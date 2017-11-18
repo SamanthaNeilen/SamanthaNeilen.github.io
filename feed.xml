@@ -1,1 +1,102 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-11-18T13:41:11+01:00</updated><id>http://localhost:4000/</id><title type="html">Samantha Neilen</title><subtitle>My name is Samantha Neilen, a dutch .Net developer.  I've been coding professionaly since 2008. On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.</subtitle><entry><title type="html">Welcome to my blog</title><link href="http://localhost:4000/2017/11/18/starting-my-blog.html" rel="alternate" type="text/html" title="Welcome to my blog" /><published>2017-11-18T08:46:41+01:00</published><updated>2017-11-18T08:46:41+01:00</updated><id>http://localhost:4000/2017/11/18/starting%20my%20blog</id><content type="html" xml:base="http://localhost:4000/2017/11/18/starting-my-blog.html">&lt;p&gt;Welcome to my blog. I’m still setting things up, but will be posting more content shortly.&lt;/p&gt;</content><author><name></name></author><summary type="html">Welcome to my blog. I’m still setting things up, but will be posting more content shortly.</summary></entry></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-11-18T22:53:22+01:00</updated><id>http://localhost:4000/</id><title type="html">Samantha Neilen</title><subtitle>My name is Samantha Neilen, a dutch .Net developer.  I have been coding professionaly since 2008. On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.</subtitle><entry><title type="html">Starting my blog</title><link href="http://localhost:4000/2017/11/18/starting-my-blog.html" rel="alternate" type="text/html" title="Starting my blog" /><published>2017-11-18T08:46:41+01:00</published><updated>2017-11-18T08:46:41+01:00</updated><id>http://localhost:4000/2017/11/18/starting%20my%20blog</id><content type="html" xml:base="http://localhost:4000/2017/11/18/starting-my-blog.html">&lt;p&gt;
+	I would like to start my blog with a post of how I set up this blog. 
+&lt;p&gt;
+&lt;p&gt;
+	When you start a Github account you can use a repository with the name username.github.io to host a website. That website will be hosted at the url &lt;a href=&quot;#&quot;&gt;https:\\username.github.com&lt;/a&gt;. These websites on Github are called Github pages. You can also create a website for a specific repository. Seeing as you can create a free Github account as long as you don't want or need private repositories, this is a great way to host a blog or website for free. For more information see &lt;a href=&quot;https://pages.github.com/&quot;&gt;Github pages&lt;/a&gt;. 
+&lt;/p&gt;
+&lt;p&gt;
+	Github pages promotes Jekyll as a tool to build static websites. It's not officially supported from windows but so for installing it and running it on my Windows 10 (2017 Fall Creators Update) has worked out fine so far.
+	See &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;the Jekyll website&lt;/a&gt; for installation instructions.
+&lt;/p&gt;
+&lt;p&gt;
+There were a few points in the installation that I had to look up because of my unfamiliarity with Linux so I've included a description below of the steps taken after installing the Ubuntu store app from windows.
+&lt;/p&gt;
+&lt;h3&gt;Installing Jekyll on windows10&lt;/h3&gt;
+&lt;p&gt;
+After I installed the Ubuntu app and started it as an Administrator I got an error. The link in the error shows you to the MSDN page explaining that you have to run a Powershell command to actually enable the Linux subsystem for Windows.
+For more information see: &lt;a href=&quot;https://msdn.microsoft.com/en-us/commandline/wsl/install-win10&quot;&gt;Install the Windows Subsystem for Linux&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+The command that needs to be run (as administrator in Powershell) was:
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;Enable-WindowsOptionalFeature &lt;span class=&quot;nt&quot;&gt;-Online&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-FeatureName&lt;/span&gt; Microsoft-Windows-Subsystem-Linux&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;p&gt;
+	After the reboot start the Ubuntu terminal app again as administrator. It will now show the screen below:&lt;br /&gt;
+	&lt;img src=&quot;/assets/images/20171118/UbuntuInstallingMessage.png&quot; alt=&quot;Ubuntu Installing Message&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+The terminal actually froze up for me the first time here, so if it's not continuing after a few minutes, just close and restart the app. (This may happen a few times when configuring the shell or downloading and updating the packages needed to install Jekyll. Also sometimes the editor seems to not take keyboard input when prompted to press enter or cntrl-c, when that happens click a few times within the editor to get the focus back correctly in the terminal and it will accept the command.)
+&lt;/p&gt;
+&lt;p&gt;
+When it's done, you will see an active command line with root@computername:~#&lt;br /&gt;
+Enter the command below to start bash (the Jekyll website just stated bash without the sudo keyword but the sudo keyword is needed).
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;Sudo bash&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;p&gt;
+It may prompt you for a username and password. (Be aware you will need that password every time you start up bash. Also the text cursor will not show any signs off accepting input like stars or underscores but it will register your keystrokes). I have installed the terminal on 2 different computers. On one I did not get prompted for the separate login on the other I did need it.
+&lt;/p&gt;
+&lt;p&gt;
+Run the commands as provided on the Jekyll site for &lt;a href=&quot;https://jekyllrb.com/docs/windows/&quot;&gt;the installation on windows&lt;/a&gt;. When it shows multiple commands in one code block run them per command and don't paste them in all at once). 
+&lt;/p&gt;
+&lt;p&gt;
+Also it may give the message below. You can continue by pressing enter and run the next command when it finishes. &lt;br /&gt;
+&lt;img src=&quot;/assets/images/20171118/BrightboxRubyMessage.png&quot; alt=&quot;BrightBox Ruby Message&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+After all the commands have run and Jekyll is returning a version number you can navigate to a windows folder to create your first Jekyll website. The Ubuntu terminal is run from a separate sub filesystem so you need to enter the command below to navigate to your C:\ drive. 
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /mnt/c/&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;p&gt;
+From the C:\ directory you can just use the &quot;dir&quot; and &quot;cd&quot; commands to navigate to the appropriate folder the same way you would in a Windows command prompt. To create a new Jekyll website within your current folder use the command below. (note that you do not need to use the sudo keyword any more.)
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;jekyll new .&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;p&gt;
+After it has finished you have a working default website that you van run with the command below.
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;jekyll serve&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;h3&gt;Customising your site&lt;/h3&gt;
+&lt;p&gt;
+You can now add pages like the one already generated in your _posts folder and alter the _config.yml file to populate the contents of your generated site.
+&lt;/p&gt;
+&lt;p&gt;
+Every time you make a change when Jekyll serve command is active or when you issue a Jekyll build command the contents of the _site folder get updated with the generated HTML site that you can access with your browser. This is also the content you can upload to your Git repository and thus will be hosted on your username.github.io website.&lt;br /&gt;
+&lt;img src=&quot;/assets/images/20171118/JekyllDefaultPage.png&quot; alt=&quot;Jekkyl Default Page&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+As you may notice the default site is quite barren but you do not see the files for the page layouts or the stylesheets. These files can be found in the folder that holds the default theme. It was installed with the other bundles in the Ubuntu terminal. As stated in the &lt;a href=&quot;https://jekyllrb.com/docs/structure/&quot;&gt;Jekyll documentation&lt;/a&gt; ( you can find out where those files are located with the command below.
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;bundle show minima&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;/p&gt;
+&lt;p&gt;
+You can copy the files from the theme folder and copy them into the folder of your Jekyll page to completely customize them. However the files installed by the Linux terminal are installed in a folder in your AppData folder. To access them from a windows explorer you need to enable hidden folders in your folder options and search for the &quot;gem&quot; in your %Users%\User\AppData folder to locate the installed ruby packages (including the minima package)
+&lt;/p&gt;
+&lt;p&gt;
+Some great references on how to customize your pages are:
+&lt;ul&gt;
+	&lt;li&gt;
+	&lt;a href=&quot;https://jekyllrb.com/docs/templates/&quot;&gt;Jekyll template documentation&lt;/a&gt;
+	&lt;/li&gt;
+	&lt;li&gt;
+	&lt;a href=&quot;https://shopify.github.io/liquid/&quot;&gt;Liquid template language&lt;/a&gt;
+	&lt;/li&gt;
+	&lt;li&gt;
+	&lt;a href=&quot;https://gist.github.com/smutnyleszek/9803727&quot;&gt;Liquid for Github pages cheatcheat&lt;/a&gt; 
+	&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/p&gt;
+&lt;p&gt;
+After customizing your site template you can just worry about creating content pages. Any changes you make to your template at a later time will be reflected over all pages in the site. When uploading changes to your site repository, it may take a minute or so before changes are reflected in the browser.
+The files used to generate the content for this blog can be found at &lt;a href=&quot;https://github.com/SamanthaNeilen/JekyllBlog&quot;&gt;https://github.com/SamanthaNeilen/JekyllBlog&lt;/a&gt;.
+&lt;/p&gt;
+&lt;/p&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to start my blog with a post of how I set up this blog. When you start a Github account you can use a repository with the name username.github.io to host a website. That website will be hosted at the url https:\\username.github.com. These websites on Github are called Github pages. You can also create a website for a specific repository. Seeing as you can create a free Github account as long as you don't want or need private repositories, this is a great way to host a blog or website for free. For more information see Github pages. Github pages promotes Jekyll as a tool to build static websites. It's not officially supported from windows but so for installing it and running it on my Windows 10 (2017 Fall Creators Update) has worked out fine so far. See the Jekyll website for installation instructions. There were a few points in the installation that I had to look up because of my unfamiliarity with Linux so I've included a description below of the steps taken after installing the Ubuntu store app from windows. Installing Jekyll on windows10 After I installed the Ubuntu app and started it as an Administrator I got an error. The link in the error shows you to the MSDN page explaining that you have to run a Powershell command to actually enable the Linux subsystem for Windows. For more information see: Install the Windows Subsystem for Linux. The command that needs to be run (as administrator in Powershell) was: Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux After the reboot start the Ubuntu terminal app again as administrator. It will now show the screen below: The terminal actually froze up for me the first time here, so if it's not continuing after a few minutes, just close and restart the app. (This may happen a few times when configuring the shell or downloading and updating the packages needed to install Jekyll. Also sometimes the editor seems to not take keyboard input when prompted to press enter or cntrl-c, when that happens click a few times within the editor to get the focus back correctly in the terminal and it will accept the command.) When it's done, you will see an active command line with root@computername:~# Enter the command below to start bash (the Jekyll website just stated bash without the sudo keyword but the sudo keyword is needed). Sudo bash It may prompt you for a username and password. (Be aware you will need that password every time you start up bash. Also the text cursor will not show any signs off accepting input like stars or underscores but it will register your keystrokes). I have installed the terminal on 2 different computers. On one I did not get prompted for the separate login on the other I did need it. Run the commands as provided on the Jekyll site for the installation on windows. When it shows multiple commands in one code block run them per command and don't paste them in all at once). Also it may give the message below. You can continue by pressing enter and run the next command when it finishes. After all the commands have run and Jekyll is returning a version number you can navigate to a windows folder to create your first Jekyll website. The Ubuntu terminal is run from a separate sub filesystem so you need to enter the command below to navigate to your C:\ drive. cd /mnt/c/ From the C:\ directory you can just use the &quot;dir&quot; and &quot;cd&quot; commands to navigate to the appropriate folder the same way you would in a Windows command prompt. To create a new Jekyll website within your current folder use the command below. (note that you do not need to use the sudo keyword any more.) jekyll new . After it has finished you have a working default website that you van run with the command below. jekyll serve Customising your site You can now add pages like the one already generated in your _posts folder and alter the _config.yml file to populate the contents of your generated site. Every time you make a change when Jekyll serve command is active or when you issue a Jekyll build command the contents of the _site folder get updated with the generated HTML site that you can access with your browser. This is also the content you can upload to your Git repository and thus will be hosted on your username.github.io website. As you may notice the default site is quite barren but you do not see the files for the page layouts or the stylesheets. These files can be found in the folder that holds the default theme. It was installed with the other bundles in the Ubuntu terminal. As stated in the Jekyll documentation ( you can find out where those files are located with the command below. bundle show minima You can copy the files from the theme folder and copy them into the folder of your Jekyll page to completely customize them. However the files installed by the Linux terminal are installed in a folder in your AppData folder. To access them from a windows explorer you need to enable hidden folders in your folder options and search for the &quot;gem&quot; in your %Users%\User\AppData folder to locate the installed ruby packages (including the minima package) Some great references on how to customize your pages are: Jekyll template documentation Liquid template language Liquid for Github pages cheatcheat After customizing your site template you can just worry about creating content pages. Any changes you make to your template at a later time will be reflected over all pages in the site. When uploading changes to your site repository, it may take a minute or so before changes are reflected in the browser. The files used to generate the content for this blog can be found at https://github.com/SamanthaNeilen/JekyllBlog.</summary></entry></feed>
