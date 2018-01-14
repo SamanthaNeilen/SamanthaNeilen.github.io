@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tips for making your code more suitable for unit testing</title>
+    <meta name="description" content="Unit tests are important to test your business logic. Unit tests should not call actual services or the database and they should be able to run within a few ...">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="http://localhost:4000/2017/12/29/tips-for-making-your-code-more-suitable-for-unit-tests.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-109838057-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-109838057-1');
+</script>
+
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Tips for making your code more suitable for unit testing
+    </header>
+    
+    <span>Dec 29, 2017</span><br />
+    Tags: 
+                TestAutomation 
+			
+    <div class="article-content">
+        <p>
+Unit tests are important to test your business logic. Unit tests should not call actual services or the database and they should be able to run within a few minutes.
+In this blogpost I want to give a few tips on how to make your codebase more suitable for writing unit tests.
+</p>
+<h3>Interfaces and dependency injection</h3>
+<p>
+When dealing with legacy code you will often find that different functional classes are called with the new keyword throughout other functional classes. This will often get in the way of writing a true unit test that only tests the method that you are working on.
+Mitigate the problem by extracting an interface for the class whose functionality you want to access and instead pass the interface into the constructor of the class that will use the class. 
+An example of code that instantiates a direct link to an Entity Framework database context is shown below.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">CustomerService</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">CustomerViewModel</span><span class="p">&gt;</span> <span class="nf">GetCustomerOverview</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="k">new</span> <span class="nf">ECommerceDbContext</span><span class="p">()).</span><span class="n">Customer</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">customer</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">customer</span><span class="p">.</span><span class="n">Deleted</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="nf">MapToCustomerViewModel</span><span class="p">().</span><span class="nf">Compile</span><span class="p">());</span>
+    <span class="p">}</span>
+	
+    <span class="k">private</span> <span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="n">CustomerViewModel</span><span class="p">&gt;&gt;</span> <span class="nf">MapToCustomerViewModel</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">customer</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">CustomerViewModel</span>
+        <span class="p">{</span>
+            <span class="n">Id</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span>
+            <span class="n">Name</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">EmailAdress</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">EmailAdress</span><span class="p">,</span>
+            <span class="n">PhoneNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">PhoneNumber</span><span class="p">,</span>
+            <span class="n">Street</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Street</span><span class="p">,</span>
+            <span class="n">HouseNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumber</span><span class="p">,</span>
+            <span class="n">HouseNumberExtension</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumberExtension</span><span class="p">,</span>
+            <span class="n">ZipCode</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">ZipCode</span><span class="p">,</span>
+            <span class="n">City</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">City</span><span class="p">,</span>
+            <span class="n">Country</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Country</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+The GetCustomerOverview method above cannot be unit tested because all calls to the method will actually instantiate the Entity Framework context with a actual calls to the underlying database.
+A refactored CustomerService with interfaces passed through the constructor is shown below.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">CustomerService</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IECommerceDbContext</span> <span class="n">_eCommerceDbContext</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">CustomerService</span><span class="p">(</span><span class="n">IECommerceDbContext</span> <span class="n">eCommerceDbContext</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_eCommerceDbContext</span> <span class="p">=</span> <span class="n">eCommerceDbContext</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">CustomerViewModel</span><span class="p">&gt;</span> <span class="nf">GetCustomerOverview</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">customer</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">customer</span><span class="p">.</span><span class="n">Deleted</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="nf">MapToCustomerViewModel</span><span class="p">().</span><span class="nf">Compile</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="n">CustomerViewModel</span><span class="p">&gt;&gt;</span> <span class="nf">MapToCustomerViewModel</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">customer</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">CustomerViewModel</span>
+        <span class="p">{</span>
+            <span class="n">Id</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span>
+            <span class="n">Name</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">EmailAdress</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">EmailAdress</span><span class="p">,</span>
+            <span class="n">PhoneNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">PhoneNumber</span><span class="p">,</span>
+            <span class="n">Street</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Street</span><span class="p">,</span>
+            <span class="n">HouseNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumber</span><span class="p">,</span>
+            <span class="n">HouseNumberExtension</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumberExtension</span><span class="p">,</span>
+            <span class="n">ZipCode</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">ZipCode</span><span class="p">,</span>
+            <span class="n">City</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">City</span><span class="p">,</span>
+            <span class="n">Country</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Country</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+The interface for my DbContext is shown below.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">interface</span> <span class="nc">IECommerceDbContext</span>
+<span class="p">{</span>
+    <span class="n">IDbSet</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">&gt;</span> <span class="n">Customer</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="nf">SaveChanges</span><span class="p">();</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+Now you can create a unit test to the GetCustomerOverview method. I will describe how to create a mock Entity Framework class in the next section of this post.
+</p>
+<p>
+If you are not using Entity Framework Code First but using the database designer, you must create a separate partial class of your DbContext and set the interface inheritance in the new custom partial class. If you add an interface in the generated file, it will be lost at the next code generation from the model.
+</p>
+<p>
+Making sure that all dependencies are passed to a class via the constructor is called dependency injection. To ensure that you do not have to new up all the dependencies in the constructors in the UI or other top layer of your application you can leverage a framework like <a href="https://msdn.microsoft.com/en-us/library/dn178463(v=pandp.30).aspx" target="_blank">Unity</a> to handle all the dependency injection for you. An example of this can be found in my <a href="https://github.com/SamanthaNeilen/ECommerceSampleApplication" target="_blank">ECommerceSampleApplication repository</a> in the ECommerceApp.NetFramework.Web project. The Unity NuGet packages combined with a unity configuration file section map all the interfaces with the concrete implementations. .Net Core has a built in dependency injection framework.
+</p>
+<p>
+When writing tests you will want to call only specific calls of an interface during a test. You can use a mocking framework like Moq to create and verify fake behavior on interface calls. More information and examples of Moq can be found <a target="_blank" href="https://github.com/Moq/moq4/wiki/Quickstart">here</a>.
+</p>
+<h3>Mocking Entity Framework</h3>
+<p>
+When using Entity Framwork 6 and onward you can use the mock implementation in <a href="https://msdn.microsoft.com/en-us/library/dn314431(v=vs.113).aspx" target="_blank">this MSDN post</a> to simulate an entity framework without having to use a mocking framework to mock out all the calls.
+</p>
+<p>
+An example of a testclass, using the mock framework and the refactored GetCustomerOverview method of the previous section, would look like the code snippet below (This test class uses <a href="https://github.com/nunit/docs/wiki/NUnit-Documentation" target="_blank">the NUnit framework</a> for writing and running the tests):
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">CustomerServiceTests</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="n">IECommerceDbContext</span> <span class="n">_eCommerceDbContext</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">CustomerService</span> <span class="n">_customerService</span><span class="p">;</span>
+
+    <span class="p">[</span><span class="n">SetUp</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Initialize</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">_eCommerceDbContext</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MockECommerceDbContext</span><span class="p">();</span>
+        <span class="n">_customerService</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CustomerService</span><span class="p">(</span><span class="n">_eCommerceDbContext</span><span class="p">);</span>
+
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">1</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 1"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">false</span> <span class="p">});</span>
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">2</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 2"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">true</span> <span class="p">});</span>
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">3</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 3"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">false</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Test</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">GetCustomerOverview_Should_Return_Non_Deleted_Customers</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// ACT
+</span>
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="n">_customerService</span><span class="p">.</span><span class="nf">GetCustomerOverview</span><span class="p">();</span>
+
+        <span class="c1">// ASSERT
+</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="n">IsInstanceOf</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">CustomerViewModel</span><span class="p">&gt;&gt;(</span><span class="n">result</span><span class="p">);</span>            
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">e</span> <span class="p">=&gt;</span> <span class="n">e</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="m">1</span><span class="p">));</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">IsFalse</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">e</span> <span class="p">=&gt;</span> <span class="n">e</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="m">2</span><span class="p">));</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">e</span> <span class="p">=&gt;</span> <span class="n">e</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="m">3</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+My mock DbContext implementation is shown below:
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">MockECommerceDbContext</span> <span class="p">:</span> <span class="n">IECommerceDbContext</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">MockECommerceDbContext</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">Customer</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TestDbSet</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">&gt;();</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">IDbSet</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">&gt;</span> <span class="n">Customer</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">int</span> <span class="n">SaveChangesCount</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">int</span> <span class="nf">SaveChanges</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">SaveChangesCount</span><span class="p">++;</span>
+        <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+The implementation of the TestDbSet is found in the MSDN post referenced earlier in this section.
+When using Entity Framework below version 6 look at the same MSDN post on how to write unit tests using interfaces and mock classes for the Entity Framework database context.
+</p>
+<h3>Dealing with 3rd party classes</h3>
+<p>
+When writing .Net code you will probably use NuGet packages or other 3rd party references that do not always have interfaces available. 
+The class below uses 2 external packages. FileHelpers to enable CSV exports and DotNetZip to create a ZipFile on the filesystem. 
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">ExportService</span><span class="p">:</span> <span class="n">IExportService</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">_exportLocation</span> <span class="p">=</span> <span class="n">ConfigurationManager</span><span class="p">.</span><span class="n">AppSettings</span><span class="p">[</span><span class="s">"ExportLocation"</span><span class="p">];</span>
+    <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">_customerOverviewExportName</span> <span class="p">=</span> <span class="s">"CustomerOverview"</span><span class="p">;</span>      
+
+    <span class="k">public</span> <span class="n">IZipFile</span> <span class="nf">CreateCustomerOverviewZipFile</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(!</span><span class="n">Directory</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="n">_exportLocation</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">Directory</span><span class="p">.</span><span class="nf">CreateDirectory</span><span class="p">(</span><span class="n">_exportLocation</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="kt">var</span> <span class="n">customerOverViewExportFileLocation</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_exportLocation</span><span class="p">}{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">;</span>
+        <span class="nf">CreateExportFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nf">ZipExportFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">ZipFile</span> <span class="nf">ZipExportFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">customerOverViewExportFileLocation</span><span class="p">)</span>
+    <span class="p">{</span>            
+        <span class="kt">var</span> <span class="n">zipfile</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ZipFile</span><span class="p">();</span>
+        <span class="n">zipfile</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.zip"</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">zipentry</span> <span class="p">=</span> <span class="n">zipfile</span><span class="p">.</span><span class="nf">AddFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+        <span class="n">zipentry</span><span class="p">.</span><span class="n">FileName</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">;</span>
+        <span class="n">zipfile</span><span class="p">.</span><span class="nf">Save</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">_exportLocation</span><span class="p">}{</span><span class="n">zipfile</span><span class="p">.</span><span class="n">Name</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">zipfile</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">void</span> <span class="nf">CreateExportFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">customerOverViewExportFileLocation</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">customerData</span> <span class="p">=</span> <span class="p">(</span><span class="k">new</span> <span class="nf">ECommerceDbContext</span><span class="p">()).</span><span class="n">Customer</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">customer</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">customer</span><span class="p">.</span><span class="n">Deleted</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="nf">MapToCustomerExportModel</span><span class="p">().</span><span class="nf">Compile</span><span class="p">());</span>
+
+        <span class="p">(</span><span class="k">new</span> <span class="n">FileHelperEngine</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;()).</span><span class="nf">WriteFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">,</span> <span class="n">customerData</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="n">CustomerExport</span><span class="p">&gt;&gt;</span> <span class="nf">MapToCustomerExportModel</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">customer</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">CustomerExport</span>
+        <span class="p">{</span>
+            <span class="n">Name</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">EmailAdress</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">EmailAdress</span><span class="p">,</span>
+            <span class="n">PhoneNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">PhoneNumber</span><span class="p">,</span>
+            <span class="n">Street</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Street</span><span class="p">,</span>
+            <span class="n">HouseNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumber</span><span class="p">,</span>
+            <span class="n">HouseNumberExtension</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumberExtension</span><span class="p">,</span>
+            <span class="n">ZipCode</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">ZipCode</span><span class="p">,</span>
+            <span class="n">City</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">City</span><span class="p">,</span>
+            <span class="n">Country</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Country</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+The FileHelperEngine class already has an interface and can be easily refactored but the ZipFile implementation does not. The ZipFile class also does not allow itself to be mocked properly. 
+</p>
+<p>
+A solution to mitigate these issues is to create an Inherited object on which we can create an interface and thus create a mock object. The inherited object which I have called Adapter after the <a href="https://en.wikipedia.org/wiki/Adapter_pattern" target="_blank">Adapter Design principle</a> is shown below.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">ZipFileAdapter</span> <span class="p">:</span> <span class="n">ZipFile</span><span class="p">,</span> <span class="n">IZipFile</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">ZipFileAdapter</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">UseZip64WhenSaving</span> <span class="p">=</span> <span class="n">Zip64Option</span><span class="p">.</span><span class="n">AsNecessary</span><span class="p">;</span>
+        <span class="n">CompressionLevel</span> <span class="p">=</span> <span class="n">CompressionLevel</span><span class="p">.</span><span class="n">BestCompression</span><span class="p">;</span>
+    <span class="p">}</span>        
+
+    <span class="n">IZipEntry</span> <span class="n">IZipFile</span><span class="p">.</span><span class="nf">AddFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">location</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ZipEntryAdapter</span><span class="p">(</span><span class="nf">AddFile</span><span class="p">(</span><span class="n">location</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">interface</span> <span class="nc">IZipFile</span>
+<span class="p">{</span>
+    <span class="n">Zip64Option</span> <span class="n">UseZip64WhenSaving</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="n">CompressionLevel</span> <span class="n">CompressionLevel</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="kt">string</span> <span class="n">Name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="n">IZipEntry</span> <span class="nf">AddFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">location</span><span class="p">);</span>
+    <span class="k">void</span> <span class="nf">Save</span><span class="p">(</span><span class="kt">string</span> <span class="n">location</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+Because I also wanted to use the created ZipEntry after calling AddFile I also had to create an Adapter for the ZipEntry class. The implementation of this class is shown below.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">ZipEntryAdapter</span> <span class="p">:</span> <span class="n">IZipEntry</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="n">ZipEntry</span> <span class="n">_zipEntry</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">ZipEntryAdapter</span><span class="p">(</span><span class="n">ZipEntry</span> <span class="n">zipEntry</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_zipEntry</span> <span class="p">=</span> <span class="n">zipEntry</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">FileName</span> <span class="p">{</span> <span class="k">get</span> <span class="p">{</span> <span class="k">return</span> <span class="n">_zipEntry</span><span class="p">.</span><span class="n">FileName</span><span class="p">;</span> <span class="p">}</span> <span class="k">set</span> <span class="p">{</span> <span class="n">_zipEntry</span><span class="p">.</span><span class="n">FileName</span> <span class="p">=</span> <span class="k">value</span><span class="p">;</span> <span class="p">}</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">interface</span> <span class="nc">IZipEntry</span>
+<span class="p">{</span>
+    <span class="kt">string</span> <span class="n">FileName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>
+Notice that in the adapters above that I only implemented and extracted the interfaces that I actually use. It is not necessary to extract all the functionality of the third party code if you never call it. 
+</p>
+<p>
+Now that I have interfaces for all my ExportService dependencies I can refactor my ExportService class and write the appropriate unittest for the public CreateCustomerOverviewZipFile method.
+</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">ExportService</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">_exportLocation</span> <span class="p">=</span> <span class="n">ConfigurationManager</span><span class="p">.</span><span class="n">AppSettings</span><span class="p">[</span><span class="s">"ExportLocation"</span><span class="p">];</span>
+    <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">_customerOverviewExportName</span> <span class="p">=</span> <span class="s">"CustomerOverview"</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IFileHelperEngine</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;</span> <span class="n">_fileExporter</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IECommerceDbContext</span> <span class="n">_eCommerceDbContext</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">ExportService</span><span class="p">(</span><span class="n">IFileHelperEngine</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;</span> <span class="n">fileExporter</span><span class="p">,</span> <span class="n">IECommerceDbContext</span> <span class="n">eCommerceDbContext</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_fileExporter</span> <span class="p">=</span> <span class="n">fileExporter</span><span class="p">;</span>
+        <span class="n">_eCommerceDbContext</span> <span class="p">=</span> <span class="n">eCommerceDbContext</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">IZipFile</span> <span class="nf">CreateCustomerOverviewZipFile</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(!</span><span class="n">Directory</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="n">_exportLocation</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">Directory</span><span class="p">.</span><span class="nf">CreateDirectory</span><span class="p">(</span><span class="n">_exportLocation</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="kt">var</span> <span class="n">customerOverViewExportFileLocation</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_exportLocation</span><span class="p">}{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">;</span>
+
+        <span class="nf">CreateExportFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nf">ZipExportFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">IZipFile</span> <span class="nf">ZipExportFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">customerOverViewExportFileLocation</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">container</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">UnityContainer</span><span class="p">();</span>
+        <span class="n">container</span><span class="p">.</span><span class="nf">LoadConfiguration</span><span class="p">();</span>
+        <span class="kt">var</span> <span class="n">zipfile</span> <span class="p">=</span> <span class="n">container</span><span class="p">.</span><span class="n">Resolve</span><span class="p">&lt;</span><span class="n">IZipFile</span><span class="p">&gt;();</span>
+        <span class="n">zipfile</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.zip"</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">zipentry</span> <span class="p">=</span> <span class="n">zipfile</span><span class="p">.</span><span class="nf">AddFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">);</span>
+        <span class="n">zipentry</span><span class="p">.</span><span class="n">FileName</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">;</span>
+        <span class="n">zipfile</span><span class="p">.</span><span class="nf">Save</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">_exportLocation</span><span class="p">}{</span><span class="n">zipfile</span><span class="p">.</span><span class="n">Name</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">zipfile</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">void</span> <span class="nf">CreateExportFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">customerOverViewExportFileLocation</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">customerData</span> <span class="p">=</span> <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">customer</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">customer</span><span class="p">.</span><span class="n">Deleted</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="nf">MapToCustomerExportModel</span><span class="p">().</span><span class="nf">Compile</span><span class="p">());</span>
+
+        <span class="n">_fileExporter</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="n">customerOverViewExportFileLocation</span><span class="p">,</span> <span class="n">customerData</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="n">CustomerExport</span><span class="p">&gt;&gt;</span> <span class="nf">MapToCustomerExportModel</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">customer</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">CustomerExport</span>
+        <span class="p">{</span>
+            <span class="n">Name</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">EmailAdress</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">EmailAdress</span><span class="p">,</span>
+            <span class="n">PhoneNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">PhoneNumber</span><span class="p">,</span>
+            <span class="n">Street</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Street</span><span class="p">,</span>
+            <span class="n">HouseNumber</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumber</span><span class="p">,</span>
+            <span class="n">HouseNumberExtension</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">HouseNumberExtension</span><span class="p">,</span>
+            <span class="n">ZipCode</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">ZipCode</span><span class="p">,</span>
+            <span class="n">City</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">City</span><span class="p">,</span>
+            <span class="n">Country</span> <span class="p">=</span> <span class="n">customer</span><span class="p">.</span><span class="n">Country</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">ExportServiceTests</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">_exportLocation</span> <span class="p">=</span> <span class="n">ConfigurationManager</span><span class="p">.</span><span class="n">AppSettings</span><span class="p">[</span><span class="s">"ExportLocation"</span><span class="p">];</span>
+    <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">_customerOverviewExportName</span> <span class="p">=</span> <span class="s">"CustomerOverview"</span><span class="p">;</span>
+    <span class="k">private</span> <span class="kt">string</span> <span class="n">_customerOverViewExportFileLocation</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">Mock</span><span class="p">&lt;</span><span class="n">IFileHelperEngine</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;&gt;</span> <span class="n">_mockFileExporter</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">IECommerceDbContext</span> <span class="n">_eCommerceDbContext</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">ExportService</span> <span class="n">_exportService</span><span class="p">;</span>
+
+    <span class="p">[</span><span class="n">SetUp</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Initialize</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">_customerOverViewExportFileLocation</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">_exportLocation</span><span class="p">}{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">;</span>
+        <span class="n">_eCommerceDbContext</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MockECommerceDbContext</span><span class="p">();</span>
+        <span class="n">_mockFileExporter</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Mock</span><span class="p">&lt;</span><span class="n">IFileHelperEngine</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;&gt;();</span>
+        <span class="n">_exportService</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ExportService</span><span class="p">(</span><span class="n">_mockFileExporter</span><span class="p">.</span><span class="n">Object</span><span class="p">,</span> <span class="n">_eCommerceDbContext</span><span class="p">);</span>
+
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">1</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 1"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">false</span> <span class="p">});</span>
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">2</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 2"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">true</span> <span class="p">});</span>
+        <span class="n">_eCommerceDbContext</span><span class="p">.</span><span class="n">Customer</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="m">3</span><span class="p">,</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Test customer 3"</span><span class="p">,</span> <span class="n">Deleted</span> <span class="p">=</span> <span class="k">false</span> <span class="p">});</span>
+
+        <span class="n">_mockFileExporter</span><span class="p">.</span><span class="nf">Setup</span><span class="p">(</span><span class="n">exporter</span> <span class="p">=&gt;</span> <span class="n">exporter</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="n">_customerOverViewExportFileLocation</span><span class="p">,</span> <span class="nf">NonDeletedCustomers</span><span class="p">())).</span><span class="nf">Verifiable</span><span class="p">();</span>
+    <span class="p">}</span>
+
+
+    <span class="p">[</span><span class="n">Test</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">CreateCustomerOverviewZipFile_Should_Export_Non_Deleted_Customers</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// ACT
+</span>
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="n">_exportService</span><span class="p">.</span><span class="nf">CreateCustomerOverviewZipFile</span><span class="p">();</span>
+
+        <span class="c1">// ASSERT
+</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="n">IsInstanceOf</span><span class="p">&lt;</span><span class="n">IZipFile</span><span class="p">&gt;(</span><span class="n">result</span><span class="p">);</span>
+        <span class="n">_mockFileExporter</span><span class="p">.</span><span class="nf">Verify</span><span class="p">(</span><span class="n">exporter</span> <span class="p">=&gt;</span> <span class="n">exporter</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="n">_customerOverViewExportFileLocation</span><span class="p">,</span> <span class="nf">NonDeletedCustomers</span><span class="p">()));</span>
+        <span class="kt">var</span> <span class="n">mockZipfile</span> <span class="p">=</span> <span class="n">result</span> <span class="k">as</span> <span class="n">MockZipFile</span><span class="p">;</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">mockZipfile</span><span class="p">.</span><span class="n">ZipEntries</span><span class="p">.</span><span class="n">Count</span><span class="p">);</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">_customerOverviewExportName</span><span class="p">}</span><span class="s">.csv"</span><span class="p">,</span> <span class="n">mockZipfile</span><span class="p">.</span><span class="n">ZipEntries</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">FileName</span><span class="p">);</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="n">_customerOverViewExportFileLocation</span><span class="p">,</span> <span class="n">mockZipfile</span><span class="p">.</span><span class="n">ZipEntries</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Location</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;</span> <span class="nf">NonDeletedCustomers</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">It</span><span class="p">.</span><span class="n">Is</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">CustomerExport</span><span class="p">&gt;&gt;(</span><span class="n">customerExports</span> <span class="p">=&gt;</span>
+                        <span class="n">customerExports</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">export</span> <span class="p">=&gt;</span> <span class="n">export</span><span class="p">.</span><span class="n">Name</span> <span class="p">==</span> <span class="s">"Test customer 1"</span><span class="p">)</span>
+                        <span class="p">&amp;&amp;</span> <span class="n">customerExports</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">export</span> <span class="p">=&gt;</span> <span class="n">export</span><span class="p">.</span><span class="n">Name</span> <span class="p">==</span> <span class="s">"Test customer 3"</span><span class="p">)</span>
+                        <span class="p">&amp;&amp;</span> <span class="p">!</span><span class="n">customerExports</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">export</span> <span class="p">=&gt;</span> <span class="n">export</span><span class="p">.</span><span class="n">Name</span> <span class="p">==</span> <span class="s">"Test customer 2"</span><span class="p">)</span>
+                    <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .Net developer.
+    I have been coding professionaly since 2008.
+    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>    
+    
+        <a href="/2018/01/14/writing-tests-for-your-graphical-user-interface.html">Writing tests for your graphical user interface</a> <br/>
+        <div class="last-posts-spacer"></div>
+    
+        <a href="/2017/12/29/tips-for-making-your-code-more-suitable-for-unit-tests.html">Tips for making your code more suitable for unit testing</a> <br/>
+        <div class="last-posts-spacer"></div>
+    
+        <a href="/2017/11/24/managing-a-sql-server-database-from-a-visual-studio-database-project.html">Managing a SQL Server database from a Visual Studio Database project</a> <br/>
+        <div class="last-posts-spacer"></div>
+    
+        <a href="/2017/11/18/starting-my-blog.html">Starting my blog</a> <br/>
+        <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
