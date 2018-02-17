@@ -238,6 +238,9 @@ A webtest is quite similar. Here again the base class for the control is differe
 
 <h3>Running a single test on multiple browsers using a data source file</h3>
 <p>
+<b>[Edit Feb 16 2018]</b> Note that the solution described below works for projects using the Coded UI framework. When using the default Microsoft Test V2 framework, the use of the TestSettings files is deprecated and your tests will stay undiscoverable in the Test Explorer window. See the <a href="https://github.com/SamanthaNeilen/WebDriverTestApplication" target="">WebDriverTestApplication repository</a> for running tests with the MSTest V2 framework. <b>[End edit Feb 16 2018]</b>
+</p>
+<p>
 The default unit test framework from Microsoft can consume input files to run your tests for multiple data rows. In the following example I have added a CSV with the browsers names I want to test as data source. When this test is run the test will execute for each browser in sequence.
 </p>
 
@@ -337,6 +340,9 @@ Sometimes Visual Studio will not automatically pick up the TestSettings file. If
 </p>
 <h3>Setting up a simple web test with Selenium</h3>
 <p>
+<b>[Edit Feb 16 2018]</b> Note that the solution described below works for projects using the Coded UI framework. When using the default Microsoft Test V2 framework, the use of the TestSettings files is deprecated and your tests will stay undiscoverable in the Test Explorer window. See the <a href="https://github.com/SamanthaNeilen/WebDriverTestApplication" target="">WebDriverTestApplication repository</a> for running tests with the MSTest V2 framework. <b>[End edit Feb 16 2018]</b>
+</p>
+<p>
 In this last section I wanted to show a web test using Selenium. To be able to use Selenium in your test project first add the Selenium.Support NuGet package. This package will also automatically add the Selenium.Webdriver package.
 <br /><img src="/assets/images/20180114/SeleniumNuGetPackages.png" alt="Selenium NuGet Packages" />
 </p>
@@ -364,7 +370,7 @@ After setting up, you can use the test method below to check the same functional
 
 <span class="k">namespace</span> <span class="nn">CodedUITestTestApplication.Tests</span>
 <span class="p">{</span>
-    <span class="p">[</span><span class="n">TestClass</span><span class="p">]</span>
+    <span class="p">[</span><span class="n">CodedUITest</span><span class="p">]</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">WebTests</span>
     <span class="p">{</span>
         <span class="p">[</span><span class="n">TestMethod</span><span class="p">,</span> <span class="nf">DataSource</span><span class="p">(</span><span class="s">"Browsers"</span><span class="p">)]</span>
@@ -376,27 +382,28 @@ After setting up, you can use the test method below to check the same functional
                 <span class="n">browserIdentifier</span> <span class="p">=</span> <span class="n">TestContext</span><span class="p">.</span><span class="n">DataRow</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="nf">ToString</span><span class="p">();</span>
             <span class="p">}</span>
 
-            <span class="kt">var</span> <span class="n">driver</span> <span class="p">=</span> <span class="nf">StartWebdriver</span><span class="p">(</span><span class="n">browserIdentifier</span><span class="p">);</span>
+            <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">driver</span> <span class="p">=</span> <span class="nf">StartWebdriver</span><span class="p">(</span><span class="n">browserIdentifier</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="n">driver</span><span class="p">.</span><span class="nf">Navigate</span><span class="p">().</span><span class="nf">GoToUrl</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">StartUrl</span><span class="p">));</span>
 
-            <span class="n">driver</span><span class="p">.</span><span class="nf">Navigate</span><span class="p">().</span><span class="nf">GoToUrl</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">StartUrl</span><span class="p">));</span>
+                <span class="kt">var</span> <span class="n">nameTextBox</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name"</span><span class="p">));</span>
+                <span class="n">nameTextBox</span><span class="p">.</span><span class="nf">SendKeys</span><span class="p">(</span><span class="s">"Some Name"</span><span class="p">);</span>
 
-            <span class="kt">var</span> <span class="n">nameTextBox</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name"</span><span class="p">));</span>
-            <span class="n">nameTextBox</span><span class="p">.</span><span class="nf">SendKeys</span><span class="p">(</span><span class="s">"Some Name"</span><span class="p">);</span>
+                <span class="kt">var</span> <span class="n">submitButton</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">TagName</span><span class="p">(</span><span class="s">"button"</span><span class="p">));</span>
+                <span class="n">submitButton</span><span class="p">.</span><span class="nf">Click</span><span class="p">();</span>
 
-            <span class="kt">var</span> <span class="n">submitButton</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">TagName</span><span class="p">(</span><span class="s">"button"</span><span class="p">));</span>
-            <span class="n">submitButton</span><span class="p">.</span><span class="nf">Click</span><span class="p">();</span>
+                <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"addCustomerHeader"</span><span class="p">));</span>
+                <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="n">Displayed</span><span class="p">);</span>
 
-            <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"addCustomerHeader"</span><span class="p">));</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="n">Displayed</span><span class="p">);</span>
+                <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name-error"</span><span class="p">)).</span><span class="n">Count</span><span class="p">);</span>
 
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name-error"</span><span class="p">)).</span><span class="n">Count</span><span class="p">);</span>
+                <span class="kt">var</span> <span class="n">expectedEmailvalidationMessage</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="n">Messages</span><span class="p">.</span><span class="n">FieldRequired</span><span class="p">,</span> <span class="n">Labels</span><span class="p">.</span><span class="n">EmailAddress</span><span class="p">);</span>
+                <span class="kt">var</span> <span class="n">validationMessages</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">CssSelector</span><span class="p">(</span><span class="s">".field-validation-error"</span><span class="p">));</span>
+                <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">validationMessages</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">element</span> <span class="p">=&gt;</span> <span class="n">element</span><span class="p">.</span><span class="n">Displayed</span> 
+                    <span class="p">&amp;&amp;</span> <span class="nf">ChildSpanContainsExpectedText</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">)));</span>
 
-            <span class="kt">var</span> <span class="n">expectedEmailvalidationMessage</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="n">Messages</span><span class="p">.</span><span class="n">FieldRequired</span><span class="p">,</span> <span class="n">Labels</span><span class="p">.</span><span class="n">EmailAddress</span><span class="p">);</span>
-            <span class="kt">var</span> <span class="n">validationMessages</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">CssSelector</span><span class="p">(</span><span class="s">".field-validation-error"</span><span class="p">));</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">validationMessages</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">element</span> <span class="p">=&gt;</span> <span class="n">element</span><span class="p">.</span><span class="n">Displayed</span> <span class="p">&amp;&amp;</span> 
-			      <span class="nf">ChildSpanContainsExpectedText</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">)));</span>
-
-            <span class="n">driver</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+                <span class="n">driver</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+            <span class="p">}</span>
         <span class="p">}</span>
 
         <span class="k">private</span> <span class="k">static</span> <span class="kt">bool</span> <span class="nf">ChildSpanContainsExpectedText</span><span class="p">(</span><span class="n">IWebElement</span> <span class="n">element</span><span class="p">,</span> <span class="kt">string</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">)</span>
