@@ -1,4 +1,86 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.0">Jekyll</generator><link href="https://samanthaneilen.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://samanthaneilen.github.io/" rel="alternate" type="text/html" /><updated>2018-02-17T07:40:23+01:00</updated><id>https://samanthaneilen.github.io/</id><title type="html">Samantha Neilen</title><subtitle>My name is Samantha Neilen, a dutch .Net developer.  I have been coding professionaly since 2008. On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.</subtitle><entry><title type="html">Setting up a build using VSTS</title><link href="https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html" rel="alternate" type="text/html" title="Setting up a build using VSTS" /><published>2018-02-10T00:00:00+01:00</published><updated>2018-02-10T00:00:00+01:00</updated><id>https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts</id><content type="html" xml:base="https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html">&lt;p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.0">Jekyll</generator><link href="https://samanthaneilen.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://samanthaneilen.github.io/" rel="alternate" type="text/html" /><updated>2018-03-17T09:36:00+01:00</updated><id>https://samanthaneilen.github.io/</id><title type="html">Samantha Neilen</title><subtitle>My name is Samantha Neilen, a dutch .Net developer.  I have been coding professionaly since 2008. On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.</subtitle><entry><title type="html">Setting up a release using VSTS</title><link href="https://samanthaneilen.github.io/2018/03/17/setting-up-a-release-using-vsts.markdown.html" rel="alternate" type="text/html" title="Setting up a release using VSTS" /><published>2018-03-17T00:00:00+01:00</published><updated>2018-03-17T00:00:00+01:00</updated><id>https://samanthaneilen.github.io/2018/03/17/setting-up-a-release-using-vsts.markdown</id><content type="html" xml:base="https://samanthaneilen.github.io/2018/03/17/setting-up-a-release-using-vsts.markdown.html">&lt;p&gt;
+    In &lt;a href=&quot;https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html&quot; target=&quot;_blank&quot;&gt;my last&lt;/a&gt; post I showed how to build your project using VSTS. In this blog post I will describe how to set up a release to deploy the database and website from that build to an Azure Environment. 
+&lt;/p&gt;
+&lt;h3&gt;Preparing the project for the release environment&lt;/h3&gt;
+&lt;p&gt;
+    First I would like to point out some changes I made to the ECommerceApp.
+    First of was the Target platform of the database project property pages.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/DatabaseProjectTarget.png&quot; alt=&quot;Database Release Target&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    It needs to be set to target an Azure SQL Database as that will be my target platform. Not setting this to the correct target will lead to errors when deploying the .dacpac file.
+    Next I altered the Web.Release.config. The transformation rules below will change any local paths to HIDDEN. 
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ReleaseConfig.png&quot; alt=&quot;Release Config&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    These settings will be overwritten by the settings in the “Application settings” configured in the Azure Portal on the Web App, so there is no need for those paths to be filled with Debug or local settings. In production environments this would ensure no that no sensitive data is in the web.config on the file system and only in the “Application Settings” on the portal. The settings in the portal can be secured with access rights and are saved encrypted in the Azure Environment. The project contains a file download that expects a download to a local folder. That will not work on Azure, so I added the EnableExport feature flag that is set to false in the deployment.
+&lt;/p&gt;
+&lt;h3&gt;Setting up the Azure artifacts for deployment&lt;/h3&gt;
+&lt;p&gt;
+    In my example I set up de Web app and the Azure SQL Database by hand. The deployment pipelines in VSTS have steps to create these artifacts during a release if they do not exist with PowerShell steps. This is beyond the scope of this blog post. In this post I assume that the Web app and Azure SQL Database are present and correctly configured in the Azure environment that I am targeting. 
+    My resource group looks like the image below:
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ResourceGroupAzure.png&quot; alt=&quot;Resource Group Azure&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Also my Web App already has the correct application settings and connection string configured in the Application settings tab as shown below. The application and configuration settings in the Azure portal are used at runtime instead of the settings in the web.config that is deployed in the Azure environment.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ApplicationSettingsAzure.png&quot; alt=&quot;Application Settings Azure&quot; /&gt;
+&lt;/p&gt;
+&lt;h3&gt;Setting up the release&lt;/h3&gt;
+&lt;p&gt;
+    In your VSTS project go to the Build and Release menu, then click Releases and then select New definition.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/CreateReleasePage.png&quot; alt=&quot;Create Release Page&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    In the new Release Definition window select I selected the “Empty” template and named my deployment environment Test.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/NewReleaseDefinitionOverview.png&quot; alt=&quot;New Release Definition Overview&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt; 
+    Next I want to select the output artifacts (the database .dacpac and web deployment zip) from my build with the Add button next to Artifacts.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ArtifactSelection.png&quot; alt=&quot;Artifact Selection&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    After selecting your artifacts the build trigger will become available. You can set the trigger to create the release every time a build has been successfully created.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/DeploymentTrigger.png&quot; alt=&quot;Deployment Trigger&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt; 
+    Next are the pre-deployment settings where you can set up extra rules that the deployment will start after a manual approval by for example your QA team.  I kept the defaults for this step.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/PreDeploymentConditions.png&quot; alt=&quot;Pre-Deployment Conditions&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Next click on the 1 phase, 0 tasks link to get into the screen where you can actually add the deployment steps for the environment. Here add a Azure SQL DacpacTask and a Azure App Service Deploy task. Then setup the tasks to deploy to your Azure environment.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/EnvironmentSteps.png&quot; alt=&quot;Environment Steps&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    The DacpacTask is configured as shown below:
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/DacPacStepDetails.png&quot; alt=&quot;DacPac Step Details&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    The Azure App Service Deploy is configured as below. I only setup the settings shown below and used the defaults for all the others. Notice the menu to deploy or change the application and configuration settings. As all my configuration is already set up correctly in the portal, I do not need to set these up here.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/WebAppStepDetails.png&quot; alt=&quot;WebApp Step Details&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    These steps are enough to deploy the output from the build to the Azure environment. You can return to the release overview using the Pipeline option and add some post-release options to the environment. Post-deployment approvals can be used to sign of on the release after the deployment has been tested. So if you add another environment like Acceptance or Production after the Test environment (using the Add button) the Post-Deployment approval is used to halt the release for the next environment until the current environment is approved by the QA team. 
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/PostDeploymentConditions.png&quot; alt=&quot;Post Deployment Conditions&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    In the options tab of the release definition you can set up the format for the naming conventions for your release.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ReleaseOptions.png&quot; alt=&quot;Release Options&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Now that we’ve set up the release pipeline, save it and start a new build to trigger the release. As I did not set any pre-deployment approvals the build will immediately and automatically release to the test environment after the build is complete.
+&lt;/p&gt;
+&lt;p&gt;
+    You can see the active releases under the release tab and also go to the overview or details for a release execute the approval actions on an environment.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ReleaseOverview.png&quot; alt=&quot;Release Overview&quot; /&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    After the release has been completed you can see an overview by clicking on the name of a release.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ReleaseDetails.png&quot; alt=&quot;Release Details&quot; /&gt; 
+&lt;/p&gt;
+&lt;p&gt;
+    If a deploy fails click on the log tab in the release details to troubleshoot errors.
+&lt;br /&gt;&lt;img src=&quot;/assets/images/20180317/ReleaseDetailsLogs.png&quot; alt=&quot;Release Details Logs&quot; /&gt;
+&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><summary type="html">In my last post I showed how to build your project using VSTS. In this blog post I will describe how to set up a release to deploy the database and website from that build to an Azure Environment. Preparing the project for the release environment First I would like to point out some changes I made to the ECommerceApp. First of was the Target platform of the database project property pages. It needs to be set to target an Azure SQL Database as that will be my target platform. Not setting this to the correct target will lead to errors when deploying the .dacpac file. Next I altered the Web.Release.config. The transformation rules below will change any local paths to HIDDEN. These settings will be overwritten by the settings in the “Application settings” configured in the Azure Portal on the Web App, so there is no need for those paths to be filled with Debug or local settings. In production environments this would ensure no that no sensitive data is in the web.config on the file system and only in the “Application Settings” on the portal. The settings in the portal can be secured with access rights and are saved encrypted in the Azure Environment. The project contains a file download that expects a download to a local folder. That will not work on Azure, so I added the EnableExport feature flag that is set to false in the deployment. Setting up the Azure artifacts for deployment In my example I set up de Web app and the Azure SQL Database by hand. The deployment pipelines in VSTS have steps to create these artifacts during a release if they do not exist with PowerShell steps. This is beyond the scope of this blog post. In this post I assume that the Web app and Azure SQL Database are present and correctly configured in the Azure environment that I am targeting. My resource group looks like the image below: Also my Web App already has the correct application settings and connection string configured in the Application settings tab as shown below. The application and configuration settings in the Azure portal are used at runtime instead of the settings in the web.config that is deployed in the Azure environment. Setting up the release In your VSTS project go to the Build and Release menu, then click Releases and then select New definition. In the new Release Definition window select I selected the “Empty” template and named my deployment environment Test. Next I want to select the output artifacts (the database .dacpac and web deployment zip) from my build with the Add button next to Artifacts. After selecting your artifacts the build trigger will become available. You can set the trigger to create the release every time a build has been successfully created. Next are the pre-deployment settings where you can set up extra rules that the deployment will start after a manual approval by for example your QA team. I kept the defaults for this step. Next click on the 1 phase, 0 tasks link to get into the screen where you can actually add the deployment steps for the environment. Here add a Azure SQL DacpacTask and a Azure App Service Deploy task. Then setup the tasks to deploy to your Azure environment. The DacpacTask is configured as shown below: The Azure App Service Deploy is configured as below. I only setup the settings shown below and used the defaults for all the others. Notice the menu to deploy or change the application and configuration settings. As all my configuration is already set up correctly in the portal, I do not need to set these up here. These steps are enough to deploy the output from the build to the Azure environment. You can return to the release overview using the Pipeline option and add some post-release options to the environment. Post-deployment approvals can be used to sign of on the release after the deployment has been tested. So if you add another environment like Acceptance or Production after the Test environment (using the Add button) the Post-Deployment approval is used to halt the release for the next environment until the current environment is approved by the QA team. In the options tab of the release definition you can set up the format for the naming conventions for your release. Now that we’ve set up the release pipeline, save it and start a new build to trigger the release. As I did not set any pre-deployment approvals the build will immediately and automatically release to the test environment after the build is complete. You can see the active releases under the release tab and also go to the overview or details for a release execute the approval actions on an environment. After the release has been completed you can see an overview by clicking on the name of a release. If a deploy fails click on the log tab in the release details to troubleshoot errors.</summary></entry><entry><title type="html">Setting up a build using VSTS</title><link href="https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html" rel="alternate" type="text/html" title="Setting up a build using VSTS" /><published>2018-02-10T00:00:00+01:00</published><updated>2018-02-10T00:00:00+01:00</updated><id>https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts</id><content type="html" xml:base="https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html">&lt;p&gt;
 VSTS is the online platform from Microsoft to save your code. A VSTS project is free when there are 5 users or less and can function as a free private source control for small teams and projects. It also has Scrum/Kanban board functionality to manage a backlog and issues. But the best feature might be that you can use the  build and deployment features to fully adopt a DevOps way of working.  In this blogpost I will be showing how to create and run a build using VSTS. In a next blog post I will cover how to set up a deployment to Azure using the output of the build.
 &lt;/p&gt;
 &lt;p&gt;
