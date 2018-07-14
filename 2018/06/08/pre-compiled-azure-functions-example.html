@@ -399,7 +399,7 @@ Then add the code to your Azure Function to create and call the context. The cod
 <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">([</span><span class="nf">QueueTrigger</span><span class="p">(</span><span class="s">"messages"</span><span class="p">,</span> <span class="n">Connection</span> <span class="p">=</span> <span class="s">"AzureWebJobsStorage"</span><span class="p">)]</span><span class="n">QueueMessage</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
 <span class="p">{</span>
 	<span class="kt">var</span> <span class="n">dbContext</span> <span class="p">=</span> <span class="n">OrderDbContext</span><span class="p">.</span><span class="nf">GetInstance</span><span class="p">(</span><span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"OrderDbConnection"</span><span class="p">));</span>
-	<span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span><span class="p">);</span>
+	<span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Person</span><span class="p">);</span>
 
 	<span class="kt">var</span> <span class="n">mailData</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MailData</span>
 	<span class="p">{</span>
@@ -508,7 +508,7 @@ Next we can create the blobservice in our function instance and call the method 
         <span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"BlobStorageKey"</span><span class="p">)</span>
         <span class="p">);</span>
 
-    <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Person</span><span class="p">);</span>
 
     <span class="kt">var</span> <span class="n">mailData</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MailData</span>
     <span class="p">{</span>
@@ -610,7 +610,7 @@ Next we add the API key and from email settings to the local.settings.json file 
         <span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"BlobStorageKey"</span><span class="p">)</span>
         <span class="p">);</span>
 
-    <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Person</span><span class="p">);</span>
 
     <span class="kt">var</span> <span class="n">mailData</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MailData</span>
     <span class="p">{</span>
@@ -661,6 +661,9 @@ Next run the function to send an email with your SendGrid account. (Some servers
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2018/06/08/csharp-script-azure-functions-example.html">C# script Azure Functions example</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2018/06/08/pre-compiled-azure-functions-example.html">Pre-compiled Azure Functions example</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -671,9 +674,6 @@ Next run the function to send an email with your SendGrid account. (Some servers
     <div class="last-posts-spacer"></div>
     
     <a href="/2018/02/10/setting-up-a-build-using-vsts.html">Setting up a build using VSTS</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2018/01/14/writing-tests-for-your-graphical-user-interface.html">Writing tests for your graphical user interface</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
