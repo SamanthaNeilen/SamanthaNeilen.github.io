@@ -32,6 +32,55 @@
         
             <article>
                 <header class="article-header">
+                    <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a>
+                </header>
+                
+                <span>Aug 17, 2018</span> <br/>
+                Tags: 
+                <div class="article-content">
+                    <p>Lately more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing a HTTPS connection to their servers. TLS takes care of the encryption of the HTTPS communication and TLS1.2 was introduced in 2008. It is more secure (harder to decrypt) than the previous versions.</p>
+
+<p>You may encounter that establishing a HTTPS connection to a 3rd party may suddenly fail without there having been any new code changes or deployments. This may be due to the fact that the 3rd party has decided to no longer accept TLS 1.1 or below for HTTPS connections.</p>
+
+<p>I ran into this myself again this week because I used a PowerShell command to execute C# code to retrieve a bearer access token from Azure leveraging the ADAL dll’s. It suddenly did not work anymore last week and after some Googling I found a similar error that was solved by adding the TLS1.2 protocol to the ServicePointManager.SecurityProtocol property. I have needed to do this before in several older C# applications and it inspired me to write this blogpost today.</p>
+
+<p>If you face the exception “The server forcibly closed the connection” this may be an indication that the ServicePointManager no longer has a compatible protocol to establish a HTTPS connection with the server.</p>
+
+<p>The ServicePointManager is a static class .Net Framework class that will always choose the highest (securest) protocol available from the SecurityProtocol property and will only fall back to a previous version if the highest is not supported.</p>
+
+<p>Use a debugger to inspect the ServicePointManager.SecurityProtocol value to see if TLS 1.2 is listed, to determine whether or not this may be the cause of your connection issues. 
+This is usually the cause when using older .Net Framework versions (&lt; 4.7) as is it was with my PowerShell.</p>
+
+<p>In C# use the code below to append the current security protocols with TLS1.2 before establishing the connection to the server or put this code snippet in your Global.asax startup.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#">    <span class="n">ServicePointManager</span><span class="p">.</span><span class="n">SecurityProtocol</span> <span class="p">|=</span> <span class="n">SecurityProtocolType</span><span class="p">.</span><span class="n">Tls12</span></code></pre></figure>
+
+<p>When using powershell use the command below to check the current default protocols as used in Powershell:</p>
+
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"> <span class="o">[</span>Net.ServicePointManager]::SecurityProtocol</code></pre></figure>
+
+<p>You can set the TLS1.2 protocol if it’s not listed by using:</p>
+
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="o">[</span>Net.ServicePointManager]::SecurityProtocol +<span class="o">=</span> <span class="o">[</span>Net.SecurityProtocolType]::Tls12 </code></pre></figure>
+
+<p>Older version of PowerShell may not support this syntax. Use the syntax below set the most common protocols:</p>
+
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="o">[</span>Net.ServicePointManager]::SecurityProtocol <span class="o">=</span> <span class="o">[</span>Net.SecurityProtocolType]::Ssl3,  <span class="o">[</span>Net.SecurityProtocolType]::Tls, <span class="o">[</span>Net.SecurityProtocolType]::Tls12 </code></pre></figure>
+
+<p>Remember: when appending or setting the ServicePointManager.SecurityProtocol property to a set value in your code, you may have to revisit this at a later time when newer TLS protocols become the new standard.</p>
+
+<p>For more information on this subject visit the reference websites below:</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Transport_Layer_Security" title="Wikipedia page for Transport Layer Security" target="_blank">Wikipedia page for Transport Layer Security</a></p>
+
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.servicepointmanager.securityprotocol?redirectedfrom=MSDN&amp;view=netframework-4.7.2#System_Net_ServicePointManager_SecurityProtocol" title="Microsoft Docs page on the ServicePointManager.SecurityProtocol property" target="_blank">Microsoft Docs page on the ServicePointManager.SecurityProtocol property</a></p>
+
+
+                </div>
+            </article>
+        
+            <article>
+                <header class="article-header">
                     <a href="/2018/07/14/csharp-script-azure-functions-example.html">C# script Azure Functions example</a>
                 </header>
                 
@@ -2361,6 +2410,9 @@ The files used to generate the content for this blog can be found at <a href="ht
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2018/07/14/csharp-script-azure-functions-example.html">C# script Azure Functions example</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -2371,9 +2423,6 @@ The files used to generate the content for this blog can be found at <a href="ht
     <div class="last-posts-spacer"></div>
     
     <a href="/2018/03/17/setting-up-a-release-using-vsts.html">Setting up a release using VSTS</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2018/02/10/setting-up-a-build-using-vsts.html">Setting up a build using VSTS</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
