@@ -32,6 +32,687 @@
     
     <article>
         <header class="article-header">
+            <a href="/2018/10/09/using-route-constraints-for-input-validation-and-improved-security.html">Using route constraints for input validation and improved security</a>
+        </header>
+        
+        <span>Oct 9, 2018</span> <br />
+        Tags: 
+        MVC
+        
+        WebApi
+        
+        <div class="article-content">
+            <p>In .Net web applications you use the routing system to expose URLs and endpoints in your application. If your method has a framework value type like int then the routing engine will automatically parse your inputs to these types.</p>
+
+<p>Also if you the default convention based route in a .Net Framework MVC web application uses the convention below:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">routes</span><span class="p">.</span><span class="nf">MapRoute</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s">"Default"</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s">"{controller}/{action}/{id}"</span><span class="p">,</span>
+    <span class="n">defaults</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">controller</span> <span class="p">=</span> <span class="s">"Home"</span><span class="p">,</span> <span class="n">action</span> <span class="p">=</span> <span class="s">"Index"</span><span class="p">,</span> <span class="n">id</span> <span class="p">=</span> <span class="n">UrlParameter</span><span class="p">.</span><span class="n">Optional</span> <span class="p">}</span>
+<span class="p">);</span></code></pre></figure>
+
+<p>This means that if I have the controller with a method as shown below:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">MyController</span> <span class="p">:</span> <span class="n">Controller</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="nf">Index</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">id</span><span class="p">.</span><span class="nf">ToString</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>If I pas a numeric value that does not map to an int32 (for example max Int32 +1 (= 2147483648)) so <span class="link-style">http://localhost/My/Index/2147483648</span> or if I use <span class="link-style">http://localhost/My/Index/abc</span>, I get a server error saying that I passed a null value for a non-nullable integer. This error occurs because the input value could not be parsed to the correct value type.</p>
+
+<p>After your method gets hit with an valid int32 value, you may also want to do some input validation. For example: is my integer input a positive number. When using string inputs you may want to validate and execute different code depending on what input was given. An example of this is shown below:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">int</span> <span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">input</span> <span class="p">&lt;</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">input</span><span class="p">),</span> <span class="s">"Input has to be a valid positive integer"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">businessLogic</span><span class="p">.</span><span class="nf">ProcessInput</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrEmpty</span><span class="p">(</span><span class="n">input</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">input</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s">"@"</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="c1">//return something
+</span>
+    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="c1">// return something else
+</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>By using route constraints you can avoid cluttering controllers with validation code and routing logic inside your controller methods. Using route constraints will also add security benefits. If a route is not found the processing will stop quite early in the processing pipeline and return a 404 not found exception. This 404 exception will also never include sensitive internal information about a specific method that was being processed.</p>
+
+<p>In this blogpost I will be describing the default route constraints provided by the .Net Frameworks and how to create custom constraints to make sure a method or route only gets hit by the intended input.</p>
+
+<p>I have created a <a href="https://github.com/SamanthaNeilen/WebApiExamples" title="reference project on GitHub" target="_blank">reference project on GitHub</a> where all code snippets described in the rest of this blogpost can be found in a running project including integration tests demonstrating the working and denied routes.</p>
+
+<h3 id="route-constraints-in-a-net-framework-web-application-for-mvc-controllers">Route constraints in a .Net Framework web application for MVC controllers</h3>
+<p>Create a new .Net Framework web application using the MVC template. Next navigate to the Controllers/Home.cs file. The parameterless methods for showing the homepage, contact and about page are already listed. The default template uses the convention based routing by default. The default route template is defined in App_Start/RouteConfig.cs.</p>
+
+<p>To add another route using a route constraint to the convention based routes, add the code as shown below:</p>
+
+<p>RouteConfig.cs (make sure to add this above the default route)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">routes</span><span class="p">.</span><span class="nf">MapRoute</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s">"GetNumber"</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s">"GetNumber/{input}"</span><span class="p">,</span>
+    <span class="n">defaults</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">controller</span> <span class="p">=</span> <span class="s">"Home"</span><span class="p">,</span> <span class="n">action</span> <span class="p">=</span> <span class="s">"GetNumber"</span> <span class="p">},</span>
+    <span class="n">constraints</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">input</span> <span class="p">=</span> <span class="s">@"\d{1,3}"</span> <span class="p">}</span>
+<span class="p">);</span></code></pre></figure>
+
+<p>HomeController.cs</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="kt">string</span> <span class="nf">GetNumber</span><span class="p">(</span><span class="kt">int</span> <span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="s">$"Route is HomeController.GetNumber((</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">input</span><span class="p">)}</span><span class="s">)"</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>With this defined route you will expose the <span class="link-style">http://localhost/GetNumber/{number}</span> route where the number parameter is a number of 1 to 3 digits. The constraints parameter in the MapRoute method accepts regular expressions and will route any call to the GetNumber method if the digits match. If the route does not match (for example {number} is 4 digits) no route will be found and you will get a HTTP 404 not found error when calling the GetNumber url.</p>
+
+<p>Next if your logic is too complex for a regular expression you can choose to define a custom RouteConstraint as shown in the code snippets below:</p>
+
+<p>RouteConfig: (again make sure to add this above the default route)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">routes</span><span class="p">.</span><span class="nf">MapRoute</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s">"GetEmail"</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s">"GetEmail/{email}"</span><span class="p">,</span>
+    <span class="n">defaults</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">controller</span> <span class="p">=</span> <span class="s">"Home"</span><span class="p">,</span> <span class="n">action</span> <span class="p">=</span> <span class="s">"GetEmail"</span> <span class="p">},</span>
+    <span class="n">constraints</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">Email</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EmailRouteContraint</span><span class="p">()</span> <span class="p">}</span>
+<span class="p">);</span></code></pre></figure>
+
+<p>HomeController.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="kt">string</span> <span class="nf">GetEmail</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="s">$"Route is HomeController.GetEmail((</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>EmailRouteContraint.cs (this is a new class file added to the project)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Globalization</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Routing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Utilities</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample.Custom</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">EmailRouteContraint</span> <span class="p">:</span> <span class="n">IRouteConstraint</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Match</span><span class="p">(</span><span class="n">HttpContextBase</span> <span class="n">httpContext</span><span class="p">,</span> <span class="n">Route</span> <span class="n">route</span><span class="p">,</span> <span class="kt">string</span> <span class="n">parameterName</span><span class="p">,</span> 
+                <span class="n">RouteValueDictionary</span> <span class="n">values</span><span class="p">,</span> <span class="n">RouteDirection</span> <span class="n">routeDirection</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">httpContext</span><span class="p">,</span> <span class="n">route</span><span class="p">,</span> <span class="n">parameterName</span><span class="p">,</span> <span class="n">values</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span><span class="p">.</span><span class="nf">TryGetValue</span><span class="p">(</span><span class="n">parameterName</span><span class="p">,</span> <span class="k">out</span> <span class="kt">var</span> <span class="n">routeValue</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">parameterValueString</span> <span class="p">=</span> <span class="n">Convert</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="n">routeValue</span><span class="p">,</span> <span class="n">CultureInfo</span><span class="p">.</span><span class="n">InvariantCulture</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">parameterValueString</span><span class="p">.</span><span class="nf">IsEmail</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">void</span> <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">HttpContextBase</span> <span class="n">httpContext</span><span class="p">,</span> <span class="n">Route</span> <span class="n">route</span><span class="p">,</span> 
+                <span class="kt">string</span> <span class="n">parameterName</span><span class="p">,</span> <span class="n">RouteValueDictionary</span> <span class="n">values</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//validate input params  
+</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">httpContext</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">httpContext</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">route</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">route</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">parameterName</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">parameterName</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">values</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>IsEmail extension method implementation:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">namespace</span> <span class="nn">Utilities</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">Extensions</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">static</span> <span class="kt">bool</span> <span class="nf">IsEmail</span><span class="p">(</span><span class="k">this</span> <span class="kt">string</span> <span class="k">value</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="k">value</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s">"@"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Now we’ve set up a route for <span class="link-style">http://localhost/GetEmail/{email}</span> where the input string for email will only match if the value has a @ symbol in it. So just <span class="link-style">http://localhost/GetEmail/abc</span> will return a 404 not found result, but <span class="link-style">http://localhost/GetEmail/abc@</span> will route to our GetEmail method in the HomeController.cs file.</p>
+
+<p>Convention based routing has some limitations for route constraints and also the route templates may unintentionally overlap and result in unexpected behavior. (If we did not specify the GetEmail of GetNumber paths in the url, the default route would have used our input and try to route it to one of our methods). Also attribute routing already has default constraint options for basic value type constraints.</p>
+
+<p>For more information on convention based and attribute based routing and conventions for defining a route see the Microsoft docs pages about routing.</p>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/mvc/overview/older-versions-1/controllers-and-routing/asp-net-mvc-routing-overview-cs" title="Microsoft docs page for convention based routing" target="_blank">Microsoft docs page for convention based routing</a>.</li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#adding-route-attributes" title="Microsoft docs page for attribute based routing" target="_blank">Microsoft docs page for attribute based routing</a>.</li>
+</ul>
+
+<p>To enable attribute based routing, add the snippet below to the RouteConfig file. Next add a number method using a Route attribute with a default inline constraint as shown below.</p>
+
+<p>RouteConfig:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">routes</span><span class="p">.</span><span class="nf">MapMvcAttributeRoutes</span><span class="p">();</span></code></pre></figure>
+
+<p>HomeController.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="na">[Route("Attr/{number:range(0,2147483647)}")]</span>
+<span class="k">public</span> <span class="kt">string</span> <span class="nf">GetNumberAttributeRoute</span><span class="p">(</span><span class="kt">int</span> <span class="n">number</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="s">$"Route is HomeController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">number</span><span class="p">)}</span><span class="s">)"</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Now we have a <span class="link-style">http://localhost/Attr/{number}</span> route defined. The default route constraint will ensure that only a valid positive integer will be accepted. Negative input will result in a 404 not found result. Also if you did not specify a constraint, an input larger than Int32 would have routed to this method and the input would have been 0 as the number would not have been parsable to a valid int32.</p>
+
+<p>For a table of the default inline constraints for attribute routing see: <a href="https://docs.microsoft.com/en-us/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#route-constraints" title="the Microsoft docs page for default inline constraints" target="_blank">the Microsoft docs page for default inline constraints</a>. These default constraints do not seem to work in the convention based routing constraints parameter. When using convention based routing you will only be able to use regex or custom route constraint implementations.</p>
+
+<p>To add a custom constraint to an attribute routing template, change the call to the MapMvcAttributeRoutes method to the snippet shown below and add a method using the custom constraint in the HomeController.</p>
+
+<p>RouteConfig:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="kt">var</span> <span class="n">constraintsResolver</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">DefaultInlineConstraintResolver</span><span class="p">();</span>
+<span class="n">constraintsResolver</span><span class="p">.</span><span class="n">ConstraintMap</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"Email"</span><span class="p">,</span> <span class="k">typeof</span><span class="p">(</span><span class="n">EmailRouteContraint</span><span class="p">));</span>
+<span class="n">routes</span><span class="p">.</span><span class="nf">MapMvcAttributeRoutes</span><span class="p">(</span><span class="n">constraintsResolver</span><span class="p">);</span></code></pre></figure>
+
+<p>HomeController.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="na">[Route("Attr/{email:Email}")]</span>
+<span class="k">public</span> <span class="kt">string</span> <span class="nf">GetEmailAttributeRoute</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="s">$"Route is HomeController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Here we map the string “Email” to our custom constraint implementation. Now we can use that string in our Route template as “{parametername:Email}”. When using multiple custom constraints you have to map them to unique names to use in your routes. The implementation above maps the url <span class="link-style">http://localhost/Attr/{email}</span> to our method. So now we can use <span class="link-style">http://localhost/Attr/abc@</span> as a valid route but the constaint will ensure that <span class="link-style">http://localhost/Attr/abc</span> will still return a 404 not found.</p>
+
+<h3 id="route-constraints-in-a-net-framework-web-application-for-webapi-controllers">Route constraints in a .Net Framework web application for WebApi controllers</h3>
+<p>In the .Net Framework projects, MVC Controllers and WebApi Controllers work with different implementations. When adding a new controller and selecting a WebApi controller template, a WebApiConfig.cs file will appear in the App_Start folder. As you compare that file with the RouteConfig.cs you will see that the methods use different types with different methods to configure routing. 
+(When adding a WebApi controller to an MVC project you also need add the GlobalConfiguration.Configure(WebApiConfig.Register); line to your global.asax file to enable the WebApi routing)</p>
+
+<p>We can add a WebApi controller to the project and define some routes showing the attribute route constraints with almost the same code as we used for the MVC controller.</p>
+
+<p>Global.asax: (full Global.asax is shown but the only change I made was the call to the WebApiConfig.Register method)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Mvc</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Optimization</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Routing</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">MvcApplication</span> <span class="p">:</span> <span class="n">System</span><span class="p">.</span><span class="n">Web</span><span class="p">.</span><span class="n">HttpApplication</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="k">void</span> <span class="nf">Application_Start</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="n">AreaRegistration</span><span class="p">.</span><span class="nf">RegisterAllAreas</span><span class="p">();</span>
+            <span class="n">GlobalConfiguration</span><span class="p">.</span><span class="nf">Configure</span><span class="p">(</span><span class="n">WebApiConfig</span><span class="p">.</span><span class="n">Register</span><span class="p">);</span>
+            <span class="n">FilterConfig</span><span class="p">.</span><span class="nf">RegisterGlobalFilters</span><span class="p">(</span><span class="n">GlobalFilters</span><span class="p">.</span><span class="n">Filters</span><span class="p">);</span>
+            <span class="n">RouteConfig</span><span class="p">.</span><span class="nf">RegisterRoutes</span><span class="p">(</span><span class="n">RouteTable</span><span class="p">.</span><span class="n">Routes</span><span class="p">);</span>
+            <span class="n">BundleConfig</span><span class="p">.</span><span class="nf">RegisterBundles</span><span class="p">(</span><span class="n">BundleTable</span><span class="p">.</span><span class="n">Bundles</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>WebApiConfig.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Framework.WebApiExample.Custom</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Http.Routing</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">WebApiConfig</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Register</span><span class="p">(</span><span class="n">HttpConfiguration</span> <span class="n">config</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">constraintsResolver</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">DefaultInlineConstraintResolver</span><span class="p">();</span>
+            <span class="n">constraintsResolver</span><span class="p">.</span><span class="n">ConstraintMap</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"Email"</span><span class="p">,</span> <span class="k">typeof</span><span class="p">(</span><span class="n">EmailHttpRouteConstraint</span><span class="p">));</span>
+            <span class="n">config</span><span class="p">.</span><span class="nf">MapHttpAttributeRoutes</span><span class="p">(</span><span class="n">constraintsResolver</span><span class="p">);</span>
+
+            <span class="n">config</span><span class="p">.</span><span class="n">Routes</span><span class="p">.</span><span class="nf">MapHttpRoute</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">:</span> <span class="s">"DefaultApi"</span><span class="p">,</span>
+                <span class="n">routeTemplate</span><span class="p">:</span> <span class="s">"api/{controller}/{id}"</span><span class="p">,</span>
+                <span class="n">defaults</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">id</span> <span class="p">=</span> <span class="n">RouteParameter</span><span class="p">.</span><span class="n">Optional</span> <span class="p">}</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>EmailHttpRouteConstraint.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Globalization</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Net.Http</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Web.Http.Routing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Utilities</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample.Custom</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">EmailHttpRouteConstraint</span> <span class="p">:</span> <span class="n">IHttpRouteConstraint</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Match</span><span class="p">(</span><span class="n">HttpRequestMessage</span> <span class="n">request</span><span class="p">,</span> <span class="n">IHttpRoute</span> <span class="n">route</span><span class="p">,</span> <span class="kt">string</span> <span class="n">parameterName</span><span class="p">,</span> 
+                <span class="n">IDictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">object</span><span class="p">&gt;</span> <span class="n">values</span><span class="p">,</span> <span class="n">HttpRouteDirection</span> <span class="n">routeDirection</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">route</span><span class="p">,</span> <span class="n">parameterName</span><span class="p">,</span> <span class="n">values</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span><span class="p">.</span><span class="nf">TryGetValue</span><span class="p">(</span><span class="n">parameterName</span><span class="p">,</span> <span class="k">out</span> <span class="kt">var</span> <span class="n">routeValue</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">parameterValueString</span> <span class="p">=</span> <span class="n">Convert</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="n">routeValue</span><span class="p">,</span> <span class="n">CultureInfo</span><span class="p">.</span><span class="n">InvariantCulture</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">parameterValueString</span><span class="p">.</span><span class="nf">IsEmail</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">void</span> <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">HttpRequestMessage</span> <span class="n">request</span><span class="p">,</span> <span class="n">IHttpRoute</span> <span class="n">route</span><span class="p">,</span> 
+                <span class="kt">string</span> <span class="n">parameterName</span><span class="p">,</span> <span class="n">IDictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">object</span><span class="p">&gt;</span> <span class="n">values</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//validate input params  
+</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">request</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">request</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">route</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">route</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">parameterName</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">parameterName</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">values</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>RoutingApiController.cs:</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample.Controllers</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="nf">RoutePrefix</span><span class="p">(</span><span class="s">"api/routingapi"</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">RoutingApiController</span> <span class="p">:</span> <span class="n">ApiController</span>
+    <span class="p">{</span>
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{validPositiveInt32Value:range(0,2147483647)}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IHttpActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">int</span> <span class="n">validPositiveInt32Value</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">validPositiveInt32Value</span><span class="p">)}</span><span class="s">"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{valueMatchingRegex:regex(^(.+)(_)(.+)$)}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IHttpActionResult</span> <span class="nf">GetByRegex</span><span class="p">(</span><span class="kt">string</span> <span class="n">valueMatchingRegex</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">valueMatchingRegex</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>        
+        <span class="k">public</span> <span class="n">IHttpActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>As you may have noticed in the code above. The email custom route constraint for a WebApi controller implements the IHttpRouteConstraint interface instead of the IRouteConstraint interface. Be aware when intermingling MVC and WebApi controllers in a .Net Framework web application project that other attributes (like authorization) will also usually require different implementations to be used for a MVC and a WebApi controller.</p>
+
+<p>By adding the RoutingApiController listed above the following routes become availlable:</p>
+
+<ul>
+  <li><span class="link-style">http://localhost/api/routingapi/{ValidPositiveInt32}</span></li>
+  <li><span class="link-style">http://localhost/api/routingapi/{StringSplitByUnderscore}</span></li>
+  <li><span class="link-style">http://localhost/api/routingapi/{StringContaining@Symbol}</span></li>
+</ul>
+
+<h3 id="route-constraints-in-a-net-core-web-application">Route constraints in a .Net Core web application</h3>
+
+<p>In the .Net Core pipeline MVC and WebApi controllers now share the same base classes. The setup for routing is also now centralized in the Startup classes. The code snippets below how to set up the routing and then show an MVC and a WebApi controller with the same routing constraint concepts that I have explained in the previous sections of this post. 
+The code snippets were added to a default .Net Core web application using the Model View Controller project template. The code in the Startup.cs is needed when adding a custom route constraint in the template. If you only use the route constraints that can be resolved by the DefaultInlineConstraintResolver, the code for setting up the RouteOptions configuration can be omitted.</p>
+
+<p>Startup.cs</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Routing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">NetCore.WebApiExample.MiddleWare</span><span class="p">;</span>
+
+<span class="p">...</span>
+
+<span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">services</span><span class="p">.</span><span class="n">Configure</span><span class="p">&lt;</span><span class="n">CookiePolicyOptions</span><span class="p">&gt;(</span><span class="n">options</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="c1">// This lambda determines whether user consent for non-essential cookies is needed for a given request.
+</span>
+        <span class="n">options</span><span class="p">.</span><span class="n">CheckConsentNeeded</span> <span class="p">=</span> <span class="n">context</span> <span class="p">=&gt;</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">options</span><span class="p">.</span><span class="n">MinimumSameSitePolicy</span> <span class="p">=</span> <span class="n">SameSiteMode</span><span class="p">.</span><span class="n">None</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="n">services</span><span class="p">.</span><span class="n">Configure</span><span class="p">&lt;</span><span class="n">RouteOptions</span><span class="p">&gt;(</span><span class="n">routeOptions</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">routeOptions</span><span class="p">.</span><span class="n">ConstraintMap</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"Email"</span><span class="p">,</span> <span class="k">typeof</span><span class="p">(</span><span class="n">EmailRouteContraint</span><span class="p">));</span>
+    <span class="p">});</span>
+
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">().</span><span class="nf">SetCompatibilityVersion</span><span class="p">(</span><span class="n">CompatibilityVersion</span><span class="p">.</span><span class="n">Version_2_1</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>EmailRouteConstraint.cs</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Http</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Routing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Globalization</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Utilities</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">EmailRouteContraint</span> <span class="p">:</span> <span class="n">IRouteConstraint</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Match</span><span class="p">(</span><span class="n">HttpContext</span> <span class="n">httpContext</span><span class="p">,</span> <span class="n">IRouter</span> <span class="n">route</span><span class="p">,</span> <span class="kt">string</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">RouteValueDictionary</span> <span class="n">values</span><span class="p">,</span> <span class="n">RouteDirection</span> <span class="n">routeDirection</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">httpContext</span><span class="p">,</span> <span class="n">route</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">values</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span><span class="p">.</span><span class="nf">TryGetValue</span><span class="p">(</span><span class="n">routeKey</span><span class="p">,</span> <span class="k">out</span> <span class="kt">var</span> <span class="n">routeValue</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">parameterValueString</span> <span class="p">=</span> <span class="n">Convert</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="n">routeValue</span><span class="p">,</span> <span class="n">CultureInfo</span><span class="p">.</span><span class="n">InvariantCulture</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">parameterValueString</span><span class="p">.</span><span class="nf">IsEmail</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">void</span> <span class="nf">RouteParameterInputValidation</span><span class="p">(</span><span class="n">HttpContext</span> <span class="n">httpContext</span><span class="p">,</span> <span class="n">IRouter</span> <span class="n">route</span><span class="p">,</span> <span class="kt">string</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">RouteValueDictionary</span> <span class="n">values</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//validate input params  
+</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">httpContext</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">httpContext</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">route</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">route</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">routeKey</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">routeKey</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">values</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">values</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>HomeController.cs (.Net Core MVC Controller)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">HomeController</span> <span class="p">:</span> <span class="n">Controller</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Index</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is HomeController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>RoutingApiController.cs (.Net Core WebApi Controller)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"api/[controller]"</span><span class="p">)]</span>
+    <span class="p">[</span><span class="n">ApiController</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">RoutingApiController</span> <span class="p">:</span> <span class="n">ControllerBase</span>
+    <span class="p">{</span>
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{inputMatchingRegex:regex(^(.+)(_)(.+)$)}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">GetByRegex</span><span class="p">(</span><span class="kt">string</span> <span class="n">inputMatchingtRegexForValueContainingUnderscore</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">inputMatchingtRegexForValueContainingUnderscore</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{validPositiveInt32Value:range(0,2147483647)}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">int</span> <span class="n">validPositiveInt32Value</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">validPositiveInt32Value</span><span class="p">)}</span><span class="s">"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<h3 id="testing-routing-behavior-with-integration-tests">Testing routing behavior with integration tests</h3>
+<p>To ensure your routes work as intended and faulty input does not lead to errors you can write a set of integration tests. I used a .Net Core test project combined with the NUnit testing framework to write the tests shown below.</p>
+
+<p>TestClass: (the RouteDriver implementation is listed below the TestClass code snippet )</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">IntegrationTests.TestDriver</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">NUnit.Framework</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">IntegrationTests</span>
+<span class="p">{</span>
+    <span class="c1">/// &lt;summary&gt;
+</span>
+    <span class="c1">/// Be sure to have local instance of the Framework.WebApiExample website running on the url provided in the _localHostUrl constant.
+</span>
+    <span class="c1">/// &lt;/summary&gt;
+</span>
+    <span class="p">[</span><span class="n">TestFixture</span><span class="p">]</span>    
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">FrameworkMvcRouteTests</span>
+    <span class="p">{</span>
+        <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">_localHostUrl</span> <span class="p">=</span> <span class="s">"http://localhost:55528/"</span><span class="p">;</span>
+        <span class="k">private</span> <span class="n">RouteTestDriver</span> <span class="n">_testDriver</span><span class="p">;</span>
+
+        <span class="p">[</span><span class="n">SetUp</span><span class="p">]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">Setup</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="n">_testDriver</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RouteTestDriver</span><span class="p">(</span><span class="n">_localHostUrl</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">TearDown</span><span class="p">]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">TearDown</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="n">_testDriver</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">Test</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">""</span><span class="p">)]</span> <span class="c1">//Home/Index route    
+</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail/abc@"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail/abc@abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail/@abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetNumber/0"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetNumber/12"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetNumber/123"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">FrameworkMvc_Given_Relative_MVC_Convention_Based_Route_Should_Be_Valid_Route</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+           <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">_testDriver</span><span class="p">.</span><span class="nf">UrlReturnsSuccessStatusCode</span><span class="p">(</span><span class="n">relativeUrl</span><span class="p">));</span>                                          
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">Test</span><span class="p">]</span>        
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail/abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetEmail/123"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetNumber"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"GetNumber/1234"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">FrameworkMvc_Given_Relative_MVC_Convention_Based_Route_Should_Return_404_Not_Found_StatusCode</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">_testDriver</span><span class="p">.</span><span class="nf">UrlReturns404NotFoundStatusCode</span><span class="p">(</span><span class="n">relativeUrl</span><span class="p">));</span>
+        <span class="p">}</span>
+
+
+        <span class="p">[</span><span class="n">Test</span><span class="p">]</span>   
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/abc@"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/abc@abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/@abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/0"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/12345"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/2147483647"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">FrameworkMvc_Given_Relative_MVC_Attribute_Based_Route_Should_Be_Valid_Route</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">_testDriver</span><span class="p">.</span><span class="nf">UrlReturnsSuccessStatusCode</span><span class="p">(</span><span class="n">relativeUrl</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="n">Test</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/abc"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/-1"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">TestCase</span><span class="p">(</span><span class="s">"Attr/2147483648"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">FrameworkMvc_Given_Relative_MVC_Attribute_Based_Route_Should_Return_404_Not_Found_StatusCode</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">_testDriver</span><span class="p">.</span><span class="nf">UrlReturns404NotFoundStatusCode</span><span class="p">(</span><span class="n">relativeUrl</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>RouteTestDriver.cs (this class is a helper to centralize code used for multiple tests)</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"> 
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Net</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Net.Http</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">IntegrationTests.TestDriver</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">RouteTestDriver</span>
+    <span class="p">{</span>
+        <span class="k">private</span> <span class="kt">string</span> <span class="n">_localHostBaseUrl</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="nf">RouteTestDriver</span><span class="p">(</span><span class="kt">string</span> <span class="n">localHostBaseUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrWhiteSpace</span><span class="p">(</span><span class="n">localHostBaseUrl</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">localHostBaseUrl</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="n">_localHostBaseUrl</span> <span class="p">=</span> <span class="nf">AppendBackSlashIfNeeded</span><span class="p">(</span><span class="n">localHostBaseUrl</span><span class="p">);</span>
+
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="kt">bool</span> <span class="nf">UrlReturnsSuccessStatusCode</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrlForTest</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">httpClient</span> <span class="p">=</span> <span class="n">HttpClientFactory</span><span class="p">.</span><span class="nf">GetInstance</span><span class="p">();</span>
+            <span class="kt">var</span> <span class="n">uriToTest</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">_localHostBaseUrl</span> <span class="p">+</span> <span class="p">(</span><span class="n">relativeUrlForTest</span> <span class="p">??</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">));</span>
+            <span class="kt">var</span> <span class="n">httpCallResult</span> <span class="p">=</span> <span class="n">httpClient</span><span class="p">.</span><span class="nf">GetAsync</span><span class="p">(</span><span class="n">uriToTest</span><span class="p">).</span><span class="n">Result</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">httpCallResult</span><span class="p">.</span><span class="n">IsSuccessStatusCode</span><span class="p">;</span>
+
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="kt">bool</span> <span class="nf">UrlReturns404NotFoundStatusCode</span><span class="p">(</span><span class="kt">string</span> <span class="n">relativeUrlForTest</span><span class="p">)</span>
+        <span class="p">{</span>
+
+            <span class="kt">var</span> <span class="n">httpClient</span> <span class="p">=</span> <span class="n">HttpClientFactory</span><span class="p">.</span><span class="nf">GetInstance</span><span class="p">();</span>
+            <span class="kt">var</span> <span class="n">uriToTest</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">_localHostBaseUrl</span> <span class="p">+</span> <span class="p">(</span><span class="n">relativeUrlForTest</span> <span class="p">??</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">));</span>
+            <span class="kt">var</span> <span class="n">httpCallResult</span> <span class="p">=</span> <span class="n">httpClient</span><span class="p">.</span><span class="nf">GetAsync</span><span class="p">(</span><span class="n">uriToTest</span><span class="p">).</span><span class="n">Result</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">httpCallResult</span><span class="p">.</span><span class="n">StatusCode</span> <span class="p">==</span> <span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">NotFound</span><span class="p">;</span>
+
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="kt">string</span> <span class="nf">AppendBackSlashIfNeeded</span><span class="p">(</span><span class="kt">string</span> <span class="n">localHostBaseUrl</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="p">!</span><span class="n">localHostBaseUrl</span><span class="p">.</span><span class="nf">EndsWith</span><span class="p">(</span><span class="s">"/"</span><span class="p">)</span>
+                <span class="p">?</span> <span class="n">localHostBaseUrl</span> <span class="p">+</span> <span class="s">"/"</span>
+                <span class="p">:</span> <span class="n">localHostBaseUrl</span><span class="p">;</span>
+        <span class="p">}</span>       
+    <span class="p">}</span>
+
+    <span class="k">internal</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">HttpClientFactory</span>
+    <span class="p">{</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="n">HttpClient</span> <span class="n">_instance</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="k">static</span> <span class="n">HttpClient</span> <span class="nf">GetInstance</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">_instance</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">_instance</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HttpClient</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="n">_instance</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>These tests can help you make sure that a route either works (by returning a success status code) or is not found (by returning a 404 not found status). I made sure to explicitly check for 404 not found statuses for the “failure” cases and not just check if the success status code was false. This ensures no unwanted internal server errors are returned. Internal server errors are unwanted behavior and if error handling is set up in the wrong way, they may even expose internals of your application that you do not want your users to see.</p>
+
+<h3 id="microsoft-docs-reference-links">Microsoft Docs reference links:</h3>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/mvc/overview/older-versions-1/controllers-and-routing/asp-net-mvc-routing-overview-cs" title="Microsoft docs page for convention based routing" target="_blank">Microsoft docs page for convention based routing</a>.</li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/mvc/overview/older-versions-1/controllers-and-routing/creating-a-route-constraint-cs" title="Microsoft docs page for creating a custom route constraint for convention based routing" target="_blank">Microsoft docs page for creating a custom route constraint for convention based routing</a>.</li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#adding-route-attributes" title="Microsoft docs page for attribute based routing" target="_blank">Microsoft docs page for attribute based routing</a>.</li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-2.1" title="Microsoft docs page for routing in .Net Core 2.1" target="_blank">Microsoft docs page for routing in .Net Core 2.1</a>.</li>
+</ul>
+
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
             <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a>
         </header>
         
@@ -1128,103 +1809,6 @@ This month no technical article but a tip I want to share. For written content I
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2018/03/17/setting-up-a-release-using-vsts.html">Setting up a release using VSTS</a>
-        </header>
-        
-        <span>Mar 17, 2018</span> <br />
-        Tags: 
-        DevOps
-        
-        <div class="article-content">
-            <p>
-    In <a href="https://samanthaneilen.github.io/2018/02/10/setting-up-a-build-using-vsts.html" target="_blank">my last</a> post I showed how to build your project using VSTS. In this blog post I will describe how to set up a release to deploy the database and website from that build to an Azure Environment. 
-</p>
-<h3>Preparing the project for the release environment</h3>
-<p>
-    First I would like to point out some changes I made to the ECommerceApp.
-    First of was the Target platform of the database project property pages.
-<br /><img src="/assets/images/20180317/DatabaseProjectTarget.png" alt="Database Release Target" />
-</p>
-<p>
-    It needs to be set to target an Azure SQL Database as that will be my target platform. Not setting this to the correct target will lead to errors when deploying the .dacpac file.
-    Next I altered the Web.Release.config. The transformation rules below will change any local paths to HIDDEN. 
-<br /><img src="/assets/images/20180317/ReleaseConfig.png" alt="Release Config" />
-</p>
-<p>
-    These settings will be overwritten by the settings in the “Application settings” configured in the Azure Portal on the Web App, so there is no need for those paths to be filled with Debug or local settings. In production environments this would ensure no that no sensitive data is in the web.config on the file system and only in the “Application Settings” on the portal. The settings in the portal can be secured with access rights and are saved encrypted in the Azure Environment. The project contains a file download that expects a download to a local folder. That will not work on Azure, so I added the EnableExport feature flag that is set to false in the deployment.
-</p>
-<h3>Setting up the Azure artifacts for deployment</h3>
-<p>
-    In my example I set up de Web app and the Azure SQL Database by hand. The deployment pipelines in VSTS have steps to create these artifacts during a release if they do not exist with PowerShell steps. This is beyond the scope of this blog post. In this post I assume that the Web app and Azure SQL Database are present and correctly configured in the Azure environment that I am targeting. 
-    My resource group looks like the image below:
-<br /><img src="/assets/images/20180317/ResourceGroupAzure.png" alt="Resource Group Azure" />
-</p>
-<p>
-    Also my Web App already has the correct application settings and connection string configured in the Application settings tab as shown below. The application and configuration settings in the Azure portal are used at runtime instead of the settings in the web.config that is deployed in the Azure environment.
-<br /><img src="/assets/images/20180317/ApplicationSettingsAzure.png" alt="Application Settings Azure" />
-</p>
-<h3>Setting up the release</h3>
-<p>
-    In your VSTS project go to the Build and Release menu, then click Releases and then select New definition.
-<br /><img src="/assets/images/20180317/CreateReleasePage.png" alt="Create Release Page" />
-</p>
-<p>
-    In the new Release Definition window select I selected the “Empty” template and named my deployment environment Test.
-<br /><img src="/assets/images/20180317/NewReleaseDefinitionOverview.png" alt="New Release Definition Overview" />
-</p>
-<p> 
-    Next I want to select the output artifacts (the database .dacpac and web deployment zip) from my build with the Add button next to Artifacts.
-<br /><img src="/assets/images/20180317/ArtifactSelection.png" alt="Artifact Selection" />
-</p>
-<p>
-    After selecting your artifacts the build trigger will become available. You can set the trigger to create the release every time a build has been successfully created.
-<br /><img src="/assets/images/20180317/DeploymentTrigger.png" alt="Deployment Trigger" />
-</p>
-<p> 
-    Next are the pre-deployment settings where you can set up extra rules that the deployment will start after a manual approval by for example your QA team.  I kept the defaults for this step.
-<br /><img src="/assets/images/20180317/PreDeploymentConditions.png" alt="Pre-Deployment Conditions" />
-</p>
-<p>
-    Next click on the 1 phase, 0 tasks link to get into the screen where you can actually add the deployment steps for the environment. Here add a Azure SQL DacpacTask and a Azure App Service Deploy task. Then setup the tasks to deploy to your Azure environment.
-<br /><img src="/assets/images/20180317/EnvironmentSteps.png" alt="Environment Steps" />
-</p>
-<p>
-    The DacpacTask is configured as shown below:
-<br /><img src="/assets/images/20180317/DacPacStepDetails.png" alt="DacPac Step Details" />
-</p>
-<p>
-    The Azure App Service Deploy is configured as below. I only setup the settings shown below and used the defaults for all the others. Notice the menu to deploy or change the application and configuration settings. As all my configuration is already set up correctly in the portal, I do not need to set these up here.
-<br /><img src="/assets/images/20180317/WebAppStepDetails.png" alt="WebApp Step Details" />
-</p>
-<p>
-    These steps are enough to deploy the output from the build to the Azure environment. You can return to the release overview using the Pipeline option and add some post-release options to the environment. Post-deployment approvals can be used to sign of on the release after the deployment has been tested. So if you add another environment like Acceptance or Production after the Test environment (using the Add button) the Post-Deployment approval is used to halt the release for the next environment until the current environment is approved by the QA team. 
-<br /><img src="/assets/images/20180317/PostDeploymentConditions.png" alt="Post Deployment Conditions" />
-</p>
-<p>
-    In the options tab of the release definition you can set up the format for the naming conventions for your release.
-<br /><img src="/assets/images/20180317/ReleaseOptions.png" alt="Release Options" />
-</p>
-<p>
-    Now that we’ve set up the release pipeline, save it and start a new build to trigger the release. As I did not set any pre-deployment approvals the build will immediately and automatically release to the test environment after the build is complete.
-</p>
-<p>
-    You can see the active releases under the release tab and also go to the overview or details for a release execute the approval actions on an environment.
-<br /><img src="/assets/images/20180317/ReleaseOverview.png" alt="Release Overview" />
-</p>
-<p>
-    After the release has been completed you can see an overview by clicking on the name of a release.
-<br /><img src="/assets/images/20180317/ReleaseDetails.png" alt="Release Details" /> 
-</p>
-<p>
-    If a deploy fails click on the log tab in the release details to troubleshoot errors.
-<br /><img src="/assets/images/20180317/ReleaseDetailsLogs.png" alt="Release Details Logs" />
-</p>
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -1249,6 +1833,9 @@ This month no technical article but a tip I want to share. For written content I
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2018/10/09/using-route-constraints-for-input-validation-and-improved-security.html">Using route constraints for input validation and improved security</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -1259,9 +1846,6 @@ This month no technical article but a tip I want to share. For written content I
     <div class="last-posts-spacer"></div>
     
     <a href="/2018/04/20/podcasts-a-tip-for-consuming-it-related-content-on-the-go.html">Podcasts, a tip for consuming IT related content on the go</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2018/03/17/setting-up-a-release-using-vsts.html">Setting up a release using VSTS</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
