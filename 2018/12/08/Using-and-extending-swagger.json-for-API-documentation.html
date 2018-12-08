@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Using and extending Swagger.json (OpenApi) for API documentation</title>
+    <meta name="description" content="The OpenAPI specification (previously known as the Swagger specification) is used to describe a web API in a JSON format. An example format is shown below. {...">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="https://samanthaneilen.github.io/2018/12/08/Using-and-extending-swagger.json-for-API-documentation.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Using and extending Swagger.json (OpenApi) for API documentation
+    </header>
+    
+    <span>Dec 8, 2018</span><br />
+    Tags: 
+                WebAPI 
+			
+    <div class="article-content">
+        <p>The <a href="https://en.wikipedia.org/wiki/OpenAPI_Specification" title="OpenAPI specification" target="_blank">OpenAPI specification</a> (previously known as the Swagger specification) is used to describe a web API in a JSON format. An example format is shown below.</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="s2">"swagger"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"WebApplication1"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is a description for WebApplication1"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"/api/Values"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"get"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"Values"</span><span class="w"> </span><span class="p">],</span><span class="w">
+        </span><span class="s2">"operationId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Get"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="s2">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"text/plain"</span><span class="p">,</span><span class="w"> </span><span class="s2">"application/json"</span><span class="p">,</span><span class="w"> </span><span class="s2">"text/json"</span><span class="w"> </span><span class="p">],</span><span class="w">
+        </span><span class="s2">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="s2">"responses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"200"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"schema"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="s2">"uniqueItems"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+              </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"array"</span><span class="p">,</span><span class="w">
+              </span><span class="s2">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w"> </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="s2">"post"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"Values"</span><span class="w"> </span><span class="p">],</span><span class="w">
+        </span><span class="s2">"operationId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Post"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"application/json-patch+json"</span><span class="p">,</span><span class="w"> </span><span class="s2">"application/json"</span><span class="p">,</span><span class="w"> </span><span class="s2">"text/json"</span><span class="p">,</span><span class="w"> </span><span class="s2">"application/*+json"</span><span class="w"> </span><span class="p">],</span><span class="w">
+        </span><span class="s2">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="s2">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"value"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"in"</span><span class="p">:</span><span class="w"> </span><span class="s2">"body"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"required"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"schema"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w"> </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="s2">"responses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"200"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"definitions"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>The file describes the endpoint, parameters and returned JSON format for a web API. If you plan to develop an API that will be used by other teams or even 3rd parties outside your company then consider setting up Swagger with the Swashbuckle library for your .NET web API project.</p>
+
+<p>The Swashbuckle library will automaticaly generate the Swagger specification file for your API and even generate a front-end page called Swagger UI. This UI will offer a nice visual overview for your API and also allow user to make calls to the API with build in input validation and view results fot the calls.
+Below is screenshot of the UI for the Swagger.json as generated for the definition listed above.</p>
+
+<p><br /><img src="/assets/images/20181208/SwaggerUIExample.png" alt="Swagger UI Example" /></p>
+
+<p>In this blogpost I will show you how to how to enable Swagger UI for your .NET Framework and Core web projects. Be aware that in .NET Framework only API Controller methods will be listed. MVC Controllers and actions will not be listed. 
+Next I will show some customizations to the default generated Swagger.json and Swagger UI. For these customizations I will only list the .NET Core code. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
+
+<h3 id="configure-the-generation-of-a-swaggerjson-file">Configure the generation of a Swagger.json file</h3>
+
+<p>To get started install the Swashbuckle NuGet package for a .NET Framework project or Swashbuckle.AspNetCore for a .NET Core project.</p>
+
+<p>Next set up the pipeline in the Startup files to enable the generation of a Swagger.json file and the Swagger UI frontend based on the default meta data for your API.</p>
+
+<p>For .NET Core, go to the Startup.cs file and add the configuration show below.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
+ 
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Startup</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+        <span class="p">{</span> 
+            <span class="c1">//other configuration omitted...
+</span>
+ 
+            <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
+                    <span class="k">new</span> <span class="nf">Info</span><span class="p">()</span>
+                    <span class="p">{</span>
+                        <span class="n">Title</span> <span class="p">=</span> <span class="s">"NetCore.WebApiExample"</span><span class="p">,</span>
+                        <span class="n">Version</span> <span class="p">=</span> <span class="s">"1.0"</span><span class="p">,</span>
+                        <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
+                    <span class="p">});</span>
+            <span class="p">});</span>
+ 
+            <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">().</span><span class="nf">SetCompatibilityVersion</span><span class="p">(</span><span class="n">CompatibilityVersion</span><span class="p">.</span><span class="n">Version_2_1</span><span class="p">);</span>
+        <span class="p">}</span>
+ 
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span> <span class="n">IHostingEnvironment</span> <span class="n">env</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//other configuration omitted...
+</span>
+ 
+            <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
+ 
+            <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerEndpoint</span><span class="p">(</span>
+                 <span class="s">$"/swagger/v1/swagger.json"</span><span class="p">,</span>
+                 <span class="s">$"NetCore.WebApiExample 1.0"</span><span class="p">);</span>
+            <span class="p">});</span>
+           
+            <span class="n">app</span><span class="p">.</span><span class="nf">UseMvc</span><span class="p">(</span><span class="n">routes</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">routes</span><span class="p">.</span><span class="nf">MapRoute</span><span class="p">(</span>
+                    <span class="n">name</span><span class="p">:</span> <span class="s">"default"</span><span class="p">,</span>
+                    <span class="n">template</span><span class="p">:</span> <span class="s">"{controller=Home}/{action=Index}/{id?}"</span><span class="p">);</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>After setting up the Swagger configuration run your project and access the path that now has the SwaggerUI (<span class="link-style">https://localhost:port/swagger</span>). 
+The Swagger UI will also have a link to the actual JSON file on which the UI was generated (<span class="link-style">/swagger/v1/swagger.json</span>). The v1 part of this path is the value of the first parameter (name) of the SwaggerDoc method called in the StartUp.cs file.</p>
+
+<p>For a .NET Framework project, a file with a lot of commented out code (App_Start\SwaggerConfig.cs) was added when you installed the NuGet package. This file already enables a default generated Swagger.json endpoint and the Swagger UI frontend.
+An example of this file without all the default comments is show below.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">WebActivatorEx</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Framework.WebApiExample</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Swashbuckle.Application</span><span class="p">;</span>
+ 
+<span class="na">[assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]</span>
+ 
+<span class="k">namespace</span> <span class="nn">Framework.WebApiExample</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerConfig</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Register</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">thisAssembly</span> <span class="p">=</span> <span class="k">typeof</span><span class="p">(</span><span class="n">SwaggerConfig</span><span class="p">).</span><span class="n">Assembly</span><span class="p">;</span>
+ 
+            <span class="n">GlobalConfiguration</span><span class="p">.</span><span class="n">Configuration</span>
+                <span class="p">.</span><span class="nf">EnableSwagger</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="n">c</span><span class="p">.</span><span class="nf">SingleApiVersion</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span> <span class="s">"Framework.WebApiExample"</span><span class="p">);</span> <span class="p">})</span>
+                <span class="p">.</span><span class="nf">EnableSwaggerUi</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span> </code></pre></figure>
+
+<p>With this configuration the Swagger UI is again reached on <span class="link-style">https://localhost:port/swagger</span>). Note that the Swagger.json for .NET Framework projects is in a different location (<span class="link-style">/swagger/docs/v1</span>).
+Again, be aware that in .NET Framework only API Controller methods will be listed. MVC Controllers and actions will not be listed.</p>
+
+<h3 id="customizing-the-swaggerjson">Customizing the Swagger.json</h3>
+
+<p>All the code shown in this paragraph will only show the .NET Core implementation. The .NET Framework code and configuration will be slightly different. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
+
+<p>The default generated Swagger.json uses the metadata for your classes and methods to generate the specification file. Information such as authentication or other custom headers are not known in the Swagger UI.</p>
+
+<p>You can modify the parameters listed for yourr operation with an extension called an OperationFilter.</p>
+
+<p>An example of an OperationFilter to add a custom header is listed below. You could use for example use this technique to add the Authorization header input fields for secured API.
+OperationFilters are run for every discovered method. You can examine the current OperationContext and add conditional logic such as the IsMethodWithHttpGetAttribute function as shown in the example below.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.SwaggerGen</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+ 
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare.Swagger</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerOperationFilter</span> <span class="p">:</span> <span class="n">IOperationFilter</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">Apply</span><span class="p">(</span><span class="n">Operation</span> <span class="n">operation</span><span class="p">,</span> <span class="n">OperationFilterContext</span> <span class="n">context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">ValidateInput</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nf">IsMethodWithHttpGetAttribute</span><span class="p">(</span><span class="n">context</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">NonBodyParameter</span>
+                <span class="p">{</span>
+                    <span class="n">Name</span> <span class="p">=</span> <span class="s">"extra"</span><span class="p">,</span>
+                    <span class="n">In</span> <span class="p">=</span> <span class="s">"query"</span><span class="p">,</span>
+                    <span class="n">Description</span> <span class="p">=</span> <span class="s">"This is an extra querystring parameter"</span><span class="p">,</span>
+                    <span class="n">Required</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+                    <span class="n">Type</span> <span class="p">=</span> <span class="s">"string"</span>
+                <span class="p">});</span>
+ 
+                <span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">NonBodyParameter</span>
+                <span class="p">{</span>
+                    <span class="n">Name</span> <span class="p">=</span> <span class="s">"Authorization"</span><span class="p">,</span>
+                    <span class="n">In</span> <span class="p">=</span> <span class="s">"header"</span><span class="p">,</span>
+                    <span class="n">Description</span> <span class="p">=</span> <span class="s">"Used for certain authorization policies such as Bearer token authentication"</span><span class="p">,</span>
+                    <span class="n">Required</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+                    <span class="n">Type</span> <span class="p">=</span> <span class="s">"string"</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+ 
+        <span class="k">private</span> <span class="k">void</span> <span class="nf">ValidateInput</span><span class="p">(</span><span class="n">Operation</span> <span class="n">operation</span><span class="p">,</span> <span class="n">OperationFilterContext</span> <span class="n">context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">operation</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">operation</span><span class="p">));</span>
+            <span class="p">}</span>
+ 
+            <span class="k">if</span> <span class="p">(</span><span class="n">context</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">context</span><span class="p">));</span>
+            <span class="p">}</span>
+ 
+            <span class="k">if</span> <span class="p">(</span><span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">IParameter</span><span class="p">&gt;();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+ 
+        <span class="k">private</span> <span class="kt">bool</span> <span class="nf">IsMethodWithHttpGetAttribute</span><span class="p">(</span><span class="n">OperationFilterContext</span> <span class="n">context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="n">context</span><span class="p">.</span><span class="n">MethodInfo</span><span class="p">.</span><span class="n">CustomAttributes</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">attribute</span> <span class="p">=&gt;</span> <span class="n">attribute</span><span class="p">.</span><span class="n">AttributeType</span> <span class="p">==</span> <span class="k">typeof</span><span class="p">(</span><span class="n">HttpGetAttribute</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>After defining the OperationFilter you will also have to plug the filter into the Swagger processing pipeline as shown below.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span> 
+    <span class="c1">//other configuration omitted...
+</span>
+ 
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
+            <span class="k">new</span> <span class="nf">Info</span><span class="p">()</span>
+            <span class="p">{</span>
+                <span class="n">Title</span> <span class="p">=</span> <span class="s">"NetCore.WebApiExample"</span><span class="p">,</span>
+                <span class="n">Version</span> <span class="p">=</span> <span class="s">"1.0"</span><span class="p">,</span>
+                <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
+            <span class="p">});</span>
+    <span class="p">});</span>
+ 
+    <span class="n">c</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerOperationFilter</span><span class="p">&gt;();</span>
+ 
+    <span class="c1">//other configuration omitted...
+</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Swagger UI for a Get method before enabling the OperationFilter:
+<br /><img src="/assets/images/20181208/BeforeOperationFilter.png" alt="Swagger UI before OperationFilter" /></p>
+
+<p>Swagger UI for the same Get method after enabling the OperationFilter:
+<br /><img src="/assets/images/20181208/AfterOperationFilter.png" alt="Swagger UI after OperationFilter" /></p>
+
+<p>Also you might want to add or modify certain properties or descriptions for the endpoint. To modify a part of the Swagger.json above the “operation” level, use a DocumentFilter.</p>
+
+<p>An example of a DocumentFilter is to add descriptions to the tags. Operations for a Controller will be grouped within a collapsible pane in Swagger UI and the header of the pane is the tag assigned to that grouping. The DocumentFilter listed below will also sort the operations per tag in alphabetical order instead of the default method ordering as discovered within the API controller.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.SwaggerGen</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+ 
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare.Swagger</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerDocumentFilter</span> <span class="p">:</span> <span class="n">IDocumentFilter</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">Apply</span><span class="p">(</span><span class="n">SwaggerDocument</span> <span class="n">swaggerDoc</span><span class="p">,</span> <span class="n">DocumentFilterContext</span> <span class="n">context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">swaggerDoc</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">swaggerDoc</span><span class="p">));</span>
+            <span class="p">}</span>
+ 
+            <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Tags</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Tag</span><span class="p">&gt;</span> <span class="p">{</span>
+                    <span class="k">new</span> <span class="n">Tag</span><span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"RoutingApi"</span><span class="p">,</span> <span class="n">Description</span> <span class="p">=</span> <span class="s">"This is a description for the api routes"</span> <span class="p">}</span>
+                <span class="p">};</span>
+ 
+            <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span> <span class="p">=</span> <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span><span class="p">.</span><span class="nf">OrderBy</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">).</span><span class="nf">ToDictionary</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>After defining the DocumentFilter you will also have to plug the filter into the Swagger processing pipeline as shown below.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#">    <span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+    <span class="p">{</span> 
+        <span class="c1">//other configuration omitted...
+</span>
+ 
+        <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
+                <span class="k">new</span> <span class="nf">Info</span><span class="p">()</span>
+                <span class="p">{</span>
+                    <span class="n">Title</span> <span class="p">=</span> <span class="s">"NetCore.WebApiExample"</span><span class="p">,</span>
+                    <span class="n">Version</span> <span class="p">=</span> <span class="s">"1.0"</span><span class="p">,</span>
+                    <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
+                <span class="p">});</span>
+        <span class="p">});</span>
+ 
+        <span class="n">c</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerOperationFilter</span><span class="p">&gt;();</span>
+        <span class="n">c</span><span class="p">.</span><span class="n">DocumentFilter</span><span class="p">&lt;</span><span class="n">SwaggerDocumentFilter</span><span class="p">&gt;();</span>
+ 
+        <span class="c1">//other configuration omitted...
+</span>
+    <span class="p">}</span></code></pre></figure>
+
+<p>Swagger UI method listings before enabling the DocumentFilter:
+<br /><img src="/assets/images/20181208/BeforeDocumentFilter.png" alt="Swagger UI before DocumentFilter" /></p>
+
+<p>Swagger UI method listings after enabling the DocumentFilter:
+<br /><img src="/assets/images/20181208/AfterDocumentFilter.png" alt="Swagger UI after DocumentFilter" /></p>
+
+<p>Swagger can use certain attributes to enrich the documentation of your API.
+Like specifying a return type. These return types will be listed in definitions part of the Swagger.json and will also show in the Swagger UI.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+ 
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">HomeController</span> <span class="p">:</span> <span class="n">Controller</span>
+    <span class="p">{</span>        
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"customResponsetype"</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">ProducesResponseType</span><span class="p">(</span><span class="m">200</span><span class="p">,</span> <span class="n">Type</span> <span class="p">=</span> <span class="k">typeof</span><span class="p">(</span><span class="n">MyResponseType</span><span class="p">))]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">GetCustomResponseType</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="k">new</span> <span class="n">MyResponseType</span> <span class="p">{</span>
+                <span class="n">Title</span> <span class="p">=</span> <span class="s">"SomeTitle"</span><span class="p">,</span>
+                <span class="n">Data</span> <span class="p">=</span> <span class="s">"SomeData"</span>
+ 
+            <span class="p">});</span>
+        <span class="p">}</span>
+ 
+        <span class="k">public</span> <span class="k">class</span> <span class="nc">MyResponseType</span> <span class="p">{</span>
+            <span class="k">public</span> <span class="kt">string</span> <span class="n">Title</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+ 
+            <span class="k">public</span> <span class="kt">string</span> <span class="n">Data</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+ 
+            <span class="k">public</span> <span class="kt">int</span> <span class="n">Number</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+ 
+            <span class="k">public</span> <span class="n">DateTime</span> <span class="n">Timestamp</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Swagger UI method listing without the ProduceResponseType attribute:
+<br /><img src="/assets/images/20181208/MethodDescriptionBeforeOutputSpecification.png" alt="Swagger UI before output specification attribute" /></p>
+
+<p>Swagger UI method listing with the ProduceResponseType attribute (also note the appearance of the models section):
+<br /><img src="/assets/images/20181208/MethodDescriptionAfterOutputSpecification.png" alt="Swagger UI after output specification attribute" /></p>
+
+<p>Swashbuckle can also use an XML comments file to enrich the descriptions for your endpoints.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+ 
+<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">HomeController</span> <span class="p">:</span> <span class="n">Controller</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Index</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+        <span class="p">}</span>
+ 
+        <span class="c1">/// &lt;summary&gt;
+</span>
+        <span class="c1">/// This route has a XML comments description
+</span>
+        <span class="c1">/// &lt;/summary&gt;
+</span>
+        <span class="c1">/// &lt;param name="email"&gt;A valid email&lt;/param&gt;
+</span>
+        <span class="c1">/// &lt;returns&gt;Single line of text describing the route for the result&lt;/returns&gt;
+</span>
+        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>        
+        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is HomeController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">)"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Next you can output the XML file with the comments in the project properties. In the project properties, go to the Build tab. Be sure to select “All Configurations” the Configuration drop down on the top of the page. Next check the XML file checkbox. In the project properties you can only specify a hardcoded path, but we can change it in the project file to make it dynamic to the build configuration and target framework to make sure the xml file ends up next to your output dll. When enabling the XML comments checkbox warnings will pop-up in the Error List window for every method not decorated with XML comments on the next build. To ignore these warnings, add the value “;1591” to the Suppress Warnings field also in the Build tab of the project properties.</p>
+
+<p>Project properties:
+<br /><img src="/assets/images/20181208/ProjectPropertiesXmlOutputFile.png" alt="Project properties Build tab for XML comments file" /></p>
+
+<p>To make the XML comments file output location variable. Change the DocumentationFile values in the project file as shown below.</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml">  <span class="nt">&lt;PropertyGroup&gt;</span>
+    <span class="nt">&lt;TargetFramework&gt;</span>netcoreapp2.1<span class="nt">&lt;/TargetFramework&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+ 
+  <span class="nt">&lt;PropertyGroup</span> <span class="na">Condition=</span><span class="s">"'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;DocumentationFile&gt;</span>bin\$(Configuration)\$(TargetFramework)\NetCore.WebApiExample.xml<span class="nt">&lt;/DocumentationFile&gt;</span>
+    <span class="nt">&lt;NoWarn&gt;</span>1701;1702;1591<span class="nt">&lt;/NoWarn&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+ 
+  <span class="nt">&lt;PropertyGroup</span> <span class="na">Condition=</span><span class="s">"'$(Configuration)|$(Platform)'=='Release|AnyCPU'"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;DocumentationFile&gt;</span>bin\$(Configuration)\$(TargetFramework)\NetCore.WebApiExample.xml<span class="nt">&lt;/DocumentationFile&gt;</span>
+    <span class="nt">&lt;NoWarn&gt;</span>1701;1702;1591<span class="nt">&lt;/NoWarn&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+ </code></pre></figure>
+
+<p>After setting the file location, you set the IncludeXmlComments in the Swagger startup configuration to read the comments file with the correct location for the file.</p>
+
+<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
+        <span class="k">new</span> <span class="nf">Info</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="n">Title</span> <span class="p">=</span> <span class="s">"NetCore.WebApiExample"</span><span class="p">,</span>
+            <span class="n">Version</span> <span class="p">=</span> <span class="s">"1.0"</span><span class="p">,</span>
+            <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
+        <span class="p">});</span>
+ 
+    <span class="kt">var</span> <span class="n">xmlCommentsPath</span> <span class="p">=</span> <span class="n">Assembly</span><span class="p">.</span><span class="nf">GetExecutingAssembly</span><span class="p">().</span><span class="n">Location</span><span class="p">.</span><span class="nf">Replace</span><span class="p">(</span><span class="s">"dll"</span><span class="p">,</span><span class="s">"xml"</span><span class="p">);</span>
+    <span class="n">c</span><span class="p">.</span><span class="nf">IncludeXmlComments</span><span class="p">(</span><span class="n">xmlCommentsPath</span><span class="p">);</span>    
+<span class="p">});</span>
+ </code></pre></figure>
+
+<p>After this setup, when you navigate to the Swagger page you will see the extra descriptions.</p>
+
+<p>Swagger UI method listing without the XML comments file loaded:
+<br /><img src="/assets/images/20181208/WithoutXmlComments.png" alt="Swagger UI before XML comments" /></p>
+
+<p>Swagger UI method listing with the XML comments file loaded:
+<br /><img src="/assets/images/20181208/WithXmlComments.png" alt="Swagger UI after XML comments" /></p>
+
+<h3 id="resources-and-further-documentation">Resources and further documentation</h3>
+
+<ul>
+  <li><a href="https://github.com/domaindrivendev/Swashbuckle" title="Swashbuckle github project and documentation" target="_blank">Swashbuckle github project and documentation</a></li>
+  <li><a href="https://github.com/domaindrivendev/Swashbuckle.AspNetCore" title="Swashbuckle.AspNetCore github project and documentation" target="_blank">Swashbuckle. AspNetCore github project and documentation</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger" title="Microsoft docs Swagger page for .NET Core " target="_blank">Microsoft docs Swagger page for .NET Core</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/OpenAPI_Specification" title="OpenAPI specification on Wikipedia" target="_blank">OpenAPI specification on Wikipedia</a></li>
+  <li><a href="https://github.com/OAI/OpenAPI-Specification" title="Open API specification GitHub repository" target="_blank">Open API specification GitHub repository</a></li>
+</ul>
+
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .Net developer.
+    I have been coding professionaly since 2008.
+    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a><br />
+    Subscribe via <a href="/feed.xml">RSS</a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>
+    
+    <a href="/2018/12/08/Using-and-extending-swagger.json-for-API-documentation.html">Using and extending Swagger.json (OpenApi) for API documentation</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2018/10/09/using-route-constraints.html">Using route constraints for input validation and improved security</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2018/07/14/csharp-script-azure-functions-example.html">C# script Azure Functions example</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2018/06/08/pre-compiled-azure-functions-example.html">Pre-compiled Azure Functions example</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
