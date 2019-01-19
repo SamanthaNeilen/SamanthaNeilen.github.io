@@ -239,6 +239,8 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span> <span class="n">IHostingEnvironment</span> <span class="n">env</span><span class="p">,</span> <span class="n">IApiVersionDescriptionProvider</span> <span class="n">provider</span><span class="p">)</span>
 <span class="p">{</span>
+    <span class="c1">// other code omitted </span>
+
     <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
 
     <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
