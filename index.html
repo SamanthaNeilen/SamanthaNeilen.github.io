@@ -32,6 +32,135 @@
     
     <article>
         <header class="article-header">
+            <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a>
+        </header>
+        
+        <span>Mar 16, 2019</span> <br />
+        Tags: 
+        WebAPI,
+        
+        Mvc
+        
+        <div class="article-content">
+            <p>When developing enterprise applications on the internet you want to limit access to authenticated users only. In this blogpost I will provide links to some guides to help you get started with implementing secured websites and API using Azure Active Directory.</p>
+
+<p>For more information on how the authentication methods provided by Azure Active Directory see the <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/authentication-scenarios">Microsoft Docs pages for Azure Active Directory authentication.</a></p>
+
+<p>Also a great comprehensive resource around Azure Active Directory security is the <a href="https://app.pluralsight.com/library/courses/azure-active-directory-developers/table-of-contents">“Azure Active Directory for Developers” Pluralsight course</a>.</p>
+
+<h3 id="azure-active-directory-security-for-a-user-using-a-browser-openid-connect">Azure Active Directory security for a user using a browser (OpenID Connect)</h3>
+
+<p>When using Azure Active Directory for a user, the actual authentication process will happen outside of your application via the <a href="https://openid.net/connect/">OpenID Connect authentication scheme</a>. When an unauthenticated user uses a browser to navigate to your application, the middleware code will redirect the user to a Microsoft hosted login page. When the user provides the correct credentials, the login page will redirect the authenticated user back to a specified redirect URL in your application.</p>
+
+<p>There are already great guides and sample application from Microsoft on how to get started with Azure Active Directory in your web applications.</p>
+
+<p>For a guide on setting up OpenID Connect authentication for a .NET Framework application see the  <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-asp-webapp">“Add sign-in with Microsoft to an ASP.NET web app” guide on the Microsoft Docs pages.</a> or the <a href="https://azure.microsoft.com/en-us/resources/samples/active-directory-dotnet-webapp-openidconnect/">“Integrate Azure AD into a web application using OpenID Connect” Azure examples article.</a></p>
+
+<p>For .NET Core see the <a href="https://docs.microsoft.com/en-us/aspnet/core/security/authentication/azure-active-directory/">“Azure Active Directory with ASP.NET Core” Microsoft Docs page</a> or the <a href="https://azure.microsoft.com/en-us/resources/samples/active-directory-dotnet-webapp-openidconnect-aspnetcore/">“Integrating Azure AD into an ASP.NET Core web app” Azure examples article</a>.</p>
+
+<p>When using UI tests on a website that is secured with OpenID Connect you will also have to automate the login process. You will have to verify if a user lands on a login page and then use the automation framework to fill in a valid user name and password.</p>
+
+<h3 id="azure-active-directory-security-between-applications-bearer-token-authentication">Azure Active Directory security between applications (Bearer token authentication)</h3>
+
+<p>When another applications requests or posts data to your API, you will want to make sure that the API facing the public internet is secured so that only no unauthorized parties can use the API.</p>
+
+<p>This security mechanism can leverage the Azure Active Directory via so called <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens">access token</a>. The requesting party can request a token and send it in the Authorization header of the request to the API. The API application can verify the validity of the token against Azure Active Directory. If a token is valid the API can process the request and can use the caller identity and claims from the token available for further authorization logic.</p>
+
+<p>For a guide on setting up bearer token authentication for a .NET Framework API application see the <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-v1-dotnet-webapi">“Build a .NET web API that integrates with Azure AD for authentication and authorization” quickstart on the Microsoft Docs pages.</a></p>
+
+<p>For a guide on setting up bearer token authentication for a .NET Core API application see the <a href="https://devblogs.microsoft.com/aspnet/jwt-validation-and-authorization-in-asp-net-core/">“JWT Validation and Authorization in ASP.NET Core” guide on the Microsoft Docs pages</a>.</p>
+
+<p>If the client application that consumes  the API is a .NET application, it will probably use the <a href="https://github.com/AzureAD/azure-activedirectory-library-for-dotnet/wiki">ADAL</a> or <a href="https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki">MSAL</a> client libraries to request a valid bearer token for the API. MSAL is currently still in preview.</p>
+
+<p>If the current logged in user of the client application does not matter for the data retrieved or sent to the API, you can request a token for the client application without including any indication of the user that is logged into the client application. This will allow applications to be able to communicate securely without knowing about each others users or the privileges that the users have within a client application. This is called the “client credential” OAuth grant/flow. For more information on the flows/grants available in OAuth see the article <a href="https://auth0.com/docs/api-auth/which-oauth-flow-to-use">“Which OAuth flow to use”</a>.</p>
+
+<p>For a guide on requesting a client credential flow token using ADAL see the <a href="https://github.com/AzureAD/azure-activedirectory-library-for-dotnet/wiki/Client-credential-flows">“client credential flow” Github wiki page</a>.</p>
+
+<p>For a guide on requesting a client credential flow token using MSAL see the <a href="https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki/Client-credential-flows">“client credential flow” Github wiki page</a>.</p>
+
+<p>If the client application is a non .NET application, it can request a token for the client application using the OAuth endpoints of Azure Active Directory via HTTP posts. See <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow#service-to-service-access-token-request">the Microsoft docs pages for the HTTP requests to request an access token for an application</a>.</p>
+
+<p>For testing an API with automated tests you can request a bearer token for the API with the same code as a client application and include the token in the Authorization header when calling the API under test.</p>
+
+<h3 id="global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user">Global filters to ensure all requests need to have an authenticated user</h3>
+
+<p>After setting up authentication policies you will have to ensure that all requests require an authenticated user. This can be done by using the Authorize attribute on all (base) controllers but there are also global filters for .NET Framework or Authentication policies for .NET Core.</p>
+
+<h4 id="global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-framework">Global filters to ensure all requests need to have an authenticated user (.NET Framework)</h4>
+
+<p>To set up a global Authorization attribute in .NET Framework add the code below to the App_start/FilterConfig.cs file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class FilterConfig
+{
+    public static void RegisterGlobalFilters(GlobalFilterCollection filters)
+    {
+        filters.Add(new AuthorizeAttribute());
+    }
+}
+</code></pre></div></div>
+<p>The Authorize attributes for MVC and API Controllers reside in a different namespaces. If you decorate and API controller with the Authorize attribute for a MVC controller, the Authorize attribute will not be triggered. The MVC authorize attribute uses the “System.Web.Mvc” namespace. The API authorize attribute uses the “System.Web.Http” namespace.</p>
+
+<p>If you have a project with both MVC and Web API controllers. You may want to configure the default OWIN Authentication pipeline to accept both OpenIDConnect and JwtBearerTokens but have certain API Controllers only use the JwtBearerToken authentication. You can deviate from the default OWIN Configuration by using the HostAuthenticationAttribute (System.Web.Http) on a controller or the SuppressHostPrincipal in the App_Start\WebApiConfig.cs file. You will need to install the NuGet package: “Microsoft.AspNet.WebApi.Owin” to access the classes.</p>
+
+<p>Example for the global filter in the App_Start\WebApiConfig.cs:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>config.SuppressDefaultHostAuthentication();
+config.Filters.Add(new HostAuthenticationFilter("Bearer"));
+</code></pre></div></div>
+
+<p>Example for the attribute on a specific controller::</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[HostAuthentication("Bearer")]
+[Authorize]
+public class MyApiController 
+</code></pre></div></div>
+
+<h4 id="global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-core">Global filters to ensure all requests need to have an authenticated user (.NET Core)</h4>
+
+<p>To enable a global filters for all API and MVC controllers in .NET Core  you can use a Convention to set up an AuthorizationFilter on all controllers.</p>
+
+<p>To implement the Convention, first add a new IControllerModelConvention implementation that will set the authorization policy for the controller. You could add extra conditional logic to not set the policy under certain conditions.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Authorization;
+
+namespace NetCore.WebApiExample
+{
+    public class GlobalAuthorizeControllerModelConvention : IControllerModelConvention
+    {
+        public void Apply(ControllerModel controller)
+        {
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            controller.Filters.Add(new AuthorizeFilter(policy));
+        }
+    }
+}
+</code></pre></div></div>
+<p>Next apply the convention in the Startup.cs file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public void ConfigureServices(IServiceCollection services)
+{
+    //other code omitted
+    //...
+
+    services.AddMvc(options =&gt;
+    {
+        options.Conventions.Add(new GlobalAuthorizeControllerModelConvention());
+    }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+}
+</code></pre></div></div>
+
+<p>For more fine-grained authentication logic you could also implement a IActionModelConvention to conditionally apply the authorization policy per controller action.</p>
+
+<p>To enable authentication for specific Razor Pages see <a href="https://docs.microsoft.com/en-us/aspnet/core/security/authorization/razor-pages-authorization">the Microsoft Docs pages on Razor Pages authorization conventions</a>.</p>
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
             <a href="/2019/01/19/Web-API-versioning-using-the-NuGet-packages-from-Microsoft.html">Web API versioning using the NuGet packages from Microsoft</a>
         </header>
         
@@ -1524,349 +1653,6 @@ This is usually the cause when using older .Net Framework versions (&lt; 4.7) as
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2018/07/14/csharp-script-azure-functions-example.html">C# script Azure Functions example</a>
-        </header>
-        
-        <span>Jul 14, 2018</span> <br />
-        Tags: 
-        Azure
-        
-        AzureFunctions
-        
-        <div class="article-content">
-            <p>
-C# Script Functions are another way to create Azure Functions based on C#. These functions rely on C# script files (.csx) that are not compiled into a dll. There is no Visual Studio project to create or manage the files. You use command line tooling for development and the advantage is that you can directly edit and run your code in the Azure portal. Script Functions can be developed and tested locally before uploading the Function to the portal.
-</p>
-<p>
-If you would like to know more about compiled Azure Functions using the Visual Studio Azure Function project see <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my last blog post about pre-compiled Azure Functions</a>.
-</p>
-<p>
-All the code from the following example can also be found in my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureFunctionExample repository</a> in the solution folder AzureFunction_CsharpScript.
-</p>
-<h3>Create an C# script Azure Function</h3>
-<p>
-Install npm and nodejs from the <a href="https://nodejs.org/en/" target="_blank">nodejs website</a>.
-</p>
-<p>Install npm azure functions core tools using the command line. I used the v1 (.Net Framework version) using the command below.</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">npm install <span class="nt">-g</span> azure-functions-core-tools</code></pre></figure>
-
-<p>
-Append the package name with @core to install de v2 version. The v2 version is built on .Net Core and is currently still in preview (the same as with the compiled Azure Functions)
-</p>
-<p>
-The files for the azure-function-core-tools are placed in %USER%\AppData\Roaming\npm on your disk.
-In the npm\node_modules\azure-functions-core-tools\bin folder you can view all the Framework and Nuget package dlls available for use at runtime.
-</p>
-<p>
-If you wish to check the version of the downloaded package and the commands for the command line use the command below. For command usage see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local" target="blank">Microsoft Docs guidance on developing C# script Functions</a>.
-</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">func version</code></pre></figure>
-
-<p>
-Next I want to create a queue Function based on the C# language. Go to the directory where you want to create the function folder. And use the command below.
-</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">func init AzureFunctionsExample.ScriptV1</code></pre></figure>
-
-<p><br /><img src="/assets/images/20180714/cmd.exe-func-init.png" alt="cmd.exe func init" /></p>
-<p>
-This command will create a “project folder” for an empty Azure Function project with the host and localsettings json files. (These are used the same as for compiled Azure Functions. See <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my previous blogpost about compiled Azure Functions</a> or the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#local-settings-file" target="blank">Microsoft Docs pages</a> for more information) 
-</p>
-<p>
-Also note the .vscode folder. Seeing as there is no .csproj file, the support for regular visual studio is limited. You can manage in the files in Visual Studio by creating a class library or solution folders and importing the files but with Visual Studio code you can just open the folder to manage the files. 
-</p>
-<p>
-Visual Studio Code also has a plugin for Azure Functions that adds an Azure tab to your project. It also has options to create Azure Functions but these will create compiled Functions. When opening the folder you may be prompted to optimize the Function but as it was not created using the plugin, it will not optimize. 
-</p>
-<p>
-I used regular Visual Studio with a class library and the regular command line shell for all the next steps because I did not have time to look into debugging script Azure Functions with Visual Studio Code. NPM installs a 32 bit version of the CLI and Visual Studio Code does not seem to support debugging the 32bit process.
-</p>
-<p>
-The command below is used to create the files for the actual Function in a sub folder of the Azure Function app folder.
-</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">func new</code></pre></figure>
-
-<p>
-Next navigate the selection options to create a C# Queue trigger and provide a name for the Function.
-<br /><img src="/assets/images/20180714/cmd.exe-func-new.png" alt="cmd.exe func new" />
-</p>
-<p>
-This will create a new subfolder with a function.json that describes the input/output bindings, a run.csx that has the “main” method for the function called Run and a sample.dat file that can be used later to provide message data while debugging. It also has a readme file with little information. I just deleted the readme file. 
-</p>
-<p>Function.json:</p>
-
-<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
-  </span><span class="s2">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"bindings"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-    </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"myQueueItem"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"queueTrigger"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"direction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"queueName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"myqueue-items"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"connection"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre></figure>
-
-<p>Run.csx</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
-
-<span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">(</span><span class="kt">string</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"C# Queue trigger function processed: </span><span class="p">{</span><span class="n">myQueueItem</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>
-For easy management just include all the files inside your Visual Studio class library project so you can access and manage them from the Solution Explorer as shown in the image below.
-<br /><img src="/assets/images/20180714/solutionexplorer-AzureFunctionsExample.ScriptV1.png" alt="Solution Explorer AzureFunctionsExample.ScriptV1" />
-</p>
-<p>
-Now we have all the files needed for the Function but first we need to configure connection to the Azure Storage emulator before we can start it up. 
-</p>
-<p>
-Go into local.settings.json in the root folder and change the Values node with content below to configure the storage connections:
-</p>
-
-<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="s2">"Values"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"AzureWebJobsStorage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UseDevelopmentStorage=true"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"AzureWebJobsDashboard"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UseDevelopmentStorage=true"</span><span class="w">
-  </span><span class="p">}</span></code></pre></figure>
-
-<p>
-Next go to the function.json and set the connection to the AzureWebJobsStorage and the queueName to messages. If you do not have the Azure Storage Emulator set up yet view the Azure Storage Emulator paragraph in <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my post about compiled Azure Functions</a>. 
-</p>
-
-<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
-  </span><span class="s2">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"bindings"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-    </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"myQueueItem"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"queueTrigger"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"direction"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"queueName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"messages"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"connection"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AzureWebJobsStorage"</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre></figure>
-
-<p>
-We can now run the Function by using the command shown below in the command shell in the root folder (where the host.json file is). Make sure that the Azure Storage Emulator is running,
-</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">func host start <span class="nt">--debug</span> VS</code></pre></figure>
-
-<p><br /><img src="/assets/images/20180714/cmd.exe-func-host-start.png" alt="cmd.exe func host start" /></p>
-<p>
-This will start the Azure Function the same way that it did with the compiled Azure Function.  
-</p>
-<p>
-When specifying debug mode you also get the JIT Debugger window. Just choose the Visual Studio instance where the run.csx is available to attach the debugger.
-<br /><img src="/assets/images/20180714/jit-debug-window.png" alt="jit debug window" />
-</p>
-<p>
-You will also get the application in break mode tab in your Visual Studio instance. Just click the continue execution option. (You may have to press enter in the command shell to continue loading of the Function if it was interrupted by the debug prompt before it will pick up any messages)
-</p>
-<p>
-Next set a breakpoint in the run.csx and use the QueueMessage project from my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureFunctionExamples</a> repository or any other method to post a message to the queue and see the debugger in the run.asxc.
-<br /><img src="/assets/images/20180714/debug-run.csx.png" alt="debug run.csx" />
-</p>
-<p>
-For extra methods and simple Azure Functions you could create all extra classes and methods in the run.csx file. For better maintainability create classes and extra code into separate C# script (.csx) files or in a separate class library compiled to a dll. You can also reference the .Net assemblies that are available for the Azure Function runtime. For more information see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp" target="_blank"> Microsoft Docs on C# script</a>.
-</p>
-<p>
-In my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureExampleFunctions repository</a>. I’ve created a QueueMessage.csx class used to convert the input queuemessage from a string to an object instance. First add a QueueMessage.csx file to the ProcessMessageScriptV1 Function folder with the definition of the QueueMessage class (as shown below). There are no using or namespace definitions in the file. Next use the #load “QueueMessage.csx” statement in the run.csx to complete the reference binding and change the type for myQueueItem from string to QueueMessage. The code should look as below:
-</p>
-<p>
-QueueMessage.csx:
-</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">internal</span> <span class="k">class</span> <span class="nc">QueueMessage</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="kt">int</span> <span class="n">Person</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-    <span class="k">public</span> <span class="kt">int</span> <span class="n">Order</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-    <span class="k">public</span> <span class="kt">int</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">}</span>
- 
-<span class="k">internal</span> <span class="k">enum</span> <span class="n">OrderStatus</span>
-<span class="p">{</span>
-    <span class="n">Concept</span> <span class="p">=</span> <span class="m">0</span><span class="p">,</span>
-    <span class="n">Processing</span> <span class="p">=</span> <span class="m">1</span><span class="p">,</span>
-    <span class="n">Processed</span> <span class="p">=</span> <span class="m">2</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>run.csx:</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="err">#</span><span class="n">load</span> <span class="s">"QueueMessage.csx"</span>
- 
-<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
- 
-<span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">(</span><span class="n">QueueMessage</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"C# Queue trigger function processed: </span><span class="p">{</span><span class="n">myQueueItem</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>
-Next run the Function to see that the myQueueItem is successfully converted from a Json message to a QueueMessage instance.
-<br /><img src="/assets/images/20180714/debug-run.csx-queuemessage-object.png" alt="debug run.csx queuemessage object" />
-</p>
-<p>
-Extra .csx files can also be placed in subfolders. If QueueMessage.csx was placed in a subfolder called helpers you would use the #load “helpers/QueueMessage.csx” in the run.csx file. The #load statement contains a relative path to the file. See the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp#reusing-csx-code" target="_blank"> Microsoft Docs on C# script</a> for examples.
-</p>
-<h3>Referencing a custom dll in an Azure Script Function</h3>
-<p>
-Next I can create separate dll containing a Data Access Layer and reference it in my script Function. 
-(I couldn’t use the AzureFunctionExample.ResourceAccess library already present in the solution because I got exceptions that EntityFrameworkCore was not supported on the platflorm). Just add a .Net Framework library with the Entity Framework package and define the data access classes below:
-</p>
-<p>Order class:</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.ComponentModel.DataAnnotations</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">Order</span>
-    <span class="p">{</span>
-        <span class="p">[</span><span class="n">Key</span><span class="p">]</span>
-        <span class="k">public</span> <span class="kt">int</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="kt">int</span> <span class="n">PersonID</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-        
-        <span class="k">public</span> <span class="kt">string</span> <span class="n">OrderNumber</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="kt">int</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="k">virtual</span> <span class="n">Person</span> <span class="n">Person</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>Person class:</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.ComponentModel.DataAnnotations</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span>
-    <span class="p">{</span>
-        <span class="k">public</span> <span class="nf">Person</span><span class="p">()</span>
-        <span class="p">{</span>
-            <span class="n">Orders</span> <span class="p">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;();</span>
-        <span class="p">}</span>
-
-        <span class="p">[</span><span class="n">Key</span><span class="p">]</span>
-        <span class="k">public</span> <span class="kt">int</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="kt">string</span> <span class="n">FirstName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="kt">string</span> <span class="n">LastName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="kt">string</span> <span class="n">Email</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
-        <span class="k">public</span> <span class="k">virtual</span> <span class="n">ICollection</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;</span> <span class="n">Orders</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>OrderDbContext class:</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Data.Entity</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Data.Entity.ModelConfiguration.Conventions</span><span class="p">;</span>
- 
-<span class="k">namespace</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">OrderDbContext</span> <span class="p">:</span> <span class="n">DbContext</span>
-    <span class="p">{</span>
-        <span class="k">public</span> <span class="nf">OrderDbContext</span><span class="p">(</span><span class="kt">string</span> <span class="n">connectionString</span><span class="p">)</span> <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">connectionString</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="n">Database</span><span class="p">.</span><span class="n">SetInitializer</span><span class="p">&lt;</span><span class="n">OrderDbContext</span><span class="p">&gt;(</span><span class="k">null</span><span class="p">);</span>
-        <span class="p">}</span>
-        
-        <span class="k">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">Person</span><span class="p">&gt;</span> <span class="n">Person</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-        <span class="k">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;</span> <span class="n">Order</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
- 
-        <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnModelCreating</span><span class="p">(</span><span class="n">DbModelBuilder</span> <span class="n">modelBuilder</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="n">modelBuilder</span><span class="p">.</span><span class="n">Entity</span><span class="p">&lt;</span><span class="n">Person</span><span class="p">&gt;()</span>
-               <span class="p">.</span><span class="nf">HasMany</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Orders</span><span class="p">)</span>
-               <span class="p">.</span><span class="nf">WithRequired</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">Person</span><span class="p">)</span>
-               <span class="p">.</span><span class="nf">HasForeignKey</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span><span class="p">);</span>
- 
-            <span class="n">modelBuilder</span><span class="p">.</span><span class="n">Conventions</span><span class="p">.</span><span class="n">Remove</span><span class="p">&lt;</span><span class="n">PluralizingTableNameConvention</span><span class="p">&gt;();</span>
- 
-            <span class="k">base</span><span class="p">.</span><span class="nf">OnModelCreating</span><span class="p">(</span><span class="n">modelBuilder</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>
-To use this library in my Function I need to get the output dll and the extra references to a location accessible to the script Function. So first I copy all the dll from the bin output to an empty references folder using a post-build event.
-</p>
-
-<figure class="highlight"><pre><code class="language-shell" data-lang="shell">xcopy /Y/S <span class="k">$(</span>TargetDir<span class="k">)$(</span>ProjectName<span class="k">)</span>.dll <span class="k">$(</span>SolutionDir<span class="k">)</span>AzureFunctionsExample.ScriptV1<span class="se">\P</span>rocessMessageScriptV1<span class="se">\r</span>eferences
-xcopy /Y/S <span class="k">$(</span>TargetDir<span class="k">)</span>EntityFramework.dll <span class="k">$(</span>SolutionDir<span class="k">)</span>AzureFunctionsExample.ScriptV1<span class="se">\P</span>rocessMessageScriptV1<span class="se">\r</span>eferences
-xcopy /Y/S <span class="k">$(</span>TargetDir<span class="k">)</span>EntityFramework.SqlServer.dll <span class="k">$(</span>SolutionDir<span class="k">)</span>AzureFunctionsExample.ScriptV1<span class="se">\P</span>rocessMessageScriptV1<span class="se">\r</span>eferences</code></pre></figure>
-
-<p><br /><img src="/assets/images/20180714/project-properties-xcopy-build-event.png" alt="project properties xcopy build event" /></p>
-<p>
-This will ensure that after every build all the necessary dll will be in that folder (even though I excluded that folder from source control with the .gitignore file) 
-</p>
-<p>
-Next add all the necessary settings to the local.settings.json. so it looks like below:
-</p>
-
-<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
-  </span><span class="s2">"IsEncrypted"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"Values"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"AzureWebJobsStorage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UseDevelopmentStorage=true"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"AzureWebJobsDashboard"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UseDevelopmentStorage=true"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"OrderDbConnection"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Server=.</span><span class="se">\\</span><span class="s2">SQLEXPRESS;Database=OrderDb;Integrated Security=True;"</span><span class="p">,</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span></code></pre></figure>
-
-<p>
-And finally I add the reference and using statements to the run.csv and change the implementation of the run.csx to the code shown below:
-</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="err">#</span><span class="n">load</span> <span class="s">"QueueMessage.csx"</span>
-<span class="err">#</span><span class="n">r</span> <span class="s">"references/EntityFramework.dll"</span>
-<span class="err">#</span><span class="n">r</span> <span class="s">"references/AzureFunctionsExample.ScriptResources.dll"</span>
-<span class="err">#</span><span class="n">r</span> <span class="s">"netstandard"</span>
- 
-<span class="k">using</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Data.Entity</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
- 
-<span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">(</span><span class="n">QueueMessage</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="kt">var</span> <span class="n">dbContext</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OrderDbContext</span><span class="p">(</span><span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"OrderDbConnection"</span><span class="p">));</span>
-    <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Person</span><span class="p">);</span>
- 
-    <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">order</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">FirstName</span><span class="p">}</span><span class="s"> </span><span class="p">{</span><span class="n">order</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">LastName</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
-    <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"C# Queue trigger function processed: </span><span class="p">{</span><span class="n">myQueueItem</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
-<span class="p">}</span></code></pre></figure>
-
-<p>
-By referencing dll or just using .csx files you can create pretty complex C# script Functions with the same functionality as a pre-compiled Azure Function.
-<h3>Run and test in the Azure Portal</h3>
-<p>
-The command line offers a login and publish command to push your local Function app to a hosted Azure Function App. Another way you can upload the files is via de App Service Editor under the Platform Settings for an Azure App Function in the Azure Portal. Remember to copy the key value pairs from the appsettings.json to the Application Settings page of the Azure Function App in the portal.
-</p>
-<p>
-With script Functions you can view the files and edit and run the Function directly in the portal with the editor show below.
-<br /><img src="/assets/images/20180714/azure-function-app-editor.png" alt="azure-function-app-editor" />
-</p>
-
- 
-</p>
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -1891,6 +1677,9 @@ With script Functions you can view the files and edit and run the Function direc
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/01/19/Web-API-versioning-using-the-NuGet-packages-from-Microsoft.html">Web API versioning using the NuGet packages from Microsoft</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -1901,9 +1690,6 @@ With script Functions you can view the files and edit and run the Function direc
     <div class="last-posts-spacer"></div>
     
     <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2018/07/14/csharp-script-azure-functions-example.html">C# script Azure Functions example</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
