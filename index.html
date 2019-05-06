@@ -32,6 +32,100 @@
     
     <article>
         <header class="article-header">
+            <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a>
+        </header>
+        
+        <span>May 6, 2019</span> <br />
+        Tags: 
+        Testing
+        
+        <div class="article-content">
+            <p>Usually I think of test scenarios while examining specifications and writing code. Even though I am not a test first TDD practitioner and usually write and executing tests after writing some logic, I do think about and test scenarios throughout my coding  process.</p>
+
+<p>The techniques I want to describe in this post have been helpful to me in writing better quality code. They help me catch missing requirements earlier and my eventual tests (manual or automated) are more complete. Knowing these techniques also helps me collaborate better with the QA team during development and/or testing.</p>
+
+<p>The techniques may describe graphing out paths and making decision tables but I almost never write down the described graphs and tables. If you find yourself having trouble identifying or explaining scenarios, the described graph or table might help you as means of a visual aid.</p>
+
+<p>The techniques are describe identifying all possible test scenarios for 100% coverage. Analyzing and testing all scenarios (manual or automatic) is usually not possible due to time constraints. You should always try to focus on the parts of the software that are most likely to fail due to complexity and the parts that have the highest cost to the business when they do fail. Your test set should be maintainable and provide good enough coverage so you have enough confidence in your test set. When in doubt collaborate with your team members or QA team to determine the value of a test scenarios and test coverage.</p>
+
+<p>Testing techniques are divided into white and black box techniques. White box techniques look at the actual statements of the source code to determine test cases. Black box techniques use specifications to determine if outputs are correct when providing inputs.</p>
+
+<h3 id="equivalence-class-and-boundary-partitioning-black-box-technique">Equivalence class and boundary partitioning (black box technique)</h3>
+
+<p>Equivalence class partitioning is a technique for partitioning possible inputs into possible valid and invalid scenarios.</p>
+
+<p>For string input for a certain field you could identify:</p>
+
+<p>Valid input</p>
+<ul>
+  <li>Input length has minimum length of 0 (empty string) and maximum length of 50.</li>
+  <li>Contains only alphanumeric characters and no diacritics.</li>
+</ul>
+
+<p>Invalid input</p>
+<ul>
+  <li>Null value.String larger than 50 characters.</li>
+  <li>String with diacritics or other special characters (@# etcetera).</li>
+</ul>
+
+<p>The equivalence class technique states that you should create a test scenario for each of the valid and each of the invalid scenarios. If a method has multiple parameters and you are testing invalid scenarios you should never use more than one invalid input at a time to avoid defect masking.  This way you can relate expected errors back to the single invalid input or unexpected errors to one of the valid inputs.</p>
+
+<p>Boundary partitioning is add on to equivalence class partitioning. You basically look at the equivalence classes and use the boundary value (for example string has length of 50), boundary value -1 (string length 49) and boundary value +1 (string length 51) as additional test cases. This technique is identifying the so called edge cases of input. You should look at all equivalence classes (valid and invalid) to determine if you can set up test cases with the boundary, boundary+1 and boundary-1, value between 2 boundaries and see if the outputs are the expected values.</p>
+
+<h3 id="statement-and-decision-based-testing-white-box-techniques">Statement and decision based testing (white box techniques)</h3>
+
+<p>Statement and decision based testing use a <a href="https://en.wikipedia.org/wiki/Control-flow_graph">control-flow graph</a>. Basically each node in the graph is a control statement where a decision is made about which path to execute next (so if, switch, while, for statements ). The branches (edges) of the graph are the possible code paths executed between the control statements.</p>
+
+<p>Statement based testing creates test scenarios for each node (not all the edges). So you should have passed through each control statement (condition is true) at least once for coverage for this technique. When looking at the source code if you pass through each control statement and execute the code within the control statements, you should end up covering all lines in the source code.</p>
+
+<p>Decision based testing looks to cover the edges of the control-flow graph. To cover all the edges of the graph you should create tests for each conditional state for the control statements. So for an if statement you should test with conditional false and true. For loops you should iterate at least through one loop and use a test case that ignores the loop. When using an switch/case statements all possible cases should be covered.</p>
+
+<p>For some good examples of these two techniques, look at the short YouTube/Udacity links in the resource section of this post.</p>
+
+<h3 id="conditional-based-testing-white-box-technique">Conditional based testing (white box technique)</h3>
+
+<p>Control statements (for example if, switch, while, for statements ) usually have some kind of conditional logic. If the conditional logic has multiple inputs you can apply the rules for equivalence and boundary testing (see previous paragraph in this post) to determine all possible inputs to the conditional statement to see if the expected path is executed.</p>
+
+<h3 id="state-transition-testing-black-box-technique">State transition testing (black box technique)</h3>
+
+<p>Sometimes your software uses a <a href="https://en.wikipedia.org/wiki/Finite-state_machine">finite state machine</a> (maybe some kind of status table or status enum is used to describe the possible states of an object). The linked Wikipedia article for the finite state machine contains multiple techniques for identifying the states, path between states and the conditions per path or state.</p>
+
+<p>Each path between a state is usually identifies a “happy flow” test scenario. Besides obvious valid state transitions you should try to identify invalid paths and if they are possible to execute in the system.</p>
+
+<p>Also look at the conditions per path. See if you can use the rules for equivalence and boundary testing (see previous paragraph in this post) to determine if the guards work as expected.</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li><a href="https://www.istqb.org/downloads/send/51-ctfl2018/208-ctfl-2018-syllabus.html">ISTBQ: Foundation Level 2018 Syllabus (chapter 4 contains a list of testing techniques)</a></li>
+  <li>Wikipedia:
+    <ul>
+      <li><a href="https://en.wikipedia.org/wiki/Equivalence_partitioning">Equivalence class partitioning</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Boundary-value_analysis">Boundary value analysis</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Control-flow_graph">Control-flow graph</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Finite-state_machine">Finite state machine</a></li>
+    </ul>
+  </li>
+  <li><a href="https://sqa.stackexchange.com/questions/20226/how-do-we-calculate-statement-coverage-branch-coverage-path-coverage-and-cond">StackExchange: How do we calculate Statement coverage, Branch coverage , Path coverage and Condition coverage in White box testing?</a></li>
+  <li>YouTube/Udacity:
+    <ul>
+      <li><a href="https://www.youtube.com/watch?v=9PSrhH2gtkU">Statement Coverage - Georgia Tech - Software Development Process</a></li>
+      <li><a href="https://www.youtube.com/watch?v=0lVA7TPpxUE">Control Flow Graphs - Georgia Tech - Software Development Process</a></li>
+      <li><a href="https://www.youtube.com/watch?v=JkJFxPy08rk">Branch Coverage - Georgia Tech - Software Development Process</a></li>
+      <li><a href="https://www.youtube.com/watch?v=ZnPmJd5aqyw">Condition Coverage - Georgia Tech - Software Development Process</a></li>
+      <li><a href="https://www.youtube.com/watch?v=kd1_3CwYr60">Branch and Condition Coverage - Georgia Tech - Software Development Process</a></li>
+    </ul>
+  </li>
+  <li><a href="https://www.softwaretestingclass.com/design-test-cases-using-state-transition-testing-technique/">Software Testing Class: How to Design Test Cases Using State Transition Testing Technique?</a></li>
+  <li><a href="https://www.softwaretestingmaterial.com/state-transition-test-design-technique/">Software Testing Material: State Transition Test Case Design Technique</a></li>
+</ul>
+
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
             <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a>
         </header>
         
@@ -1604,55 +1698,6 @@ The code snippets were added to a default .Net Core web application using the Mo
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a>
-        </header>
-        
-        <span>Aug 17, 2018</span> <br />
-        Tags: 
-        <div class="article-content">
-            <p>Lately more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing a HTTPS connection to their servers. TLS takes care of the encryption of the HTTPS communication and TLS1.2 was introduced in 2008. It is more secure (harder to decrypt) than the previous versions.</p>
-
-<p>You may encounter that establishing a HTTPS connection to a 3rd party may suddenly fail without there having been any new code changes or deployments. This may be due to the fact that the 3rd party has decided to no longer accept TLS 1.1 or below for HTTPS connections.</p>
-
-<p>I ran into this myself again this week because I used a PowerShell command to execute C# code to retrieve a bearer access token from Azure leveraging the ADAL dll’s. It suddenly did not work anymore last week and after some Googling I found a similar error that was solved by adding the TLS1.2 protocol to the ServicePointManager.SecurityProtocol property. I have needed to do this before in several older C# applications and it inspired me to write this blogpost today.</p>
-
-<p>If you face the exception “The server forcibly closed the connection” this may be an indication that the ServicePointManager no longer has a compatible protocol to establish a HTTPS connection with the server.</p>
-
-<p>The ServicePointManager is a static class .Net Framework class that will always choose the highest (securest) protocol available from the SecurityProtocol property and will only fall back to a previous version if the highest is not supported.</p>
-
-<p>Use a debugger to inspect the ServicePointManager.SecurityProtocol value to see if TLS 1.2 is listed, to determine whether or not this may be the cause of your connection issues. 
-This is usually the cause when using older .Net Framework versions (&lt; 4.7) as is it was with my PowerShell.</p>
-
-<p>In C# use the code below to append the current security protocols with TLS1.2 before establishing the connection to the server or put this code snippet in your Global.asax startup.</p>
-
-<figure class="highlight"><pre><code class="language-c#" data-lang="c#">    <span class="n">ServicePointManager</span><span class="p">.</span><span class="n">SecurityProtocol</span> <span class="p">|=</span> <span class="n">SecurityProtocolType</span><span class="p">.</span><span class="n">Tls12</span></code></pre></figure>
-
-<p>When using powershell use the command below to check the current default protocols as used in Powershell:</p>
-
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"> <span class="o">[</span>Net.ServicePointManager]::SecurityProtocol</code></pre></figure>
-
-<p>You can set the TLS1.2 protocol if it’s not listed by using:</p>
-
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="o">[</span>Net.ServicePointManager]::SecurityProtocol +<span class="o">=</span> <span class="o">[</span>Net.SecurityProtocolType]::Tls12 </code></pre></figure>
-
-<p>Older version of PowerShell may not support this syntax. Use the syntax below set the most common protocols:</p>
-
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="o">[</span>Net.ServicePointManager]::SecurityProtocol <span class="o">=</span> <span class="o">[</span>Net.SecurityProtocolType]::Ssl3,  <span class="o">[</span>Net.SecurityProtocolType]::Tls, <span class="o">[</span>Net.SecurityProtocolType]::Tls12 </code></pre></figure>
-
-<p>Remember: when appending or setting the ServicePointManager.SecurityProtocol property to a set value in your code, you may have to revisit this at a later time when newer TLS protocols become the new standard.</p>
-
-<p>For more information on this subject visit the reference websites below:</p>
-
-<p><a href="https://en.wikipedia.org/wiki/Transport_Layer_Security" title="Wikipedia page for Transport Layer Security" target="_blank">Wikipedia page for Transport Layer Security</a></p>
-
-<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.servicepointmanager.securityprotocol?redirectedfrom=MSDN&amp;view=netframework-4.7.2#System_Net_ServicePointManager_SecurityProtocol" title="Microsoft Docs page on the ServicePointManager.SecurityProtocol property" target="_blank">Microsoft Docs page on the ServicePointManager.SecurityProtocol property</a></p>
-
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -1677,6 +1722,9 @@ This is usually the cause when using older .Net Framework versions (&lt; 4.7) as
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -1687,9 +1735,6 @@ This is usually the cause when using older .Net Framework versions (&lt; 4.7) as
     <div class="last-posts-spacer"></div>
     
     <a href="/2018/10/09/using-route-constraints.html">Using route constraints for input validation and improved security</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2018/08/17/tls1.2-not-supported-by-default-in-older-net-framework-applications.html">TLS1.2 not supported by default in older .NET Framework applications</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
