@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Static code analysis for your C# projects</title>
+    <meta name="description" content="Static code analysis analyzes your source code or compiled dll files for certain patterns or filenames. There are several code analyzers available for C# in ...">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="https://samanthaneilen.github.io/2019/06/22/Static-code-analysis-for-your-csharp-projects.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Static code analysis for your C# projects
+    </header>
+    
+    <span>Jun 22, 2019</span><br />
+    Tags: 
+                VisualStudio 
+			
+                StaticCodeAnalysis 
+			
+    <div class="article-content">
+        <p>Static code analysis analyzes your source code or compiled dll files for certain patterns or filenames. There are several code analyzers available for C# in Visual Studio and/or Azure DevOps. These code analyzers improve consistency, prevent technical debt and prevent security issues.</p>
+
+<p>The older Code Analysis features in Visual Studio (Analyze &gt; Run Code Analysis option) and Project properties (Code Analysis tab) are marked as deprecated and will not be covered in this post.</p>
+
+<h3 id="visual-studio-build-in-analyzers">Visual Studio build in analyzers</h3>
+
+<p>The Visual Studio compiler (Roslyn) already has some build in analyzer rules. When loading a project (like the <a href="https://github.com/dotnet-architecture/eShopOnWeb">eShopOnWeb</a> reference implementation) and opening a file, the analyzers installed in Visual Studio will analyze the file and show any error, warning or information message in the Visual Studio error list window.</p>
+
+<p><img src="/assets/images/20190622/Default-style-messages.png" alt="[Default style messages]" /></p>
+
+<p>By default Visual Studio will only contain some analyzers for code styling that output as information messages. You can edit the default code analyzer rules in the Visual Studio options via:</p>
+
+<p>Tools &gt; Options &gt; Text Editor &gt; C# &gt; Code Style</p>
+
+<p><img src="/assets/images/20190622/Default-style-messages-settings.png" alt="[Default style messages settings]" /></p>
+
+<p>The severity of the ruleset can be changed in this options window:</p>
+
+<p><img src="/assets/images/20190622/Default-style-messages-set-to-warning.png" alt="[Default style messages settings set severity]" /></p>
+
+<p>By default it only analyzes the open file but you can enable solution wide analysis in the Visual Studio options to asynchronously analyze the entire solution. This option is found via:</p>
+
+<p>Tools &gt; Options &gt; Text Editor &gt; C# &gt; Advanced &gt; Enable full solution analysis</p>
+
+<p><img src="/assets/images/20190622/Enable-full-solution-analysis.png" alt="[Enable full solution analysis]" /></p>
+
+<p>If you use Visual Studio 2019 and you have set rules resulting in errors or warning, you will also see a counter at the bottom of the file alerting you to issues in the files. There are also the colored squiggly lines in the text editor below the statement that may have and issue. There are colored blocks in the scrollbar of the text editor indicating where the issues are located in a file. And if you have the <a href="https://marketplace.visualstudio.com/items?itemName=VisualStudioPlatformTeam.ProductivityPowerPack2017">Productivity Power Tools</a> extension installed the Solution Error Visualization will show the same colored squiggly lines in the Solution Explorer window below filenames that have issues.</p>
+
+<p>I have marked all visual indicators for errors and or warnings in the screenshot below:</p>
+
+<p><img src="/assets/images/20190622/Visual-indicators-for-issues.png" alt="[Visual indicators for warnings or errors]" /></p>
+
+<h3 id="sonarlint">SonarLint</h3>
+
+<p>For extra code analysis I use the <a href="https://www.sonarlint.org/visualstudio/">SonarLint extension</a> in Visual Studio. This extension loads extra code analysis rules for several categories (code smells, bugs and security issues). For the full list see the <a href="https://rules.sonarsource.com/csharp">SonarSource rules pages</a>. Rules from SonarLint can be identified by the S prefix in the Error list window.</p>
+
+<p><img src="/assets/images/20190622/SonarLint-messages.png" alt="[SonarLint warnings example]" /></p>
+
+<p>You can use a .ruleset file in your project to disable or change the default severities or disable warnings for the default rules. See the <a href="https://docs.microsoft.com/en-us/visualstudio/code-quality/how-to-create-a-custom-rule-set">Microsoft Docs page for adding ruleset files</a> for more instructions.</p>
+
+<p>When using SonarLint, I usually enable the category column in my error list window to triage the warnings shown. You can right click the error list window and use the option Show Columns &gt; Category to add it.</p>
+
+<p><img src="/assets/images/20190622/Add-Category-column-to-error-list.png" alt="[Add Category column to error list]" /></p>
+
+<h3 id="sonarqube">SonarQube</h3>
+
+<p>The SonarLint extension also enables integration with a <a href="https://www.sonarqube.org/">SonarQube server</a>. SonarQube is open source static code analysis platform that can integrate <a href="https://www.sonarlint.org/visualstudio/#visualstudio-connected-mode">with Visual Studio</a> and <a href="https://www.azuredevopslabs.com/labs/vstsextend/sonarqube/">with Azure Devops</a>. SonarQube can be used to define a ruleset that all team members can download into new or existing projects. SonarQube (when integrating with Azure DevOps) can also provide code coverage metrics and code duplication analysis. It can also provide insight in the amount of issues over time and provides a technical debt score for a solution. You can also fail a build if your solution does not meet a configured quality gate. SonarQube is great in providing code analysis and related dashboards especially when working with a team on a code project. See the <a href="https://www.sonarqube.org/">SonarQube</a> website for all the features and installation instructions.</p>
+
+<h3 id="security-code-scan">Security Code Scan</h3>
+
+<p><a href="https://security-code-scan.github.io/">Security Code Scan</a> is a static analyzer extension focusing on security issues in your code. It checks for patterns that indicate SQL injection or XSS vulnerabilities in your code and several other issues that are defined by <a href="https://www.owasp.org/index.php/Main_Page">OWASP</a> as security issues.</p>
+
+<p>After installing the extension (and enabling full solution wide analysis) the warnings from Security Code scan are listed with the prefix SCS.</p>
+
+<p><img src="/assets/images/20190622/Security-Code-Scan-messages.png" alt="[Security Code Scan messages]" /></p>
+
+<h3 id="auditnet">Audit.NET</h3>
+
+<p><a href="https://github.com/OSSIndex/audit.net">Audit.NET</a> is an <a href="https://marketplace.visualstudio.com/items?itemName=VorSecurity.AuditNet">extension for Visual Studio</a> that scans you package.config file and compares the package references against several public databases containing known vulnerabilities. Any issues with packages are shown in the Error window as errors. These errors are not blocking and will not result prevent you from building, debugging or running your solutions.</p>
+
+<p><img src="/assets/images/20190622/AuditNET-errors.png" alt="[Audit.NET messages]" /></p>
+
+<p>At the time of this writing the extension can analyze .Net Core projects (and the new package references) but it does not seem to properly show the current issues in the error window.</p>
+
+<h3 id="whitesource-bolt">WhiteSource Bolt</h3>
+
+<p><a href="https://bolt.whitesourcesoftware.com/azure/">WhiteSoure Bolt</a> is the free version of WhiteSource and can be integrated <a href="https://www.azuredevopslabs.com/labs/vstsextend/whitesource/">with Azure Devops</a>. The free version can be used in an commercial environment but beware of the <a href="https://bolt.whitesourcesoftware.com/azure/terms/">terms of service</a> data and usage policies as it does send and store metadata and file hashes to WhiteSource hosted in America. This may be an issue in certain corporate environments (especially in Europe).</p>
+
+<p>WhiteSource Bolt analyzes your project and will report on NuGet package of included dll files with known vulnerabilities. It will also give you an overview all used 3rd party components and their licenses.</p>
+
+<p>See <a href="https://www.azuredevopslabs.com/labs/vstsextend/whitesource/">the Azure Devops labs last step of the Trigger a build section</a> for screenshots of the report for a build.</p>
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .Net developer.
+    I have been coding professionaly since 2008.
+    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a><br />
+    Subscribe via <a href="/feed.xml">RSS</a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>
+    
+    <a href="/2019/06/22/Static-code-analysis-for-your-csharp-projects.html">Static code analysis for your C# projects</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/01/19/Web-API-versioning-using-the-NuGet-packages-from-Microsoft.html">Web API versioning using the NuGet packages from Microsoft</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2018/12/08/Using-and-extending-swagger.json-for-API-documentation.html">Using and extending Swagger.json (OpenApi) for API documentation</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
