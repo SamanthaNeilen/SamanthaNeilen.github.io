@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Writing tests for your graphical user interface</title>
-    <meta name="description" content="In this blogpost I will be talking on how to create tests using Coded UI and Selenium. Coded UI is the UI testing framework from Microsoft for testing any ty...">
+    <meta name="description" content="[Edit Juli 19 2019] Coded UI has been marked deprecated by Microsoft. As stated on the Microsoft Docs page for Coded UI: Coded UI Test for automated UI-drive...">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -37,7 +37,10 @@
                 TestAutomation 
 			
     <div class="article-content">
-        <p>
+        <p>    
+<b>[Edit Juli 19 2019]</b> Coded UI has been marked deprecated by Microsoft. As stated on the <a href="https://docs.microsoft.com/en-us/visualstudio/test/use-ui-automation-to-test-your-code?view=vs-2019">Microsoft Docs page for Coded UI</a>:<br />
+Coded UI Test for automated UI-driven functional testing is deprecated. Visual Studio 2019 is the last version where Coded UI Test will be available. We recommend using Selenium for testing web apps and Appium with WinAppDriver for testing desktop and UWP apps. Consider Xamarin.UITest for testing iOS and Android apps using the NUnit test framework. <b>[End edit Juli 19 2019]</b></p>
+<p>
 In this blogpost I will be talking on how to create tests using Coded UI and Selenium. 
 </p>
 <p>
@@ -109,15 +112,15 @@ The class containing the test must be decorated with the [CodedUITest] attribute
             <span class="kt">var</span> <span class="n">amount1Edit</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WpfEdit</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">amount1Edit</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WpfEdit</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">AutomationId</span><span class="p">,</span> <span class="s">"txtFirstAmount"</span><span class="p">);</span>
             <span class="n">amount1Edit</span><span class="p">.</span><span class="n">Text</span> <span class="p">=</span> <span class="s">"5"</span><span class="p">;</span>
-
+    
             <span class="kt">var</span> <span class="n">amount2Edit</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WpfEdit</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">amount2Edit</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WpfEdit</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">AutomationId</span><span class="p">,</span> <span class="s">"txtSecondAmount"</span><span class="p">);</span>
             <span class="n">amount2Edit</span><span class="p">.</span><span class="n">Text</span> <span class="p">=</span> <span class="s">"10"</span><span class="p">;</span>
-
+    
             <span class="kt">var</span> <span class="n">buttonPlus</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WpfButton</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">buttonPlus</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WpfEdit</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">AutomationId</span><span class="p">,</span> <span class="s">"btnAdd"</span><span class="p">);</span>
             <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">buttonPlus</span><span class="p">);</span>
-
+    
             <span class="kt">var</span> <span class="n">resultLabel</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WpfText</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">resultLabel</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WpfEdit</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">AutomationId</span><span class="p">,</span> <span class="s">"lblResult"</span><span class="p">);</span>
             <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="s">"15"</span><span class="p">,</span> <span class="n">resultLabel</span><span class="p">.</span><span class="n">DisplayText</span><span class="p">);</span>
@@ -154,17 +157,17 @@ In this example I just boot up and automate the windows calculator.
             <span class="kt">var</span> <span class="n">button5</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WinButton</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">button5</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WinControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="s">"5"</span><span class="p">);</span>
             <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">button5</span><span class="p">);</span>
-
+    
             <span class="kt">var</span> <span class="n">buttonPlus</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WinButton</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">buttonPlus</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WinControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="s">"Add"</span><span class="p">);</span>
             <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">buttonPlus</span><span class="p">);</span>
-
+    
             <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">button5</span><span class="p">);</span>
-
+    
             <span class="kt">var</span> <span class="n">buttonEquals</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WinButton</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">buttonEquals</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WinControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="s">"Equals"</span><span class="p">);</span>
             <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">buttonEquals</span><span class="p">);</span>
-
+    
             <span class="kt">var</span> <span class="n">resultText</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WinText</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
             <span class="n">resultText</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">WinControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="s">"Result"</span><span class="p">);</span>
             <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="s">"10"</span><span class="p">,</span> <span class="n">resultText</span><span class="p">.</span><span class="n">DisplayText</span><span class="p">);</span>
@@ -197,29 +200,29 @@ A webtest is quite similar. Here again the base class for the control is differe
     <span class="k">public</span> <span class="k">void</span> <span class="nf">WebTest_TestForm</span><span class="p">()</span>
     <span class="p">{</span>           
         <span class="n">BrowserWindow</span> <span class="n">browser</span> <span class="p">=</span> <span class="n">BrowserWindow</span><span class="p">.</span><span class="nf">Launch</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">StartUrl</span><span class="p">));</span>
-
+    
         <span class="kt">var</span> <span class="n">nameTextBox</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlEdit</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">nameTextBox</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"Name"</span><span class="p">);</span>
         <span class="n">nameTextBox</span><span class="p">.</span><span class="n">Text</span> <span class="p">=</span> <span class="s">"Some Name"</span><span class="p">;</span>
-
+    
         <span class="kt">var</span> <span class="n">submitButton</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlButton</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">submitButton</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlButton</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Type</span><span class="p">,</span> <span class="s">"submit"</span><span class="p">);</span>
         <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">submitButton</span><span class="p">);</span>
-
+    
         <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlControl</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">header</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"addCustomerHeader"</span><span class="p">);</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
-
+    
         <span class="kt">var</span> <span class="n">nameValidationmessage</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlSpan</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">nameValidationmessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"Name-error"</span><span class="p">);</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsFalse</span><span class="p">(</span><span class="n">nameValidationmessage</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
-
+    
         <span class="kt">var</span> <span class="n">expectedEmailvalidationMessage</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="n">Messages</span><span class="p">.</span><span class="n">FieldRequired</span><span class="p">,</span> <span class="n">Labels</span><span class="p">.</span><span class="n">EmailAddress</span><span class="p">);</span>
         <span class="kt">var</span> <span class="n">emailAddessValidationMessage</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlSpan</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Class</span><span class="p">,</span> <span class="s">"field-validation-error"</span><span class="p">);</span>
         <span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">InnerText</span><span class="p">,</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">,</span> 
-		    <span class="n">PropertyExpressionOperator</span><span class="p">.</span><span class="n">Contains</span><span class="p">);</span>
-
+    	    <span class="n">PropertyExpressionOperator</span><span class="p">.</span><span class="n">Contains</span><span class="p">);</span>
+    
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">InnerText</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">expectedEmailvalidationMessage</span><span class="p">));</span>
     <span class="p">}</span>
@@ -252,7 +255,7 @@ The default unit test framework from Microsoft can consume input files to run yo
     <span class="p">}</span>
 
     <span class="k">protected</span> <span class="kt">string</span> <span class="n">StartUrl</span> <span class="p">=</span> <span class="n">ConfigurationManager</span><span class="p">.</span><span class="n">AppSettings</span><span class="p">[</span><span class="s">"ApplicationStartUrl"</span><span class="p">];</span>
-
+    
     <span class="p">[</span><span class="n">TestMethod</span><span class="p">,</span> <span class="nf">DataSource</span><span class="p">(</span><span class="s">"Browsers"</span><span class="p">)]</span>
     <span class="k">public</span> <span class="k">void</span> <span class="nf">WebTest_TestForm</span><span class="p">()</span>
     <span class="p">{</span>
@@ -263,29 +266,29 @@ The default unit test framework from Microsoft can consume input files to run yo
         <span class="p">}</span>
         <span class="n">BrowserWindow</span><span class="p">.</span><span class="n">CurrentBrowser</span> <span class="p">=</span> <span class="n">browserIdentifier</span><span class="p">;</span>
         <span class="n">BrowserWindow</span> <span class="n">browser</span> <span class="p">=</span> <span class="n">BrowserWindow</span><span class="p">.</span><span class="nf">Launch</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">StartUrl</span><span class="p">));</span>
-
+    
         <span class="kt">var</span> <span class="n">nameTextBox</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlEdit</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">nameTextBox</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"Name"</span><span class="p">);</span>
         <span class="n">nameTextBox</span><span class="p">.</span><span class="n">Text</span> <span class="p">=</span> <span class="s">"Some Name"</span><span class="p">;</span>
-
+    
         <span class="kt">var</span> <span class="n">submitButton</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlButton</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">submitButton</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlButton</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Type</span><span class="p">,</span> <span class="s">"submit"</span><span class="p">);</span>
         <span class="n">Mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="n">submitButton</span><span class="p">);</span>
-
+    
         <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlControl</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">header</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"addCustomerHeader"</span><span class="p">);</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
-
+    
         <span class="kt">var</span> <span class="n">nameValidationmessage</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlSpan</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">nameValidationmessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="s">"Name-error"</span><span class="p">);</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsFalse</span><span class="p">(</span><span class="n">nameValidationmessage</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
-
+    
         <span class="kt">var</span> <span class="n">expectedEmailvalidationMessage</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="n">Messages</span><span class="p">.</span><span class="n">FieldRequired</span><span class="p">,</span> <span class="n">Labels</span><span class="p">.</span><span class="n">EmailAddress</span><span class="p">);</span>
         <span class="kt">var</span> <span class="n">emailAddessValidationMessage</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HtmlSpan</span><span class="p">(</span><span class="n">browser</span><span class="p">);</span>
         <span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">Class</span><span class="p">,</span> <span class="s">"field-validation-error"</span><span class="p">);</span>
         <span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">SearchProperties</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HtmlControl</span><span class="p">.</span><span class="n">PropertyNames</span><span class="p">.</span><span class="n">InnerText</span><span class="p">,</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">,</span> 
-		     <span class="n">PropertyExpressionOperator</span><span class="p">.</span><span class="n">Contains</span><span class="p">);</span>
-
+    	     <span class="n">PropertyExpressionOperator</span><span class="p">.</span><span class="n">Contains</span><span class="p">);</span>
+    
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="nf">TryFind</span><span class="p">());</span>
         <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">emailAddessValidationMessage</span><span class="p">.</span><span class="n">InnerText</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">expectedEmailvalidationMessage</span><span class="p">));</span>
     <span class="p">}</span>
@@ -374,32 +377,32 @@ After setting up, you can use the test method below to check the same functional
             <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">driver</span> <span class="p">=</span> <span class="nf">StartWebdriver</span><span class="p">(</span><span class="n">browserIdentifier</span><span class="p">))</span>
             <span class="p">{</span>
                 <span class="n">driver</span><span class="p">.</span><span class="nf">Navigate</span><span class="p">().</span><span class="nf">GoToUrl</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">StartUrl</span><span class="p">));</span>
-
+    
                 <span class="kt">var</span> <span class="n">nameTextBox</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name"</span><span class="p">));</span>
                 <span class="n">nameTextBox</span><span class="p">.</span><span class="nf">SendKeys</span><span class="p">(</span><span class="s">"Some Name"</span><span class="p">);</span>
-
+    
                 <span class="kt">var</span> <span class="n">submitButton</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">TagName</span><span class="p">(</span><span class="s">"button"</span><span class="p">));</span>
                 <span class="n">submitButton</span><span class="p">.</span><span class="nf">Click</span><span class="p">();</span>
-
+    
                 <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"addCustomerHeader"</span><span class="p">));</span>
                 <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="n">Displayed</span><span class="p">);</span>
-
+    
                 <span class="n">Assert</span><span class="p">.</span><span class="nf">AreEqual</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">Id</span><span class="p">(</span><span class="s">"Name-error"</span><span class="p">)).</span><span class="n">Count</span><span class="p">);</span>
-
+    
                 <span class="kt">var</span> <span class="n">expectedEmailvalidationMessage</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="n">Messages</span><span class="p">.</span><span class="n">FieldRequired</span><span class="p">,</span> <span class="n">Labels</span><span class="p">.</span><span class="n">EmailAddress</span><span class="p">);</span>
                 <span class="kt">var</span> <span class="n">validationMessages</span> <span class="p">=</span> <span class="n">driver</span><span class="p">.</span><span class="nf">FindElements</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">CssSelector</span><span class="p">(</span><span class="s">".field-validation-error"</span><span class="p">));</span>
                 <span class="n">Assert</span><span class="p">.</span><span class="nf">IsTrue</span><span class="p">(</span><span class="n">validationMessages</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">element</span> <span class="p">=&gt;</span> <span class="n">element</span><span class="p">.</span><span class="n">Displayed</span> 
                     <span class="p">&amp;&amp;</span> <span class="nf">ChildSpanContainsExpectedText</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">)));</span>
-
+    
                 <span class="n">driver</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
             <span class="p">}</span>
         <span class="p">}</span>
-
+    
         <span class="k">private</span> <span class="k">static</span> <span class="kt">bool</span> <span class="nf">ChildSpanContainsExpectedText</span><span class="p">(</span><span class="n">IWebElement</span> <span class="n">element</span><span class="p">,</span> <span class="kt">string</span> <span class="n">expectedEmailvalidationMessage</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">return</span> <span class="n">element</span><span class="p">.</span><span class="nf">FindElement</span><span class="p">(</span><span class="n">By</span><span class="p">.</span><span class="nf">TagName</span><span class="p">(</span><span class="s">"span"</span><span class="p">)).</span><span class="n">Text</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">expectedEmailvalidationMessage</span><span class="p">);</span>
         <span class="p">}</span>
-
+    
         <span class="k">private</span> <span class="n">IWebDriver</span> <span class="nf">StartWebdriver</span><span class="p">(</span><span class="kt">string</span> <span class="n">browserIdentifier</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">switch</span> <span class="p">(</span><span class="n">browserIdentifier</span><span class="p">)</span>
