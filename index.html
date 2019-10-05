@@ -5,7 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Samantha Neilen</title>
-    <meta name="description" content="My name is Samantha Neilen, a dutch .Net developer. I have been coding professionaly since 2008. On this blog I will be writing about multiple subjects that ...">
+    <meta name="description" content="My name is Samantha Neilen, a dutch .NET developer. I have been coding professionaly since 2008. On this blog I will be writing about multiple subjects that ...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -42,7 +43,16 @@
         UserInterface
         
         <div class="article-content">
-            <h3 id="bootstrap"><a href="https://getbootstrap.com/">Bootstrap</a></h3>
+            <p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#bootstrap" id="markdown-toc-bootstrap">Bootstrap</a></li>
+  <li><a href="#office-fabric-core" id="markdown-toc-office-fabric-core">Office Fabric (Core)</a></li>
+  <li><a href="#material-design" id="markdown-toc-material-design">Material Design</a></li>
+  <li><a href="#icon-sets" id="markdown-toc-icon-sets">Icon sets</a></li>
+  <li><a href="#further-reading-and-research" id="markdown-toc-further-reading-and-research">Further reading and research</a></li>
+</ul>
+
+<h3 id="bootstrap"><a href="https://getbootstrap.com/">Bootstrap</a></h3>
 
 <p>When creating a new website with .NET Core, the template will already contain the Bootstrap design framework. This framework uses a grid system for creating a layout, has some out-of-the-box styled controls like dropdowns and tabs and has an icon set to use. Next to the default color scheme it has some guidance on how to create your own color schemes. Bootstrap also has an eco-system of templates based on Bootstrap to get inspiration for your own designs.</p>
 
@@ -105,6 +115,16 @@
 
 <p>The older Code Analysis features in Visual Studio (Analyze &gt; Run Code Analysis option) and Project properties (Code Analysis tab) are marked as deprecated and will not be covered in this post.</p>
 
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#visual-studio-built-in-analyzers" id="markdown-toc-visual-studio-built-in-analyzers">Visual Studio built in analyzers</a></li>
+  <li><a href="#sonarlint" id="markdown-toc-sonarlint">SonarLint</a></li>
+  <li><a href="#sonarqube" id="markdown-toc-sonarqube">SonarQube</a></li>
+  <li><a href="#security-code-scan" id="markdown-toc-security-code-scan">Security Code Scan</a></li>
+  <li><a href="#auditnet" id="markdown-toc-auditnet">Audit.NET</a></li>
+  <li><a href="#whitesource-bolt" id="markdown-toc-whitesource-bolt">WhiteSource Bolt</a></li>
+</ul>
+
 <h3 id="visual-studio-built-in-analyzers">Visual Studio built in analyzers</h3>
 
 <p>The Visual Studio compiler (Roslyn) already has some built in analyzer rules. When loading a project (like the <a href="https://github.com/dotnet-architecture/eShopOnWeb">eShopOnWeb</a> reference implementation) and opening a file, the analyzers installed in Visual Studio will analyze the file and show any error, warning or information message in the Visual Studio error list window.</p>
@@ -159,11 +179,11 @@
 
 <h3 id="auditnet">Audit.NET</h3>
 
-<p><a href="https://github.com/OSSIndex/audit.net">Audit.NET</a> is an <a href="https://marketplace.visualstudio.com/items?itemName=VorSecurity.AuditNet">extension for Visual Studio</a> that scans you package.config file and compares the package references against several public databases containing known vulnerabilities. Any issues with packages are shown in the Error window as errors. These errors are not blocking and will not result prevent you from building, debugging or running your solutions.</p>
+<p><a href="https://github.com/OSSIndex/audit.NET">Audit.NET</a> is an <a href="https://marketplace.visualstudio.com/items?itemName=VorSecurity.AuditNet">extension for Visual Studio</a> that scans you package.config file and compares the package references against several public databases containing known vulnerabilities. Any issues with packages are shown in the Error window as errors. These errors are not blocking and will not result prevent you from building, debugging or running your solutions.</p>
 
 <p><img src="/assets/images/20190622/AuditNET-errors.png" alt="[Audit.NET messages]" /></p>
 
-<p>At the time of this writing the extension can analyze .Net Core projects (and the new package references) but it does not seem to properly show the current issues in the error window.</p>
+<p>At the time of this writing the extension can analyze .NET Core projects (and the new package references) but it does not seem to properly show the current issues in the error window.</p>
 
 <h3 id="whitesource-bolt">WhiteSource Bolt</h3>
 
@@ -195,6 +215,15 @@
 <p>The techniques are describe identifying all possible test scenarios for 100% coverage. Analyzing and testing all scenarios (manual or automatic) is usually not possible due to time constraints. You should always try to focus on the parts of the software that are most likely to fail due to complexity and the parts that have the highest cost to the business when they do fail. Your test set should be maintainable and provide good enough coverage so you have enough confidence in your test set. When in doubt collaborate with your team members or QA team to determine the value of a test scenarios and test coverage.</p>
 
 <p>Testing techniques are divided into white and black box techniques. White box techniques look at the actual statements of the source code to determine test cases. Black box techniques use specifications to determine if outputs are correct when providing inputs.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#equivalence-class-and-boundary-partitioning-black-box-technique" id="markdown-toc-equivalence-class-and-boundary-partitioning-black-box-technique">Equivalence class and boundary partitioning (black box technique)</a></li>
+  <li><a href="#statement-and-decision-based-testing-white-box-techniques" id="markdown-toc-statement-and-decision-based-testing-white-box-techniques">Statement and decision based testing (white box techniques)</a></li>
+  <li><a href="#conditional-based-testing-white-box-technique" id="markdown-toc-conditional-based-testing-white-box-technique">Conditional based testing (white box technique)</a></li>
+  <li><a href="#state-transition-testing-black-box-technique" id="markdown-toc-state-transition-testing-black-box-technique">State transition testing (black box technique)</a></li>
+  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
+</ul>
 
 <h3 id="equivalence-class-and-boundary-partitioning-black-box-technique">Equivalence class and boundary partitioning (black box technique)</h3>
 
@@ -288,9 +317,20 @@
 
 <p>Also a great comprehensive resource around Azure Active Directory security is the <a href="https://app.pluralsight.com/library/courses/azure-active-directory-developers/table-of-contents">“Azure Active Directory for Developers” Pluralsight course</a>.</p>
 
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#azure-active-directory-security-for-a-user-using-a-browser-openid-connect" id="markdown-toc-azure-active-directory-security-for-a-user-using-a-browser-openid-connect">Azure Active Directory security for a user using a browser (OpenID Connect)</a></li>
+  <li><a href="#azure-active-directory-security-between-applications-bearer-token-authentication" id="markdown-toc-azure-active-directory-security-between-applications-bearer-token-authentication">Azure Active Directory security between applications (Bearer token authentication)</a></li>
+  <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user">Global filters to ensure all requests need to have an authenticated user</a>    <ul>
+      <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-framework" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-framework">Global filters to ensure all requests need to have an authenticated user (.NET Framework)</a></li>
+      <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-core" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-core">Global filters to ensure all requests need to have an authenticated user (.NET Core)</a></li>
+    </ul>
+  </li>
+</ul>
+
 <h3 id="azure-active-directory-security-for-a-user-using-a-browser-openid-connect">Azure Active Directory security for a user using a browser (OpenID Connect)</h3>
 
-<p>When using Azure Active Directory for a user, the actual authentication process will happen outside of your application via the <a href="https://openid.net/connect/">OpenID Connect authentication scheme</a>. When an unauthenticated user uses a browser to navigate to your application, the middleware code will redirect the user to a Microsoft hosted login page. When the user provides the correct credentials, the login page will redirect the authenticated user back to a specified redirect URL in your application.</p>
+<p>When using Azure Active Directory for a user, the actual authentication process will happen outside of your application via the <a href="https://openid.NET/connect/">OpenID Connect authentication scheme</a>. When an unauthenticated user uses a browser to navigate to your application, the middleware code will redirect the user to a Microsoft hosted login page. When the user provides the correct credentials, the login page will redirect the authenticated user back to a specified redirect URL in your application.</p>
 
 <p>There are already great guides and sample application from Microsoft on how to get started with Azure Active Directory in your web applications.</p>
 
@@ -423,11 +463,18 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <p>The ApiExplorer package is only needed when using the API metadata for each version (like for Swagger documentation).</p>
 
-<p>In this blogpost I will describe how to enable versioning for your API including version support for the Swagger UI documentation. This blogpost will only describe these steps for a .NET Core projects. A complete solution with the code can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>. A .NET Framework example can be found on the <a href="https://github.com/Microsoft/aspnet-api-versioning/tree/master/samples/webapi/SwaggerWebApiSample" title="Microsoft.Asp.Net.WebApi.Versioning github repository for a sample project">Microsoft.Asp.Net.WebApi.Versioning github repository for a sample project</a>. The default Startup classes for the .NET Framework will need to be set up a little different from a project without versioning.</p>
+<p>In this blogpost I will describe how to enable versioning for your API including version support for the Swagger UI documentation. This blogpost will only describe these steps for a .NET Core projects. A complete solution with the code can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>. A .NET Framework example can be found on the <a href="https://github.com/Microsoft/aspnet-api-versioning/tree/master/samples/webapi/SwaggerWebApiSample" title="Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project">Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project</a>. The default Startup classes for the .NET Framework will need to be set up a little different from a project without versioning.</p>
 
 <p>A small disclaimer: I will only show how to get started with versioning. When creating a new version, you should always think about support for previous versions or graceful degradation. Especially when you do database or schema changes. You must be careful not to break a previous version and may have to support multiple classes (or even database objects) with v1, v2 etcetera in their name or namespace if they are still used in a previous supported version. It is always a good idea when building an API to have integration tests. Having regression tests for the previous versions can ensure not breaking those versions while focusing on the new version.</p>
 
-<p>The <a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.Net.WebApi.Versioning github repository wiki">Microsoft.Asp.Net.WebApi.Versioning github repository wiki</a> contains all the documentation for the configuration and possibilities of the Microsoft.Asp.Net.WebApi.Versioning packages.</p>
+<p>The <a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a> contains all the documentation for the configuration and possibilities of the Microsoft.Asp.NET.WebApi.Versioning packages.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#minimal-configuration-for-versioning" id="markdown-toc-minimal-configuration-for-versioning">Minimal configuration for versioning</a></li>
+  <li><a href="#setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package" id="markdown-toc-setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package">Setup versioning for Swagger documentation using the Swashbuckle NuGet package</a></li>
+  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
+</ul>
 
 <h3 id="minimal-configuration-for-versioning">Minimal configuration for versioning</h3>
 
@@ -704,7 +751,7 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <p>For more information on all the features and configuration of the versioning packages visit the link below.</p>
 
-<p><a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.Net.WebApi.Versioning github repository wiki">Microsoft.Asp.Net.WebApi.Versioning github repository wiki</a></p>
+<p><a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a></p>
 
 
         </div>
@@ -720,7 +767,7 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>

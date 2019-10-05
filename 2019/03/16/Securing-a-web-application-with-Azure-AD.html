@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Getting started with web application security using Azure Active Directory</title>
     <meta name="description" content="When developing enterprise applications on the internet you want to limit access to authenticated users only. In this blogpost I will provide links to some g...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -45,9 +46,20 @@
 
 <p>Also a great comprehensive resource around Azure Active Directory security is the <a href="https://app.pluralsight.com/library/courses/azure-active-directory-developers/table-of-contents">“Azure Active Directory for Developers” Pluralsight course</a>.</p>
 
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#azure-active-directory-security-for-a-user-using-a-browser-openid-connect" id="markdown-toc-azure-active-directory-security-for-a-user-using-a-browser-openid-connect">Azure Active Directory security for a user using a browser (OpenID Connect)</a></li>
+  <li><a href="#azure-active-directory-security-between-applications-bearer-token-authentication" id="markdown-toc-azure-active-directory-security-between-applications-bearer-token-authentication">Azure Active Directory security between applications (Bearer token authentication)</a></li>
+  <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user">Global filters to ensure all requests need to have an authenticated user</a>    <ul>
+      <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-framework" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-framework">Global filters to ensure all requests need to have an authenticated user (.NET Framework)</a></li>
+      <li><a href="#global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-core" id="markdown-toc-global-filters-to-ensure-all-requests-need-to-have-an-authenticated-user-net-core">Global filters to ensure all requests need to have an authenticated user (.NET Core)</a></li>
+    </ul>
+  </li>
+</ul>
+
 <h3 id="azure-active-directory-security-for-a-user-using-a-browser-openid-connect">Azure Active Directory security for a user using a browser (OpenID Connect)</h3>
 
-<p>When using Azure Active Directory for a user, the actual authentication process will happen outside of your application via the <a href="https://openid.net/connect/">OpenID Connect authentication scheme</a>. When an unauthenticated user uses a browser to navigate to your application, the middleware code will redirect the user to a Microsoft hosted login page. When the user provides the correct credentials, the login page will redirect the authenticated user back to a specified redirect URL in your application.</p>
+<p>When using Azure Active Directory for a user, the actual authentication process will happen outside of your application via the <a href="https://openid.NET/connect/">OpenID Connect authentication scheme</a>. When an unauthenticated user uses a browser to navigate to your application, the middleware code will redirect the user to a Microsoft hosted login page. When the user provides the correct credentials, the login page will redirect the authenticated user back to a specified redirect URL in your application.</p>
 
 <p>There are already great guides and sample application from Microsoft on how to get started with Azure Active Directory in your web applications.</p>
 
@@ -163,7 +175,7 @@ namespace NetCore.WebApiExample
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>

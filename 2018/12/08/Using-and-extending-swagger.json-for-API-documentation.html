@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Using and extending Swagger.json (OpenApi) for API documentation</title>
     <meta name="description" content="The OpenAPI specification (previously known as the Swagger specification) is used to describe a web API in a JSON format. An example format is shown below. {...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -94,6 +95,13 @@ Below is screenshot of the UI for the Swagger.json as generated for the definiti
 
 <p>In this blogpost I will show you how to how to enable Swagger UI for your .NET Framework and Core web projects. Be aware that in .NET Framework only API Controller methods will be listed. MVC Controllers and actions will not be listed. 
 Next I will show some customizations to the default generated Swagger.json and Swagger UI. For these customizations I will only list the .NET Core code. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#configure-the-generation-of-a-swaggerjson-file" id="markdown-toc-configure-the-generation-of-a-swaggerjson-file">Configure the generation of a Swagger.json file</a></li>
+  <li><a href="#customizing-the-swaggerjson" id="markdown-toc-customizing-the-swaggerjson">Customizing the Swagger.json</a></li>
+  <li><a href="#resources-and-further-documentation" id="markdown-toc-resources-and-further-documentation">Resources and further documentation</a></li>
+</ul>
 
 <h3 id="configure-the-generation-of-a-swaggerjson-file">Configure the generation of a Swagger.json file</h3>
 
@@ -487,7 +495,7 @@ Like specifying a return type. These return types will be listed in definitions 
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>

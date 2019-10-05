@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TLS1.2 not supported by default in older .NET Framework applications</title>
     <meta name="description" content="Lately more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing a HTT...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -43,10 +44,10 @@
 
 <p>If you face the exception “The server forcibly closed the connection” this may be an indication that the ServicePointManager no longer has a compatible protocol to establish a HTTPS connection with the server.</p>
 
-<p>The ServicePointManager is a static class .Net Framework class that will always choose the highest (securest) protocol available from the SecurityProtocol property and will only fall back to a previous version if the highest is not supported.</p>
+<p>The ServicePointManager is a static class .NET Framework class that will always choose the highest (securest) protocol available from the SecurityProtocol property and will only fall back to a previous version if the highest is not supported.</p>
 
 <p>Use a debugger to inspect the ServicePointManager.SecurityProtocol value to see if TLS 1.2 is listed, to determine whether or not this may be the cause of your connection issues. 
-This is usually the cause when using older .Net Framework versions (&lt; 4.7) as is it was with my PowerShell.</p>
+This is usually the cause when using older .NET Framework versions (&lt; 4.7) as is it was with my PowerShell.</p>
 
 <p>In C# use the code below to append the current security protocols with TLS1.2 before establishing the connection to the server or put this code snippet in your Global.asax startup.</p>
 
@@ -70,7 +71,7 @@ This is usually the cause when using older .Net Framework versions (&lt; 4.7) as
 
 <p><a href="https://en.wikipedia.org/wiki/Transport_Layer_Security" title="Wikipedia page for Transport Layer Security" target="_blank">Wikipedia page for Transport Layer Security</a></p>
 
-<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.servicepointmanager.securityprotocol?redirectedfrom=MSDN&amp;view=netframework-4.7.2#System_Net_ServicePointManager_SecurityProtocol" title="Microsoft Docs page on the ServicePointManager.SecurityProtocol property" target="_blank">Microsoft Docs page on the ServicePointManager.SecurityProtocol property</a></p>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.NET.servicepointmanager.securityprotocol?redirectedfrom=MSDN&amp;view=netframework-4.7.2#System_Net_ServicePointManager_SecurityProtocol" title="Microsoft Docs page on the ServicePointManager.SecurityProtocol property" target="_blank">Microsoft Docs page on the ServicePointManager.SecurityProtocol property</a></p>
 
 
     </div>
@@ -83,7 +84,7 @@ This is usually the cause when using older .Net Framework versions (&lt; 4.7) as
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>

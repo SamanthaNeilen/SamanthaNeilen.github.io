@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Static code analysis for your C# projects</title>
     <meta name="description" content="Static code analysis analyzes your source code or compiled dll files for certain patterns or filenames. There are several code analyzers available for C# in ...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -42,6 +43,16 @@
         <p>Static code analysis analyzes your source code or compiled dll files for certain patterns or filenames. There are several code analyzers available for C# in Visual Studio and/or Azure DevOps. These code analyzers improve consistency, prevent technical debt and prevent security issues.</p>
 
 <p>The older Code Analysis features in Visual Studio (Analyze &gt; Run Code Analysis option) and Project properties (Code Analysis tab) are marked as deprecated and will not be covered in this post.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#visual-studio-built-in-analyzers" id="markdown-toc-visual-studio-built-in-analyzers">Visual Studio built in analyzers</a></li>
+  <li><a href="#sonarlint" id="markdown-toc-sonarlint">SonarLint</a></li>
+  <li><a href="#sonarqube" id="markdown-toc-sonarqube">SonarQube</a></li>
+  <li><a href="#security-code-scan" id="markdown-toc-security-code-scan">Security Code Scan</a></li>
+  <li><a href="#auditnet" id="markdown-toc-auditnet">Audit.NET</a></li>
+  <li><a href="#whitesource-bolt" id="markdown-toc-whitesource-bolt">WhiteSource Bolt</a></li>
+</ul>
 
 <h3 id="visual-studio-built-in-analyzers">Visual Studio built in analyzers</h3>
 
@@ -97,11 +108,11 @@
 
 <h3 id="auditnet">Audit.NET</h3>
 
-<p><a href="https://github.com/OSSIndex/audit.net">Audit.NET</a> is an <a href="https://marketplace.visualstudio.com/items?itemName=VorSecurity.AuditNet">extension for Visual Studio</a> that scans you package.config file and compares the package references against several public databases containing known vulnerabilities. Any issues with packages are shown in the Error window as errors. These errors are not blocking and will not result prevent you from building, debugging or running your solutions.</p>
+<p><a href="https://github.com/OSSIndex/audit.NET">Audit.NET</a> is an <a href="https://marketplace.visualstudio.com/items?itemName=VorSecurity.AuditNet">extension for Visual Studio</a> that scans you package.config file and compares the package references against several public databases containing known vulnerabilities. Any issues with packages are shown in the Error window as errors. These errors are not blocking and will not result prevent you from building, debugging or running your solutions.</p>
 
 <p><img src="/assets/images/20190622/AuditNET-errors.png" alt="[Audit.NET messages]" /></p>
 
-<p>At the time of this writing the extension can analyze .Net Core projects (and the new package references) but it does not seem to properly show the current issues in the error window.</p>
+<p>At the time of this writing the extension can analyze .NET Core projects (and the new package references) but it does not seem to properly show the current issues in the error window.</p>
 
 <h3 id="whitesource-bolt">WhiteSource Bolt</h3>
 
@@ -121,7 +132,7 @@
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>

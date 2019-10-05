@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Writing tests for your graphical user interface</title>
     <meta name="description" content="[Edit Juli 19 2019] Coded UI has been marked deprecated by Microsoft. As stated on the Microsoft Docs page for Coded UI: Coded UI Test for automated UI-drive...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/site.css" />
@@ -55,7 +56,17 @@ UI testing is a great method of automating regression tests for your application
 <p>
 Please note that all the sample tests later in this blog post are just simple examples to help you get started. If you wish to build an extensive test library please look into building your own UI test framework using the page-object approach.
 </p>
-<h3>Setting up a Code UI project</h3>
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#setting-up-a-code-ui-project" id="markdown-toc-setting-up-a-code-ui-project">Setting up a Code UI project</a></li>
+  <li><a href="#setting-up-a-simple-windows-application-test-with-coded-ui" id="markdown-toc-setting-up-a-simple-windows-application-test-with-coded-ui">Setting up a simple Windows application test with Coded UI</a></li>
+  <li><a href="#setting-up-a-simple-web-test-with-coded-ui" id="markdown-toc-setting-up-a-simple-web-test-with-coded-ui">Setting up a simple web test with Coded UI</a></li>
+  <li><a href="#running-a-single-test-on-multiple-browsers-using-a-data-source-file" id="markdown-toc-running-a-single-test-on-multiple-browsers-using-a-data-source-file">Running a single test on multiple browsers using a data source file</a></li>
+  <li><a href="#setting-up-a-simple-web-test-with-selenium" id="markdown-toc-setting-up-a-simple-web-test-with-selenium">Setting up a simple web test with Selenium</a></li>
+  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
+</ul>
+
+<h3 id="setting-up-a-code-ui-project">Setting up a Code UI project</h3>
 <p>
 To start with Coded UI make sure you have the Coded UI project type installed. It can be found under test projects.
 <br /><img src="/assets/images/20180114/VisualStudioTestProjects.png" alt="Visual Studio Test Project Templates" />
@@ -86,7 +97,7 @@ And here is an example of inspecting a button in a web page:
 <br /><img src="/assets/images/20180114/WebButtonProperties.png" alt="Web Button Properties" />
 
  </p>
-<h3>Setting up a simple WPF test with Coded UI</h3>
+<p>### Setting up a simple WPF test with Coded UI</p>
 <p>
  A working sample of the code below including the sample application that it is run on can be found in my <a href="https://github.com/SamanthaNeilen/CodedUITestApplication" target="_blank">CodedUITestApplication repository</a>.
  </p>
@@ -134,7 +145,7 @@ As you can see, you find WPF controls by adding search properties. As long as yo
 <p>
 The framework uses certain timeouts when finding controls. These timeouts can be changed by accessing the static PlayBack class.
 </p>
-<h3>Setting up a simple Windows application test with Coded UI</h3>
+<h3 id="setting-up-a-simple-windows-application-test-with-coded-ui">Setting up a simple Windows application test with Coded UI</h3>
 <p>
 In this example I just boot up and automate the windows calculator.
 </p>
@@ -178,7 +189,7 @@ In this example I just boot up and automate the windows calculator.
 <p>
 Notice that the searching and asserting is the same as with the WPF application. Only the base class for defining the type of control is different. 
 </p>
-<h3>Setting up a simple web test with Coded UI</h3>
+<h3 id="setting-up-a-simple-web-test-with-coded-ui">Setting up a simple web test with Coded UI</h3>
 <p>
 A webtest is quite similar. Here again the base class for the control is different. Also, we start a BrowserWindow instead of using ApllicationUnderTest. BrowserWindow is actually inherited from ApplicationUnderTest. You can use BrowserWindow.CurrentBrowser (before calling Launch) to determine the browser to use. The default is "IE" and you can use "Chrome" or "Firefox" to start other browsers. Note that Firefox will not start if your browser version is not supported by the  <a href="https://marketplace.visualstudio.com/items?itemName=AtinBansal.SeleniumcomponentsforCodedUICrossBrowserTesting" target="_blank">Selenium Cross Browser tools (version &gt; 47.0.1, 32 bit)</a>.
 </p>
@@ -228,7 +239,7 @@ A webtest is quite similar. Here again the base class for the control is differe
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
 
-<h3>Running a single test on multiple browsers using a data source file</h3>
+<h3 id="running-a-single-test-on-multiple-browsers-using-a-data-source-file">Running a single test on multiple browsers using a data source file</h3>
 <p>
 <b>[Edit Feb 16 2018]</b> Note that the solution described below works for projects using the Coded UI framework. When using the default Microsoft Test V2 framework, the use of the TestSettings files is deprecated and your tests will stay undiscoverable in the Test Explorer window. See the <a href="https://github.com/SamanthaNeilen/WebDriverTestApplication" target="">WebDriverTestApplication repository</a> for running tests with the MSTest V2 framework. <b>[End edit Feb 16 2018]</b>
 </p>
@@ -330,7 +341,7 @@ Open the test settings file and navigate to deployment. Check the Enable Deploym
 Sometimes Visual Studio will not automatically pick up the TestSettings file. If you get errors about not finding the data source first check if the TestSettings file is selected for use.
 <br /><img src="/assets/images/20180114/VisualStudioTestSettingsMenu.png" alt="Visua Studio Test Settings Menu Option" />
 </p>
-<h3>Setting up a simple web test with Selenium</h3>
+<h3 id="setting-up-a-simple-web-test-with-selenium">Setting up a simple web test with Selenium</h3>
 <p>
 <b>[Edit Feb 16 2018]</b> Note that the solution described below works for projects using the Coded UI framework. When using the default Microsoft Test V2 framework, the use of the TestSettings files is deprecated and your tests will stay undiscoverable in the Test Explorer window. See the <a href="https://github.com/SamanthaNeilen/WebDriverTestApplication" target="">WebDriverTestApplication repository</a> for running tests with the MSTest V2 framework. <b>[End edit Feb 16 2018]</b>
 </p>
@@ -420,7 +431,7 @@ After setting up, you can use the test method below to check the same functional
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
 
-<h3>Resources</h3>
+<h3 id="resources">Resources</h3>
 <p>
 <a href="https://app.pluralsight.com/library/courses/codedui-test-automation/table-of-contents" target="_blank">Pluralsight- Coded UI</a><br />
 <a href="https://app.pluralsight.com/library/courses/selenium/table-of-contents" target="_blank">Pluralsight- Selenium</a><br />
@@ -438,7 +449,7 @@ After setting up, you can use the test method below to check the same functional
                 <aside aria-label="sidebar">
                     <section class="sidebar-section">
     <h3>About me</h3>
-    I am a dutch .Net developer.
+    I am a dutch .NET developer.
     I have been coding professionaly since 2008.
     On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>
