@@ -33,6 +33,131 @@
     
     <article>
         <header class="article-header">
+            <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a>
+        </header>
+        
+        <span>Oct 19, 2019</span> <br />
+        Tags: 
+        JavaScript
+        
+        Stylesheets
+        
+        <div class="article-content">
+            <p>If you start a new .NET Core Razor Pages or MVC project in Visual Studio, it will create a project containing working starter website. However, due to the speed at which 3rd party libraries update, the included version of Bootstrap and jQuery will probably be out of date. There will also be an empty site stylesheet and JavaScript file with their nested minified equivalents. These placeholder files will not update their minified counterparts if you don’t configuring a minifyer.  In this blogpost I explain the tags used for referencing client-side libraries, how to use LibMan for 3rd party client-side libraries and how to use BuildBindlerMinifier to bundle and minify files in your project.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#how-the-script-and-stylesheets-are-referenced-in-the-view-files" id="markdown-toc-how-the-script-and-stylesheets-are-referenced-in-the-view-files">How the script and stylesheets are referenced in the view files.</a></li>
+  <li><a href="#managing-3rd-party-client-side-libraries-with-libman" id="markdown-toc-managing-3rd-party-client-side-libraries-with-libman">Managing 3rd party Client-Side libraries with LibMan</a></li>
+  <li><a href="#how-to-bundle-and-minify-your-custom-scripts" id="markdown-toc-how-to-bundle-and-minify-your-custom-scripts">How to bundle and minify your custom scripts</a></li>
+</ul>
+<h3 id="how-the-script-and-stylesheets-are-referenced-in-the-view-files">How the script and stylesheets are referenced in the view files.</h3>
+
+<p>.NET Core projects use the syntax below in the _Layout.cshtml to include 3rd party client-side libraries.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span> 
+    <span class="nt">&lt;environment</span> <span class="na">include=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"~/lib/bootstrap/dist/css/bootstrap.css"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/environment&gt;</span>
+    <span class="nt">&lt;environment</span> <span class="na">exclude=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"</span>
+              <span class="na">asp-fallback-href=</span><span class="s">"~/lib/bootstrap/dist/css/bootstrap.min.css"</span>
+              <span class="na">asp-fallback-test-class=</span><span class="s">"sr-only"</span> <span class="na">asp-fallback-test-property=</span><span class="s">"position"</span> <span class="na">asp-fallback-test-value=</span><span class="s">"absolute"</span>
+              <span class="na">crossorigin=</span><span class="s">"anonymous"</span>
+              <span class="na">integrity=</span><span class="s">"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/environment&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"~/css/site.css"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+
+    <span class="nt">&lt;environment</span> <span class="na">include=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/lib/jquery/dist/jquery.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/lib/bootstrap/dist/js/bootstrap.bundle.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;/environment&gt;</span>
+    <span class="nt">&lt;environment</span> <span class="na">exclude=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"</span>
+                <span class="na">asp-fallback-src=</span><span class="s">"~/lib/jquery/dist/jquery.min.js"</span>
+                <span class="na">asp-fallback-test=</span><span class="s">"window.jQuery"</span>
+                <span class="na">crossorigin=</span><span class="s">"anonymous"</span>
+                <span class="na">integrity=</span><span class="s">"sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;/script&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"</span>
+                <span class="na">asp-fallback-src=</span><span class="s">"~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"</span>
+                <span class="na">asp-fallback-test=</span><span class="s">"window.jQuery &amp;&amp; window.jQuery.fn &amp;&amp; window.jQuery.fn.modal"</span>
+                <span class="na">crossorigin=</span><span class="s">"anonymous"</span>
+                <span class="na">integrity=</span><span class="s">"sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;/script&gt;</span>
+    <span class="nt">&lt;/environment&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/js/site.js"</span> <span class="na">asp-append-version=</span><span class="s">"true"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+    @RenderSection("Scripts", required: false)
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>Notice the environment elements. When using the development environment, the local unminified files are used. For all other environments it uses a CDN (content delivery network) link to a minified file. The value of “environment” is an environment variable and can be set via the Debug tab in the property pages or by changing the Properties/launchsettings file. For more information on using the environment variable see <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments">the Microsoft docs page on this variable</a>.</p>
+
+<p>The asp-fallback-test attribute will check if a CSS class or JavaScript function for that specific file is available. If the test fails it will load the (local) script file that is defined in the asp-fallback-src attribute. For more information on the benefits of using the CDN and to dive deeper into the fallback attributes see the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/link-tag-helper">Microsoft Docs page for the Link Tag Helper</a>.</p>
+
+<p>The crossorigin attribute is always anonymous unless a cookie or user credentials are required to access the file from the remote location. For more information on this attribute see the <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_settings_attributes">MDN docs page for the crossorigin attribute</a>.</p>
+
+<p>The integrity attribute is probably the most important to know about in regard to upgrading library versions. The value of this attribute is a cryptographic hash that matches the contents for the file referenced file. If the referenced file and the hash no longer match up, the browser will see the file as security compromise and block it. For more information on the integrity attribute see <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity">the MDN docs page for the integrity attribute</a>. This page also has instructions and links for getting the appropriate hash for the files that you are trying to reference and embed in your website.</p>
+
+<h3 id="managing-3rd-party-client-side-libraries-with-libman">Managing 3rd party Client-Side libraries with LibMan</h3>
+
+<p>We used to manage front-end libraries with NuGet or include files manually. These days Visual Studio has support for LibMan for managing client-side libraries from several sources in a .NET Core web project. LibMan already has a basic <a href="https://docs.microsoft.com/en-us/aspnet/core/client-side/libman/libman-vs">“Getting started” guide on Microsoft Docs</a> so I will not be repeating the information contained there in this post.</p>
+
+<p>If you need packages from NPM that have multiple dependencies, then LibMan (unpkg/jsDelivr source) will not crawl those dependencies and include any  of them. My advice is to just use NPM in that case. Also try to stick to a single client-side package manager when possible for your project. This way the team won’t get confused about how the libraries are managed.</p>
+
+<p>LibMan is good at managing libraries without extra dependencies from cdnjs or other CDNs. If you use the “Add -&gt; Client-Side library” option you get a visual editor however the “Manage Client-Side libraries” option will just open the libman.json file. This is something I found confusing at first. It turns out that the code completion in the JSON file provides the same experience as the visual editor. (It does however take a few minutes for the intellisense to fetch the results from the provider. So, if you’re not seeing the list of libraries or files, just wait a minute.)</p>
+
+<p>A few screenshots comparing the visual editor vs the libman.json experience:</p>
+
+<p><img src="/assets/images/20191019/ComparingLibrarySearch.png" alt="[Comparing library search]" /></p>
+
+<p><img src="/assets/images/20191019/ComparingVersionSearch.png" alt="[Comparing version search]" /></p>
+
+<p><img src="/assets/images/20191019/ComparingFileSelection.png" alt="[Comparing file selection]" /></p>
+
+<p>LibMan has out-of-the-box support for several sources but you can use the filesystem source if you need a file from another source. See the screenshot below for an example. The filesystem fallback only works with a complete url to a single file in the library input field. (It will not work with wildcards or a directory).</p>
+
+<p><img src="/assets/images/20191019/FilesystemSearch.png" alt="[Visual editor filesystem search]" /></p>
+
+<h3 id="how-to-bundle-and-minify-your-custom-scripts">How to bundle and minify your custom scripts</h3>
+
+<p>When you create new .NET Core web project in Visual Studio, an empty site.css and site.js with their minified counterparts will be added. When editing the unminified files, the minified files will not be updated with the changes made. You will need to configure an additional minification tool to enable the minification.</p>
+
+<p>I use the <a href="https://github.com/madskristensen/BundlerMinifier">BuildBundlerMinifier</a> NuGet package to bundle and minify my own custom script and stylesheet files. To use it, first install the BuildBindlerMinifier package and add a  bundleconfig.json to the project containing the JSON contents as shown below to enable minification of the default files. Note that the input files parameter is an array, so you could provide multiple input files to bundle into one output file.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"outputFileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wwwroot/css/site.min.css"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"inputFiles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"wwwroot/css/site.css"</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"outputFileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wwwroot/js/site.min.js"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"inputFiles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"wwwroot/js/site.js"</span><span class="w"> </span><span class="p">],</span><span class="w">
+    </span><span class="s2">"minify"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"renameLocals"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"sourceMap"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you build the project, the minified files will be updated with the contents from the input files.</p>
+
+<p>For information on how to configure bundling and minification for .NET Core, see <a href="https://docs.microsoft.com/en-us/aspnet/core/client-side/bundling-and-minification">the Microsoft docs pages on bundling and minification</a>.</p>
+
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
             <a href="/2019/08/10/Front-end-design.html">Front-end design</a>
         </header>
         
@@ -439,324 +564,6 @@ namespace NetCore.WebApiExample
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2019/01/19/Web-API-versioning-using-the-NuGet-packages-from-Microsoft.html">Web API versioning using the NuGet packages from Microsoft</a>
-        </header>
-        
-        <span>Jan 19, 2019</span> <br />
-        Tags: 
-        WebAPI
-        
-        <div class="article-content">
-            <p>When developing a Web API, using versioning can greatly improve flexibility for production deployments. Even if the contract for your API changes, current users will not be impacted if you keep supporting the version they currently use. Using versioning will allow the consumers of your service more time to upgrade to newer versions and it will at the same time allow you to deploy on demand. At some point in time certain versions should of course be deprecated and finally removed to improve maintainability of the software.</p>
-
-<p>Microsoft has several NuGet packages available to easily configure versioning in your API:</p>
-
-<p><strong>NET core:</strong> <br />
-Microsoft.AspNetCore.Mvc.Versioning<br />
-Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer</p>
-
-<p><strong>NET framework:</strong><br />
-Microsoft.AspNet.WebApi.Versioning<br />
-Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
-
-<p>The ApiExplorer package is only needed when using the API metadata for each version (like for Swagger documentation).</p>
-
-<p>In this blogpost I will describe how to enable versioning for your API including version support for the Swagger UI documentation. This blogpost will only describe these steps for a .NET Core projects. A complete solution with the code can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>. A .NET Framework example can be found on the <a href="https://github.com/Microsoft/aspnet-api-versioning/tree/master/samples/webapi/SwaggerWebApiSample" title="Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project">Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project</a>. The default Startup classes for the .NET Framework will need to be set up a little different from a project without versioning.</p>
-
-<p>A small disclaimer: I will only show how to get started with versioning. When creating a new version, you should always think about support for previous versions or graceful degradation. Especially when you do database or schema changes. You must be careful not to break a previous version and may have to support multiple classes (or even database objects) with v1, v2 etcetera in their name or namespace if they are still used in a previous supported version. It is always a good idea when building an API to have integration tests. Having regression tests for the previous versions can ensure not breaking those versions while focusing on the new version.</p>
-
-<p>The <a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a> contains all the documentation for the configuration and possibilities of the Microsoft.Asp.NET.WebApi.Versioning packages.</p>
-
-<p><strong>Table of contents:</strong></p>
-<ul id="markdown-toc">
-  <li><a href="#minimal-configuration-for-versioning" id="markdown-toc-minimal-configuration-for-versioning">Minimal configuration for versioning</a></li>
-  <li><a href="#setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package" id="markdown-toc-setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package">Setup versioning for Swagger documentation using the Swashbuckle NuGet package</a></li>
-  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
-</ul>
-
-<h3 id="minimal-configuration-for-versioning">Minimal configuration for versioning</h3>
-
-<p>First install the NuGet package Microsoft.AspNetCore.Mvc.Versioning in your web project.</p>
-
-<p>Next go to the Startup.cs file and add the code shown below to enable the default versioning by querystring.</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">//other code omitted</span>
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddApiVersioning</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span>
-    <span class="p">{</span>
-        <span class="n">o</span><span class="p">.</span><span class="n">AssumeDefaultVersionWhenUnspecified</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
-        <span class="n">o</span><span class="p">.</span><span class="n">DefaultApiVersion</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ApiVersion</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
-    <span class="p">});</span>
-    
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">().</span><span class="nf">SetCompatibilityVersion</span><span class="p">(</span><span class="n">CompatibilityVersion</span><span class="p">.</span><span class="n">Version_2_1</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>This is all you need to enable versioning. The 2 options set in this snippet ensure that your current API will act as version 1.0 and that everyone that calls your service without a version querystring receives that version. (If you use Swagger documentation via Swashbuckle you will need extra configuration to ensure Swagger file generation keeps working. See the “Setup versioning for Swagger documentation using the Swashbuckle NuGet package” section later in this post.)</p>
-
-<p>In my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a> I have an API endpoint on the route <span class="link-style">https://localhost:44314/api/routingapi/123</span>. After adding the versioning configuration, this API is still available and responding to that address. Next I can call <span class="link-style">https://localhost:44314/api/routingapi/123?api-version=2.0</span>. Since I did not define a version 2.0 (at this point), I will receive the automatic error generated from the versioning package as shown below.</p>
-
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="s2">"error"</span><span class="p">:{</span><span class="s2">"code"</span><span class="p">:</span><span class="s2">"UnsupportedApiVersion"</span><span class="p">,</span><span class="s2">"message"</span><span class="p">:</span><span class="s2">"The HTTP resource that matches the request URI 'https://localhost:44314/api/routingapi/123' does not support the API version '2.0'."</span><span class="p">,</span><span class="s2">"innerError"</span><span class="p">:</span><span class="kc">null</span><span class="p">}}</span><span class="w">
-</span></code></pre></div></div>
-
-<p>I can now add a RouteApiV2Controller with a new interface to listen to the same url on V2. The code for the RouteApiController (that’s listening to version 1.0 or no ApiVersion specification) and RouteApiV2Controller are shown below.</p>
-
-<p>RouteApiController:</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
-<span class="p">{</span>
-    <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"api/[controller]"</span><span class="p">)]</span>
-    <span class="p">[</span><span class="n">ApiController</span><span class="p">]</span>
-    <span class="p">[</span><span class="nf">ApiVersion</span><span class="p">(</span><span class="s">"1.0"</span><span class="p">)]</span>
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">RoutingApiController</span> <span class="p">:</span> <span class="n">ControllerBase</span>
-    <span class="p">{</span>
-        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
-        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>
-        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">) (DEFAULT VERSION)"</span><span class="p">);</span>
-        <span class="p">}</span>        
-
-        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
-        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{validPositiveInt32Value:range(0,2147483647)}"</span><span class="p">)]</span>
-        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">int</span> <span class="n">validPositiveInt32Value</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">validPositiveInt32Value</span><span class="p">)}</span><span class="s"> (DEFAULT VERSION)"</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
-        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{inputMatchingRegex:regex(^(.+)(_)(.+)$)}"</span><span class="p">)]</span>
-        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">GetByRegex</span><span class="p">(</span><span class="kt">string</span> <span class="n">inputMatchingtRegexForValueContainingUnderscore</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">inputMatchingtRegexForValueContainingUnderscore</span><span class="p">)}</span><span class="s">) (DEFAULT VERSION)"</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>RouteApiV2Controller:</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
-<span class="p">{</span>
-    <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"api/RoutingApi"</span><span class="p">)]</span>
-    <span class="p">[</span><span class="n">ApiController</span><span class="p">]</span>
-    <span class="p">[</span><span class="nf">ApiVersion</span><span class="p">(</span><span class="s">"2.0"</span><span class="p">)]</span>    
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">RoutingApiV2Controller</span> <span class="p">:</span> <span class="n">ControllerBase</span>
-    <span class="p">{</span>
-        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
-        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{email:Email}"</span><span class="p">)]</span>
-        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">string</span> <span class="n">email</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">email</span><span class="p">)}</span><span class="s">) (V2)"</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
-        <span class="p">[</span><span class="nf">Route</span><span class="p">(</span><span class="s">"{validPositiveInt32Value:range(0,2147483647)}"</span><span class="p">)]</span>
-        <span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Get</span><span class="p">(</span><span class="kt">int</span> <span class="n">validPositiveInt32Value</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="s">$"Route is RoutingApiController.Get(</span><span class="p">{</span><span class="k">nameof</span><span class="p">(</span><span class="n">validPositiveInt32Value</span><span class="p">)}</span><span class="s"> (V2)"</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>Notice that the V2 controller maps to the same path but is missing an endpoint.</p>
-
-<p>When calling <span class="link-style">https://localhost:44314/api/routingapi/123</span> the service will return the default version. When calling <span class="link-style">https://localhost:44314/api/routingapi/123?api-version=2.0</span> it will execute and return the RouteApiV2Controller version.</p>
-
-<p>When calling the missing method in v2 <span class="link-style">https://localhost:44314/api/routingapi/some_value?api-version=2.0</span> it will return the error shown below. When calling <span class="link-style">https://localhost:44314/api/routingapi/some_value</span> or <span class="link-style">https://localhost:44314/api/routingapi/some_value?api-version=1.0</span> it will just return the old method for version 1.</p>
-
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-    </span><span class="s2">"error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UnsupportedApiVersion"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The HTTP resource that matches the request URI 
-            'https://localhost:44314/api/routingapi/some_value' does not support the API version '2.0'."</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"innerError"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package">Setup versioning for Swagger documentation using the Swashbuckle NuGet package</h3>
-
-<p>If you use Swagger UI via the Swashbuckle package as online documentation for your API you can set up descriptions per version. This will allow you to write release notes per versions and will give consumers documentation that represents actual the version the API that they currently use even if newer versions are available.</p>
-
-<p>If you are using Swagger, the generation of the Swagger file will fail if routes are available for multiple versions and you have changed the configuration for Swagger to support multiple versions.</p>
-
-<p>First install the Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer NuGet package.</p>
-
-<p>Next configure the Swagger configuration for versions in the ConfigureService method in the StartUp.cs as shown below to change the generation of a Swagger.json file per version.</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">// other code omitted 	</span>
-
-    <span class="c1">// ConfigureSwagger(services) contains the services.AddSwaggerGen(options =&gt; {...}) code see method definition below</span>
-    <span class="nf">ConfigureSwagger</span><span class="p">(</span><span class="n">services</span><span class="p">);</span>
- 
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddApiVersioning</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span>
-        <span class="p">{</span>
-	        <span class="n">o</span><span class="p">.</span><span class="n">AssumeDefaultVersionWhenUnspecified</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
-	        <span class="n">o</span><span class="p">.</span><span class="n">DefaultApiVersion</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ApiVersion</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
-        <span class="p">});</span>
-
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddVersionedApiExplorer</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">GroupNameFormat</span> <span class="p">=</span> <span class="s">"'V'VVV"</span><span class="p">);</span>
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">().</span><span class="nf">SetCompatibilityVersion</span><span class="p">(</span><span class="n">CompatibilityVersion</span><span class="p">.</span><span class="n">Version_2_1</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">private</span> <span class="k">void</span> <span class="nf">ConfigureSwagger</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
-    <span class="p">{</span>
-        <span class="kt">var</span> <span class="n">provider</span> <span class="p">=</span> <span class="n">services</span><span class="p">.</span><span class="nf">BuildServiceProvider</span><span class="p">()</span>
-            <span class="p">.</span><span class="n">GetRequiredService</span><span class="p">&lt;</span><span class="n">IApiVersionDescriptionProvider</span><span class="p">&gt;();</span>
-        
-        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">apiVersion</span> <span class="k">in</span> <span class="n">provider</span><span class="p">.</span><span class="n">ApiVersionDescriptions</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="nf">ConfigureVersionedDescription</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">apiVersion</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="kt">var</span> <span class="n">xmlCommentsPath</span> <span class="p">=</span> <span class="n">Assembly</span><span class="p">.</span><span class="nf">GetExecutingAssembly</span><span class="p">()</span>
-            <span class="p">.</span><span class="n">Location</span><span class="p">.</span><span class="nf">Replace</span><span class="p">(</span><span class="s">"dll"</span><span class="p">,</span> <span class="s">"xml"</span><span class="p">);</span>
-        <span class="n">options</span><span class="p">.</span><span class="nf">IncludeXmlComments</span><span class="p">(</span><span class="n">xmlCommentsPath</span><span class="p">);</span>
-
-        <span class="n">options</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerOperationFilter</span><span class="p">&gt;();</span>
-        <span class="n">options</span><span class="p">.</span><span class="n">DocumentFilter</span><span class="p">&lt;</span><span class="n">SwaggerDocumentFilter</span><span class="p">&gt;();</span>
-    <span class="p">});</span>
-<span class="p">}</span>
-        
-<span class="k">private</span> <span class="k">void</span> <span class="nf">ConfigureVersionedDescription</span><span class="p">(</span><span class="n">SwaggerGenOptions</span> <span class="n">options</span><span class="p">,</span> <span class="n">ApiVersionDescription</span> <span class="n">apiVersion</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">//In production code you should probably use a seperate class to get these version descriptions</span>
-    <span class="kt">var</span> <span class="n">dictionairy</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;</span> 
-    <span class="p">{</span>
-        <span class="p">{</span> <span class="s">"1.0"</span><span class="p">,</span> <span class="s">"This API features several endpoints showing different API features for API version V1"</span> <span class="p">},</span>
-        <span class="p">{</span> <span class="s">"2.0"</span><span class="p">,</span> <span class="s">"This API features several endpoints showing different API features for API version V2"</span> <span class="p">}</span>
-    <span class="p">};</span>
-
-    <span class="kt">var</span> <span class="n">apiVersionName</span> <span class="p">=</span> <span class="n">apiVersion</span><span class="p">.</span><span class="n">ApiVersion</span><span class="p">.</span><span class="nf">ToString</span><span class="p">();</span>
-    <span class="n">options</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="n">apiVersion</span><span class="p">.</span><span class="n">GroupName</span><span class="p">,</span>
-        <span class="k">new</span> <span class="nf">Info</span><span class="p">()</span>
-        <span class="p">{</span>
-            <span class="n">Title</span> <span class="p">=</span> <span class="s">"NetCore.WebApiExample"</span><span class="p">,</span>
-            <span class="n">Version</span> <span class="p">=</span> <span class="n">apiVersionName</span><span class="p">,</span>
-            <span class="n">Description</span> <span class="p">=</span> <span class="n">dictionairy</span><span class="p">[</span><span class="n">apiVersionName</span><span class="p">]</span> 
-        <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>Finally change the Configure method as shown below to enable the version selection in Swagger UI.(Notice the IApiVersionDescriptionProvider provider parameter is added to the method signature.)</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span> <span class="n">IHostingEnvironment</span> <span class="n">env</span><span class="p">,</span> <span class="n">IApiVersionDescriptionProvider</span> <span class="n">provider</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">// other code omitted </span>
-
-    <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
-
-    <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
-    <span class="p">{</span>
-        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">apiVersion</span> <span class="k">in</span> <span class="n">provider</span><span class="p">.</span><span class="n">ApiVersionDescriptions</span>
-                 <span class="p">.</span><span class="nf">OrderBy</span><span class="p">(</span><span class="n">version</span> <span class="p">=&gt;</span> <span class="n">version</span><span class="p">.</span><span class="nf">ToString</span><span class="p">()))</span>
-        <span class="p">{</span>
-            <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerEndpoint</span><span class="p">(</span>
-                <span class="s">$"/swagger/</span><span class="p">{</span><span class="n">apiVersion</span><span class="p">.</span><span class="n">GroupName</span><span class="p">}</span><span class="s">/swagger.json"</span><span class="p">,</span>
-                    <span class="s">$"NetCore.WebApiExample </span><span class="p">{</span><span class="n">apiVersion</span><span class="p">.</span><span class="n">GroupName</span><span class="p">}</span><span class="s">"</span>
-            <span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">});</span>
-
-    <span class="n">app</span><span class="p">.</span><span class="nf">UseMvc</span><span class="p">(</span><span class="n">routes</span> <span class="p">=&gt;</span>
-    <span class="p">{</span>
-        <span class="n">routes</span><span class="p">.</span><span class="nf">MapRoute</span><span class="p">(</span>
-            <span class="n">name</span><span class="p">:</span> <span class="s">"default"</span><span class="p">,</span>
-            <span class="n">template</span><span class="p">:</span> <span class="s">"{controller=Home}/{action=Index}/{id?}"</span><span class="p">);</span>
-    <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>After this configuration the Swagger UI will have the different versions available in the dropdown to the left. Also notice that the version 2 will only contain the routes and models defined for version 2.</p>
-
-<p>When versioning is enabled the api-version query parameter input field will be automatically added to all methods in Swagger UI.</p>
-
-<p>Swagger UI for version 1:</p>
-
-<p><img src="/assets/images/20190119/SwaggerUIWebAPIV1.png" alt="[Swagger UI API Version 1]" /></p>
-
-<p>Swagger UI for version 2:</p>
-
-<p><img src="/assets/images/20190119/SwaggerUIWebAPIV2.png" alt="[Swagger UI API Version 2]" /></p>
-
-<p>If you use document or operation filters (as explained in <a href="https://samanthaneilen.github.io/2018/12/08/Using-and-extending-swagger.json-for-API-documentation.html" title="my blogpost regarding Swagger/OpenApi/Swashbuckle constraints">my previous post</a>) you may get some unintended behavior when they are executed based on strings and names that overlap over versions.</p>
-
-<p>For example look at the document filter below:</p>
-
-<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.SwaggerGen</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare.Swagger</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerDocumentFilter</span> <span class="p">:</span> <span class="n">IDocumentFilter</span>
-    <span class="p">{</span>
-        <span class="k">private</span> <span class="k">readonly</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Tag</span><span class="p">&gt;</span> <span class="n">_tags</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Tag</span><span class="p">&gt;</span>
-        <span class="p">{</span>
-            <span class="k">new</span> <span class="n">Tag</span> <span class="p">{</span> 
-            	<span class="n">Name</span> <span class="p">=</span> <span class="s">"RoutingApi"</span><span class="p">,</span> 
-            	<span class="n">Description</span> <span class="p">=</span> <span class="s">"This is a description for the api routes"</span> 
-            <span class="p">}</span>
-        <span class="p">};</span>
-
-        <span class="k">public</span> <span class="k">void</span> <span class="nf">Apply</span><span class="p">(</span><span class="n">SwaggerDocument</span> <span class="n">swaggerDoc</span><span class="p">,</span> <span class="n">DocumentFilterContext</span> <span class="n">context</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">swaggerDoc</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
-            <span class="p">{</span>
-                <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">swaggerDoc</span><span class="p">));</span>
-            <span class="p">}</span>
-
-            <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Tags</span> <span class="p">=</span> <span class="nf">GetFilteredTagDefinitions</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
-            <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span> <span class="p">=</span> <span class="nf">GetSortedPaths</span><span class="p">(</span><span class="n">swaggerDoc</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="k">private</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Tag</span><span class="p">&gt;</span> <span class="nf">GetFilteredTagDefinitions</span><span class="p">(</span><span class="n">DocumentFilterContext</span> <span class="n">context</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="c1">//Filtering ensures route for tag is present</span>
-            <span class="kt">var</span> <span class="n">currentGroupNames</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">ApiDescriptions</span>
-            	<span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">description</span> <span class="p">=&gt;</span> <span class="n">description</span><span class="p">.</span><span class="n">GroupName</span><span class="p">);</span>
-            <span class="k">return</span> <span class="n">_tags</span><span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">tag</span> <span class="p">=&gt;</span> <span class="n">currentGroupNames</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">Name</span><span class="p">)).</span><span class="nf">ToList</span><span class="p">();</span>
-        <span class="p">}</span>
-
-        <span class="k">private</span> <span class="n">IDictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">PathItem</span><span class="p">&gt;</span> <span class="nf">GetSortedPaths</span><span class="p">(</span>
-        	<span class="n">SwaggerDocument</span> <span class="n">swaggerDoc</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span><span class="p">.</span><span class="nf">OrderBy</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">)</span>
-            	<span class="p">.</span><span class="nf">ToDictionary</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>The Tag list contains a hardcoded name here that is not present when switching to version 2 of the API (see the screenshots of Swagger UI earlier in the post). If you do not use the context.ApiDescriptions to check there are routes for the group it will end up adding an empty group for version 2. If I did not add the filtering the Swagger UI page for version 2 would have looked as shown in the screenshot below.</p>
-
-<p><img src="/assets/images/20190119/SwaggerUIEmptyTag.png" alt="[Swagger UI with empty Tag]" /></p>
-
-<h3 id="resources">Resources</h3>
-
-<p>For more information on all the features and configuration of the versioning packages visit the link below.</p>
-
-<p><a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a></p>
-
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -781,6 +588,9 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/08/10/Front-end-design.html">Front-end design</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -791,9 +601,6 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/01/19/Web-API-versioning-using-the-NuGet-packages-from-Microsoft.html">Web API versioning using the NuGet packages from Microsoft</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
