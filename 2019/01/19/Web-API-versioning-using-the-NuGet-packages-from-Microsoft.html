@@ -38,7 +38,7 @@
                 WebAPI 
 			
     <div class="article-content">
-        <p>When developing a Web API, using versioning can greatly improve flexibility for production deployments. Even if the contract for your API changes, current users will not be impacted if you keep supporting the version they currently use. Using versioning will allow the consumers of your service more time to upgrade to newer versions and it will at the same time allow you to deploy on demand. At some point in time certain versions should of course be deprecated and finally removed to improve maintainability of the software.</p>
+        <p>When developing a Web API, using versioning can greatly improve flexibility for production deployments. Even if the contract for your API changes, current users will not be impacted if you keep supporting the version they currently use. Using versioning will allow the consumers of your service more time to upgrade to newer versions and it will at the same time allow you to deploy on-demand. At some point in time, certain versions should, of course, be deprecated and finally removed to improve the maintainability of the software.</p>
 
 <p>Microsoft has several NuGet packages available to easily configure versioning in your API:</p>
 
@@ -52,24 +52,24 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <p>The ApiExplorer package is only needed when using the API metadata for each version (like for Swagger documentation).</p>
 
-<p>In this blogpost I will describe how to enable versioning for your API including version support for the Swagger UI documentation. This blogpost will only describe these steps for a .NET Core projects. A complete solution with the code can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>. A .NET Framework example can be found on the <a href="https://github.com/Microsoft/aspnet-api-versioning/tree/master/samples/webapi/SwaggerWebApiSample" title="Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project">Microsoft.Asp.NET.WebApi.Versioning github repository for a sample project</a>. The default Startup classes for the .NET Framework will need to be set up a little different from a project without versioning.</p>
+<p>In this blog post, I will describe how to enable versioning for your API including version support for the Swagger UI documentation. This blogpost will only describe these steps for .NET Core projects. A complete solution with the code can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>. A .NET Framework example can be found on the <a href="https://github.com/Microsoft/aspnet-api-versioning/tree/master/samples/webapi/SwaggerWebApiSample" title="Microsoft.Asp.NET.WebApi.Versioning GitHub repository for a sample project">Microsoft.Asp.NET.WebApi.Versioning GitHub repository for a sample project</a>. The default Startup classes for the .NET Framework will need to be set up a little different from a project without versioning.</p>
 
-<p>A small disclaimer: I will only show how to get started with versioning. When creating a new version, you should always think about support for previous versions or graceful degradation. Especially when you do database or schema changes. You must be careful not to break a previous version and may have to support multiple classes (or even database objects) with v1, v2 etcetera in their name or namespace if they are still used in a previous supported version. It is always a good idea when building an API to have integration tests. Having regression tests for the previous versions can ensure not breaking those versions while focusing on the new version.</p>
+<p>A small disclaimer: I will only show how to get started with versioning. When creating a new version, you should always think about support for previous versions or graceful degradation. Especially when you do database or schema changes. You must be careful not to break a previous version and may have to support multiple classes (or even database objects) with v1, v2 etcetera in their name or namespace if they are still used in a previously supported version. It is always a good idea when building an API to have integration tests. Having regression tests for the previous versions can ensure not breaking those versions while focusing on the new version.</p>
 
-<p>The <a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a> contains all the documentation for the configuration and possibilities of the Microsoft.Asp.NET.WebApi.Versioning packages.</p>
+<p>The <a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning GitHub repository wiki">Microsoft.Asp.NET.WebApi.Versioning GitHub repository wiki</a> contains all the documentation for the configuration and possibilities of the Microsoft.Asp.NET.WebApi.Versioning packages.</p>
 
 <p><strong>Table of contents:</strong></p>
 <ul id="markdown-toc">
-  <li><a href="#minimal-configuration-for-versioning" id="markdown-toc-minimal-configuration-for-versioning">Minimal configuration for versioning</a></li>
+  <li><a href="#the-minimal-configuration-for-versioning" id="markdown-toc-the-minimal-configuration-for-versioning">The minimal configuration for versioning</a></li>
   <li><a href="#setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package" id="markdown-toc-setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package">Setup versioning for Swagger documentation using the Swashbuckle NuGet package</a></li>
   <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
 </ul>
 
-<h3 id="minimal-configuration-for-versioning">Minimal configuration for versioning</h3>
+<h3 id="the-minimal-configuration-for-versioning">The minimal configuration for versioning</h3>
 
-<p>First install the NuGet package Microsoft.AspNetCore.Mvc.Versioning in your web project.</p>
+<p>First, install the NuGet package Microsoft.AspNetCore.Mvc.Versioning in your web project.</p>
 
-<p>Next go to the Startup.cs file and add the code shown below to enable the default versioning by querystring.</p>
+<p>Next, go to the Startup.cs file and add the code shown below to enable the default versioning by the query string.</p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
 <span class="p">{</span>
@@ -84,14 +84,14 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>This is all you need to enable versioning. The 2 options set in this snippet ensure that your current API will act as version 1.0 and that everyone that calls your service without a version querystring receives that version. (If you use Swagger documentation via Swashbuckle you will need extra configuration to ensure Swagger file generation keeps working. See the “Setup versioning for Swagger documentation using the Swashbuckle NuGet package” section later in this post.)</p>
+<p>This is all you need to enable versioning. The 2 options set in this snippet ensure that your current API will act as version 1.0 and that everyone that calls your service without a version query string receives that version. (If you use Swagger documentation via Swashbuckle you will need extra configuration to ensure Swagger file generation keeps working. See the “Setup versioning for Swagger documentation using the Swashbuckle NuGet package” section later in this post.)</p>
 
-<p>In my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a> I have an API endpoint on the route <span class="link-style">https://localhost:44314/api/routingapi/123</span>. After adding the versioning configuration, this API is still available and responding to that address. Next I can call <span class="link-style">https://localhost:44314/api/routingapi/123?api-version=2.0</span>. Since I did not define a version 2.0 (at this point), I will receive the automatic error generated from the versioning package as shown below.</p>
+<p>In my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository ">WebApiExamples GitHub repository</a>, I have an API endpoint on the route <span class="link-style">https://localhost:44314/api/routingapi/123</span>. After adding the versioning configuration, this API is still available and responding to that address. Next, I can call <span class="link-style">https://localhost:44314/api/routingapi/123?api-version=2.0</span>. Since I did not define a version 2.0 (at this point), I will receive the automatic error generated from the versioning package as shown below.</p>
 
 <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="s2">"error"</span><span class="p">:{</span><span class="s2">"code"</span><span class="p">:</span><span class="s2">"UnsupportedApiVersion"</span><span class="p">,</span><span class="s2">"message"</span><span class="p">:</span><span class="s2">"The HTTP resource that matches the request URI 'https://localhost:44314/api/routingapi/123' does not support the API version '2.0'."</span><span class="p">,</span><span class="s2">"innerError"</span><span class="p">:</span><span class="kc">null</span><span class="p">}}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>I can now add a RouteApiV2Controller with a new interface to listen to the same url on V2. The code for the RouteApiController (that’s listening to version 1.0 or no ApiVersion specification) and RouteApiV2Controller are shown below.</p>
+<p>I can now add a RouteApiV2Controller with a new interface to listen to the same URL on V2. The code for the RouteApiController (that’s listening to version 1.0 or no ApiVersion specification) and RouteApiV2Controller are shown below.</p>
 
 <p>RouteApiController:</p>
 
@@ -174,13 +174,13 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <h3 id="setup-versioning-for-swagger-documentation-using-the-swashbuckle-nuget-package">Setup versioning for Swagger documentation using the Swashbuckle NuGet package</h3>
 
-<p>If you use Swagger UI via the Swashbuckle package as online documentation for your API you can set up descriptions per version. This will allow you to write release notes per versions and will give consumers documentation that represents actual the version the API that they currently use even if newer versions are available.</p>
+<p>If you use Swagger UI via the Swashbuckle package as online documentation for your API you can set up descriptions per version. This will allow you to write release notes per version and will give consumers documentation that represents the actual version of the API that they currently use even if newer versions are available.</p>
 
 <p>If you are using Swagger, the generation of the Swagger file will fail if routes are available for multiple versions and you have changed the configuration for Swagger to support multiple versions.</p>
 
-<p>First install the Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer NuGet package.</p>
+<p>First, install the Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer NuGet package.</p>
 
-<p>Next configure the Swagger configuration for versions in the ConfigureService method in the StartUp.cs as shown below to change the generation of a Swagger.json file per version.</p>
+<p>Next, configure the Swagger configuration for versions in the ConfigureService method in the StartUp.cs as shown below to change the generation of a Swagger.json file per version.</p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
 <span class="p">{</span>
@@ -271,7 +271,7 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <p>After this configuration the Swagger UI will have the different versions available in the dropdown to the left. Also notice that the version 2 will only contain the routes and models defined for version 2.</p>
 
-<p>When versioning is enabled the api-version query parameter input field will be automatically added to all methods in Swagger UI.</p>
+<p>When versioning is enabled the API-version query parameter input field will be automatically added to all methods in Swagger UI.</p>
 
 <p>Swagger UI for version 1:</p>
 
@@ -283,7 +283,7 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <p>If you use document or operation filters (as explained in <a href="https://samanthaneilen.github.io/2018/12/08/Using-and-extending-swagger.json-for-API-documentation.html" title="my blogpost regarding Swagger/OpenApi/Swashbuckle constraints">my previous post</a>) you may get some unintended behavior when they are executed based on strings and names that overlap over versions.</p>
 
-<p>For example look at the document filter below:</p>
+<p>For example, look at the document filter below:</p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.SwaggerGen</span><span class="p">;</span>
@@ -338,9 +338,9 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 
 <h3 id="resources">Resources</h3>
 
-<p>For more information on all the features and configuration of the versioning packages visit the link below.</p>
+<p>For more information on all the features and configuration of the versioning packages, visit the link below.</p>
 
-<p><a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning github repository wiki">Microsoft.Asp.NET.WebApi.Versioning github repository wiki</a></p>
+<p><a href="https://github.com/Microsoft/aspnet-api-versioning/wiki" title="Microsoft.Asp.NET.WebApi.Versioning GitHub repository wiki">Microsoft.Asp.NET.WebApi.Versioning GitHub repository wiki</a></p>
 
 
     </div>
@@ -354,8 +354,8 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
                     <section class="sidebar-section">
     <h3>About me</h3>
     I am a dutch .NET developer.
-    I have been coding professionaly since 2008.
-    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>
 <section class="sidebar-section">
     <h3>Social</h3>
@@ -367,6 +367,9 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -377,9 +380,6 @@ Microsoft.AspNet. WebApi.Versioning.ApiExplorer</p>
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>

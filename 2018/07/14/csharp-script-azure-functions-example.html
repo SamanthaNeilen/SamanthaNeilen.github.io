@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>C# script Azure Functions example</title>
-    <meta name="description" content="C# Script Functions are another way to create Azure Functions based on C#. These functions rely on C# script files (.csx) that are not compiled into a dll. T...">
+    <meta name="description" content="C# Script Functions are another way to create Azure Functions based on C#. These functions rely on C# script files (.csx) that are not compiled into a DLL. T...">
     <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
@@ -41,7 +41,7 @@
 			
     <div class="article-content">
         <p>
-C# Script Functions are another way to create Azure Functions based on C#. These functions rely on C# script files (.csx) that are not compiled into a dll. There is no Visual Studio project to create or manage the files. You use command line tooling for development and the advantage is that you can directly edit and run your code in the Azure portal. Script Functions can be developed and tested locally before uploading the Function to the portal.
+C# Script Functions are another way to create Azure Functions based on C#. These functions rely on C# script files (.csx) that are not compiled into a DLL. There is no Visual Studio project to create or manage the files. You use command line tooling for development and the advantage is that you can directly edit and run your code in the Azure portal. Script Functions can be developed and tested locally before uploading the Function to the portal.
 </p>
 <p>
 If you would like to know more about compiled Azure Functions using the Visual Studio Azure Function project see <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my last blog post about pre-compiled Azure Functions</a>.
@@ -49,16 +49,19 @@ If you would like to know more about compiled Azure Functions using the Visual S
 <p>
 All the code from the following example can also be found in my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureFunctionExample repository</a> in the solution folder AzureFunction_CsharpScript.
 </p>
+
 <p><strong>Table of contents:</strong></p>
 <ul id="markdown-toc">
-  <li><a href="#create-an-c-script-azure-function" id="markdown-toc-create-an-c-script-azure-function">Create an C# script Azure Function</a></li>
-  <li><a href="#referencing-a-custom-dll-in-an-azure-script-function" id="markdown-toc-referencing-a-custom-dll-in-an-azure-script-function">Referencing a custom dll in an Azure Script Function</a></li>
+  <li><a href="#create-a-c-script-azure-function" id="markdown-toc-create-a-c-script-azure-function">Create a C# script Azure Function</a></li>
+  <li><a href="#referencing-a-custom-dll-in-an-azure-script-function" id="markdown-toc-referencing-a-custom-dll-in-an-azure-script-function">Referencing a custom DLL in an Azure Script Function</a></li>
+  <li><a href="#run-and-test-in-the-azure-portal" id="markdown-toc-run-and-test-in-the-azure-portal">Run and test in the Azure Portal</a></li>
 </ul>
-<h3 id="create-an-c-script-azure-function">Create an C# script Azure Function</h3>
+<h3 id="create-a-c-script-azure-function">Create a C# script Azure Function</h3>
 <p>
-Install npm and nodejs from the <a href="https://nodejs.org/en/" target="_blank">nodejs website</a>.
+Install npm and Node.Js from the <a href="https://nodejs.org/en/" target="_blank">Node.Js website</a>.
 </p>
-<p>Install npm azure functions core tools using the command line. I used the v1 (.NET Framework version) using the command below.</p>
+
+<p>Install npm Azure Functions core tools using the command line. I used the v1 (.NET Framework version) using the command below.</p>
 
 <figure class="highlight"><pre><code class="language-shell" data-lang="shell">npm install <span class="nt">-g</span> azure-functions-core-tools</code></pre></figure>
 
@@ -67,41 +70,41 @@ Append the package name with @core to install de v2 version. The v2 version is b
 </p>
 <p>
 The files for the azure-function-core-tools are placed in %USER%\AppData\Roaming\npm on your disk.
-In the npm\node_modules\azure-functions-core-tools\bin folder you can view all the Framework and Nuget package dlls available for use at runtime.
+In the npm\node_modules\azure-functions-core-tools\bin folder, you can view all the Framework and Nuget package DLLs available for use at runtime.
 </p>
 <p>
-If you wish to check the version of the downloaded package and the commands for the command line use the command below. For command usage see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local" target="blank">Microsoft Docs guidance on developing C# script Functions</a>.
+If you wish to check the version of the downloaded package and the commands for the command line use the command below. For command usage, see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local" target="blank">Microsoft Docs guidance on developing C# script Functions</a>.
 </p>
 
 <figure class="highlight"><pre><code class="language-shell" data-lang="shell">func version</code></pre></figure>
 
 <p>
-Next I want to create a queue Function based on the C# language. Go to the directory where you want to create the function folder. And use the command below.
+Next, I want to create a queue Function based on the C# language. Go to the directory where you want to create the function folder. And use the command below.
 </p>
 
 <figure class="highlight"><pre><code class="language-shell" data-lang="shell">func init AzureFunctionsExample.ScriptV1</code></pre></figure>
 
 <p><br /><img src="/assets/images/20180714/cmd.exe-func-init.png" alt="cmd.exe func init" /></p>
 <p>
-This command will create a “project folder” for an empty Azure Function project with the host and localsettings json files. (These are used the same as for compiled Azure Functions. See <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my previous blogpost about compiled Azure Functions</a> or the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#local-settings-file" target="blank">Microsoft Docs pages</a> for more information) 
+This command will create a “project folder” for an empty Azure Function project with the host and localsettings JSON files. (These are used the same as for compiled Azure Functions. See <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my previous blogpost about compiled Azure Functions</a> or the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#local-settings-file" target="blank">Microsoft Docs pages</a> for more information) 
 </p>
 <p>
-Also note the .vscode folder. Seeing as there is no .csproj file, the support for regular visual studio is limited. You can manage in the files in Visual Studio by creating a class library or solution folders and importing the files but with Visual Studio code you can just open the folder to manage the files. 
+Also, note the .vscode folder. Seeing as there is no .csproj file, the support for regular Visual Studio is limited. You can manage in the files in Visual Studio by creating a class library or solution folders and importing the files but with Visual Studio Code, you can just open the folder to manage the files. 
 </p>
 <p>
 Visual Studio Code also has a plugin for Azure Functions that adds an Azure tab to your project. It also has options to create Azure Functions but these will create compiled Functions. When opening the folder you may be prompted to optimize the Function but as it was not created using the plugin, it will not optimize. 
 </p>
 <p>
-I used regular Visual Studio with a class library and the regular command line shell for all the next steps because I did not have time to look into debugging script Azure Functions with Visual Studio Code. NPM installs a 32 bit version of the CLI and Visual Studio Code does not seem to support debugging the 32bit process.
+I used regular Visual Studio with a class library and the regular command-line shell for all the next steps because I did not have time to look into debugging script Azure Functions with Visual Studio Code. NPM installs a 32-bit version of the CLI and Visual Studio Code does not seem to support debugging the 32-bit process.
 </p>
 <p>
-The command below is used to create the files for the actual Function in a sub folder of the Azure Function app folder.
+The command below is used to create the files for the actual Function in a subfolder of the Azure Function app folder.
 </p>
 
 <figure class="highlight"><pre><code class="language-shell" data-lang="shell">func new</code></pre></figure>
 
 <p>
-Next navigate the selection options to create a C# Queue trigger and provide a name for the Function.
+Next, navigate the selection options to create a C# Queue trigger and provide a name for the Function.
 <br /><img src="/assets/images/20180714/cmd.exe-func-new.png" alt="cmd.exe func new" />
 </p>
 <p>
@@ -136,10 +139,10 @@ For easy management just include all the files inside your Visual Studio class l
 <br /><img src="/assets/images/20180714/solutionexplorer-AzureFunctionsExample.ScriptV1.png" alt="Solution Explorer AzureFunctionsExample.ScriptV1" />
 </p>
 <p>
-Now we have all the files needed for the Function but first we need to configure connection to the Azure Storage emulator before we can start it up. 
+Now we have all the files needed for the Function but first, we need to configure the connection to the Azure Storage emulator before we can start it up. 
 </p>
 <p>
-Go into local.settings.json in the root folder and change the Values node with content below to configure the storage connections:
+Go into local.settings.json in the root folder and change the Values node with the content below to configure the storage connections:
 </p>
 
 <figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="s2">"Values"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -148,7 +151,7 @@ Go into local.settings.json in the root folder and change the Values node with c
   </span><span class="p">}</span></code></pre></figure>
 
 <p>
-Next go to the function.json and set the connection to the AzureWebJobsStorage and the queueName to messages. If you do not have the Azure Storage Emulator set up yet view the Azure Storage Emulator paragraph in <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my post about compiled Azure Functions</a>. 
+Next, go to the function.json and set the connection to the AzureWebJobsStorage and the queueName to messages. If you do not have the Azure Storage Emulator set up yet view the Azure Storage Emulator paragraph in <a href="https://samanthaneilen.github.io/2018/06/08/pre-compiled-azure-functions-example.html" target="_blank">my post about compiled Azure Functions</a>. 
 </p>
 
 <figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
@@ -179,17 +182,17 @@ When specifying debug mode you also get the JIT Debugger window. Just choose the
 <br /><img src="/assets/images/20180714/jit-debug-window.png" alt="jit debug window" />
 </p>
 <p>
-You will also get the application in break mode tab in your Visual Studio instance. Just click the continue execution option. (You may have to press enter in the command shell to continue loading of the Function if it was interrupted by the debug prompt before it will pick up any messages)
+You will also get the application in the break mode tab in your Visual Studio instance. Just click the continue execution option. (You may have to press enter in the command shell to continue loading of the Function if it was interrupted by the debug prompt before it will pick up any messages)
 </p>
 <p>
 Next set a breakpoint in the run.csx and use the QueueMessage project from my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureFunctionExamples</a> repository or any other method to post a message to the queue and see the debugger in the run.asxc.
 <br /><img src="/assets/images/20180714/debug-run.csx.png" alt="debug run.csx" />
 </p>
 <p>
-For extra methods and simple Azure Functions you could create all extra classes and methods in the run.csx file. For better maintainability create classes and extra code into separate C# script (.csx) files or in a separate class library compiled to a dll. You can also reference the .NET assemblies that are available for the Azure Function runtime. For more information see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp" target="_blank"> Microsoft Docs on C# script</a>.
+For extra methods and simple Azure Functions, you could create all extra classes and methods in the run.csx file. For better maintainability create classes and extra code into separate C# script (.csx) files or in a separate class library compiled to a DLL. You can also reference the .NET assemblies that are available for the Azure Function runtime. For more information see the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp" target="_blank"> Microsoft Docs on C# script</a>.
 </p>
 <p>
-In my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureExampleFunctions repository</a>. I’ve created a QueueMessage.csx class used to convert the input queuemessage from a string to an object instance. First add a QueueMessage.csx file to the ProcessMessageScriptV1 Function folder with the definition of the QueueMessage class (as shown below). There are no using or namespace definitions in the file. Next use the #load “QueueMessage.csx” statement in the run.csx to complete the reference binding and change the type for myQueueItem from string to QueueMessage. The code should look as below:
+In my <a href="https://github.com/SamanthaNeilen/AzureFunctionExamples" target="_blank">AzureExampleFunctions repository</a>. I’ve created a QueueMessage.csx class used to convert the input queue message from a string to an object instance. First, add a QueueMessage.csx file to the ProcessMessageScriptV1 Function folder with the definition of the QueueMessage class (as shown below). There are no using or namespace definitions in the file. Next use the #load “QueueMessage.csx” statement in the run.csx to complete the reference binding and change the type for myQueueItem from string to QueueMessage. The code should look as below:
 </p>
 <p>
 QueueMessage.csx:
@@ -201,7 +204,7 @@ QueueMessage.csx:
     <span class="k">public</span> <span class="kt">int</span> <span class="n">Order</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
     <span class="k">public</span> <span class="kt">int</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">}</span>
- 
+
 <span class="k">internal</span> <span class="k">enum</span> <span class="n">OrderStatus</span>
 <span class="p">{</span>
     <span class="n">Concept</span> <span class="p">=</span> <span class="m">0</span><span class="p">,</span>
@@ -212,25 +215,26 @@ QueueMessage.csx:
 <p>run.csx:</p>
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="err">#</span><span class="n">load</span> <span class="s">"QueueMessage.csx"</span>
- 
+
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
- 
+
 <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">(</span><span class="n">QueueMessage</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"C# Queue trigger function processed: </span><span class="p">{</span><span class="n">myQueueItem</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
 <span class="p">}</span></code></pre></figure>
 
 <p>
-Next run the Function to see that the myQueueItem is successfully converted from a Json message to a QueueMessage instance.
+Next run the Function to see that the myQueueItem is successfully converted from a JSON message to a QueueMessage instance.
 <br /><img src="/assets/images/20180714/debug-run.csx-queuemessage-object.png" alt="debug run.csx queuemessage object" />
 </p>
 <p>
-Extra .csx files can also be placed in subfolders. If QueueMessage.csx was placed in a subfolder called helpers you would use the #load “helpers/QueueMessage.csx” in the run.csx file. The #load statement contains a relative path to the file. See the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp#reusing-csx-code" target="_blank"> Microsoft Docs on C# script</a> for examples.
+Extra .csx files can also be placed in subfolders. If QueueMessage.csx was placed in a subfolder called helpers you would use the #load “helpers/QueueMessage.csx” in the run.csx file. The #load statement contains a relative path to the file. See the <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp#reusing-csx-code" target="_blank"> Microsoft Docs on C# script</a> for an example.
 </p>
-<h3 id="referencing-a-custom-dll-in-an-azure-script-function">Referencing a custom dll in an Azure Script Function</h3>
+
+<h3 id="referencing-a-custom-dll-in-an-azure-script-function">Referencing a custom DLL in an Azure Script Function</h3>
 <p>
-Next I can create separate dll containing a Data Access Layer and reference it in my script Function. 
-(I couldn’t use the AzureFunctionExample.ResourceAccess library already present in the solution because I got exceptions that EntityFrameworkCore was not supported on the platflorm). Just add a .NET Framework library with the Entity Framework package and define the data access classes below:
+Next, I can create separate DLL containing a Data Access Layer and reference it in my script Function. 
+(I couldn’t use the AzureFunctionExample.ResourceAccess library already present in the solution because I got exceptions that EntityFrameworkCore was not supported on the platform). Just add a .NET Framework library with the Entity Framework package and define the data access classes below:
 </p>
 <p>Order class:</p>
 
@@ -246,9 +250,9 @@ Next I can create separate dll containing a Data Access Layer and reference it i
         <span class="k">public</span> <span class="kt">int</span> <span class="n">PersonID</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
         
         <span class="k">public</span> <span class="kt">string</span> <span class="n">OrderNumber</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="kt">int</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="k">virtual</span> <span class="n">Person</span> <span class="n">Person</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
@@ -269,13 +273,13 @@ Next I can create separate dll containing a Data Access Layer and reference it i
 
         <span class="p">[</span><span class="n">Key</span><span class="p">]</span>
         <span class="k">public</span> <span class="kt">int</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="kt">string</span> <span class="n">FirstName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="kt">string</span> <span class="n">LastName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="kt">string</span> <span class="n">Email</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
-
+    
         <span class="k">public</span> <span class="k">virtual</span> <span class="n">ICollection</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;</span> <span class="n">Orders</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
@@ -284,7 +288,7 @@ Next I can create separate dll containing a Data Access Layer and reference it i
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Data.Entity</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Data.Entity.ModelConfiguration.Conventions</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">OrderDbContext</span> <span class="p">:</span> <span class="n">DbContext</span>
@@ -296,23 +300,23 @@ Next I can create separate dll containing a Data Access Layer and reference it i
         
         <span class="k">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">Person</span><span class="p">&gt;</span> <span class="n">Person</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
         <span class="k">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">Order</span><span class="p">&gt;</span> <span class="n">Order</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
- 
+     
         <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnModelCreating</span><span class="p">(</span><span class="n">DbModelBuilder</span> <span class="n">modelBuilder</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="n">modelBuilder</span><span class="p">.</span><span class="n">Entity</span><span class="p">&lt;</span><span class="n">Person</span><span class="p">&gt;()</span>
                <span class="p">.</span><span class="nf">HasMany</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Orders</span><span class="p">)</span>
                <span class="p">.</span><span class="nf">WithRequired</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">Person</span><span class="p">)</span>
                <span class="p">.</span><span class="nf">HasForeignKey</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span><span class="p">);</span>
- 
+     
             <span class="n">modelBuilder</span><span class="p">.</span><span class="n">Conventions</span><span class="p">.</span><span class="n">Remove</span><span class="p">&lt;</span><span class="n">PluralizingTableNameConvention</span><span class="p">&gt;();</span>
- 
+     
             <span class="k">base</span><span class="p">.</span><span class="nf">OnModelCreating</span><span class="p">(</span><span class="n">modelBuilder</span><span class="p">);</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
 
 <p>
-To use this library in my Function I need to get the output dll and the extra references to a location accessible to the script Function. So first I copy all the dll from the bin output to an empty references folder using a post-build event.
+To use this library in my Function I need to get the output DLL and the extra references to a location accessible to the script Function. So first I copy all the DLL from the bin output to an empty references folder using a post-build event.
 </p>
 
 <figure class="highlight"><pre><code class="language-shell" data-lang="shell">xcopy /Y/S <span class="k">$(</span>TargetDir<span class="k">)$(</span>ProjectName<span class="k">)</span>.dll <span class="k">$(</span>SolutionDir<span class="k">)</span>AzureFunctionsExample.ScriptV1<span class="se">\P</span>rocessMessageScriptV1<span class="se">\r</span>eferences
@@ -321,10 +325,10 @@ xcopy /Y/S <span class="k">$(</span>TargetDir<span class="k">)</span>EntityFrame
 
 <p><br /><img src="/assets/images/20180714/project-properties-xcopy-build-event.png" alt="project properties xcopy build event" /></p>
 <p>
-This will ensure that after every build all the necessary dll will be in that folder (even though I excluded that folder from source control with the .gitignore file) 
+This will ensure that after every build all the necessary DLL will be in that folder (even though I excluded that folder from source control with the .gitignore file) 
 </p>
 <p>
-Next add all the necessary settings to the local.settings.json. so it looks like below:
+Next, add all the necessary settings to the local.settings.json. so it looks like below:
 </p>
 
 <figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
@@ -337,41 +341,40 @@ Next add all the necessary settings to the local.settings.json. so it looks like
 </span><span class="p">}</span></code></pre></figure>
 
 <p>
-And finally I add the reference and using statements to the run.csv and change the implementation of the run.csx to the code shown below:
+And finally, add the reference and using statements to the run.csv and change the implementation of the run.csx to the code shown below:
 </p>
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="err">#</span><span class="n">load</span> <span class="s">"QueueMessage.csx"</span>
 <span class="err">#</span><span class="n">r</span> <span class="s">"references/EntityFramework.dll"</span>
 <span class="err">#</span><span class="n">r</span> <span class="s">"references/AzureFunctionsExample.ScriptResources.dll"</span>
 <span class="err">#</span><span class="n">r</span> <span class="s">"netstandard"</span>
- 
+
 <span class="k">using</span> <span class="nn">AzureFunctionsExample.ScriptResources.DataAccess</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Data.Entity</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
- 
+
 <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Run</span><span class="p">(</span><span class="n">QueueMessage</span> <span class="n">myQueueItem</span><span class="p">,</span> <span class="n">TraceWriter</span> <span class="n">log</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="kt">var</span> <span class="n">dbContext</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OrderDbContext</span><span class="p">(</span><span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"OrderDbConnection"</span><span class="p">));</span>
     <span class="kt">var</span> <span class="n">order</span> <span class="p">=</span> <span class="n">dbContext</span><span class="p">.</span><span class="n">Order</span><span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Person</span><span class="p">).</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Order</span> <span class="p">&amp;&amp;</span> <span class="n">o</span><span class="p">.</span><span class="n">PersonID</span> <span class="p">==</span> <span class="n">myQueueItem</span><span class="p">.</span><span class="n">Person</span><span class="p">);</span>
- 
+
     <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">order</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">FirstName</span><span class="p">}</span><span class="s"> </span><span class="p">{</span><span class="n">order</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">LastName</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
     <span class="n">log</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">$"C# Queue trigger function processed: </span><span class="p">{</span><span class="n">myQueueItem</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
 <span class="p">}</span></code></pre></figure>
 
 <p>
-By referencing dll or just using .csx files you can create pretty complex C# script Functions with the same functionality as a pre-compiled Azure Function.
-### Run and test in the Azure Portal
+By referencing DLL or just using .csx files you can create pretty complex C# script Functions with the same functionality as a pre-compiled Azure Function.
+</p>
+<h3 id="run-and-test-in-the-azure-portal">Run and test in the Azure Portal</h3>
 <p>
-The command line offers a login and publish command to push your local Function app to a hosted Azure Function App. Another way you can upload the files is via de App Service Editor under the Platform Settings for an Azure App Function in the Azure Portal. Remember to copy the key value pairs from the appsettings.json to the Application Settings page of the Azure Function App in the portal.
+The command line offers a login and publish-command to push your local Function app to a hosted Azure Function App. Another way you can upload the files is via de App Service Editor under the Platform Settings for an Azure App Function in the Azure Portal. Remember to copy the key-value pairs from the appsettings.json to the Application Settings page of the Azure Function App in the portal.
 </p>
 <p>
-With script Functions you can view the files and edit and run the Function directly in the portal with the editor show below.
+With script Functions, you can view the files and edit and run the Function directly in the portal with the editor shown below.
 <br /><img src="/assets/images/20180714/azure-function-app-editor.png" alt="azure-function-app-editor" />
 </p>
 
- 
-</p>
 
     </div>
     
@@ -384,8 +387,8 @@ With script Functions you can view the files and edit and run the Function direc
                     <section class="sidebar-section">
     <h3>About me</h3>
     I am a dutch .NET developer.
-    I have been coding professionaly since 2008.
-    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>
 <section class="sidebar-section">
     <h3>Social</h3>
@@ -397,6 +400,9 @@ With script Functions you can view the files and edit and run the Function direc
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -407,9 +413,6 @@ With script Functions you can view the files and edit and run the Function direc
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>

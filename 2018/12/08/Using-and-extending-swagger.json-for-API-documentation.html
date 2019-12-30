@@ -88,13 +88,13 @@
 
 <p>The file describes the endpoint, parameters and returned JSON format for a web API. If you plan to develop an API that will be used by other teams or even 3rd parties outside your company then consider setting up Swagger with the Swashbuckle library for your .NET web API project.</p>
 
-<p>The Swashbuckle library will automaticaly generate the Swagger specification file for your API and even generate a front-end page called Swagger UI. This UI will offer a nice visual overview for your API and also allow user to make calls to the API with build in input validation and view results fot the calls.
-Below is screenshot of the UI for the Swagger.json as generated for the definition listed above.</p>
+<p>The Swashbuckle library will automatically generate the Swagger specification file for your API and even generate a front-end page called Swagger UI. This UI will offer a nice visual overview for your API and also allow a user to make calls to the API with built-in input validation and view results for the calls.
+Below is a screenshot of the UI for the Swagger.json as generated for the definition listed above.</p>
 
 <p><br /><img src="/assets/images/20181208/SwaggerUIExample.png" alt="Swagger UI Example" /></p>
 
-<p>In this blogpost I will show you how to how to enable Swagger UI for your .NET Framework and Core web projects. Be aware that in .NET Framework only API Controller methods will be listed. MVC Controllers and actions will not be listed. 
-Next I will show some customizations to the default generated Swagger.json and Swagger UI. For these customizations I will only list the .NET Core code. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
+<p>In this blog post, I will show you how to how to enable Swagger UI for your .NET Framework and Core web projects. Be aware that in .NET Framework only API Controller methods will be listed. MVC Controllers and actions will not be listed. 
+Next, I will show some customizations to the default generated Swagger.json and Swagger UI. For these customizations, I will only list the .NET Core code. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
 
 <p><strong>Table of contents:</strong></p>
 <ul id="markdown-toc">
@@ -107,12 +107,12 @@ Next I will show some customizations to the default generated Swagger.json and S
 
 <p>To get started install the Swashbuckle NuGet package for a .NET Framework project or Swashbuckle.AspNetCore for a .NET Core project.</p>
 
-<p>Next set up the pipeline in the Startup files to enable the generation of a Swagger.json file and the Swagger UI frontend based on the default meta data for your API.</p>
+<p>Next set up the pipeline in the Startup files to enable the generation of a Swagger.json file and the Swagger UI frontend based on the default metadata for your API.</p>
 
-<p>For .NET Core, go to the Startup.cs file and add the configuration show below.</p>
+<p>For .NET Core, go to the Startup.cs file and add the configuration shown below.</p>
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Swashbuckle.AspNetCore.Swagger</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">NetCore.WebApiExample</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">Startup</span>
@@ -121,7 +121,7 @@ Next I will show some customizations to the default generated Swagger.json and S
         <span class="p">{</span> 
             <span class="c1">//other configuration omitted...
 </span>
- 
+
             <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
             <span class="p">{</span>
                 <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
@@ -132,17 +132,17 @@ Next I will show some customizations to the default generated Swagger.json and S
                         <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
                     <span class="p">});</span>
             <span class="p">});</span>
- 
+     
             <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">().</span><span class="nf">SetCompatibilityVersion</span><span class="p">(</span><span class="n">CompatibilityVersion</span><span class="p">.</span><span class="n">Version_2_1</span><span class="p">);</span>
         <span class="p">}</span>
- 
+     
         <span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span> <span class="n">IHostingEnvironment</span> <span class="n">env</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="c1">//other configuration omitted...
 </span>
- 
+     
             <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
- 
+     
             <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
             <span class="p">{</span>
                 <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerEndpoint</span><span class="p">(</span>
@@ -164,15 +164,15 @@ Next I will show some customizations to the default generated Swagger.json and S
 The Swagger UI will also have a link to the actual JSON file on which the UI was generated (<span class="link-style">/swagger/v1/swagger.json</span>). The v1 part of this path is the value of the first parameter (name) of the SwaggerDoc method called in the StartUp.cs file.</p>
 
 <p>For a .NET Framework project, a file with a lot of commented out code (App_Start\SwaggerConfig.cs) was added when you installed the NuGet package. This file already enables a default generated Swagger.json endpoint and the Swagger UI frontend.
-An example of this file without all the default comments is show below.</p>
+An example of this file without all the default comments is shown below.</p>
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">WebActivatorEx</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">Framework.WebApiExample</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">Swashbuckle.Application</span><span class="p">;</span>
- 
+
 <span class="na">[assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]</span>
- 
+
 <span class="k">namespace</span> <span class="nn">Framework.WebApiExample</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerConfig</span>
@@ -180,7 +180,7 @@ An example of this file without all the default comments is show below.</p>
         <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Register</span><span class="p">()</span>
         <span class="p">{</span>
             <span class="kt">var</span> <span class="n">thisAssembly</span> <span class="p">=</span> <span class="k">typeof</span><span class="p">(</span><span class="n">SwaggerConfig</span><span class="p">).</span><span class="n">Assembly</span><span class="p">;</span>
- 
+
             <span class="n">GlobalConfiguration</span><span class="p">.</span><span class="n">Configuration</span>
                 <span class="p">.</span><span class="nf">EnableSwagger</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="n">c</span><span class="p">.</span><span class="nf">SingleApiVersion</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span> <span class="s">"Framework.WebApiExample"</span><span class="p">);</span> <span class="p">})</span>
                 <span class="p">.</span><span class="nf">EnableSwaggerUi</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">});</span>
@@ -195,9 +195,9 @@ Again, be aware that in .NET Framework only API Controller methods will be liste
 
 <p>All the code shown in this paragraph will only show the .NET Core implementation. The .NET Framework code and configuration will be slightly different. The .NET Framework (as well as the .NET Core) implementation can be found in my <a href="https://github.com/SamanthaNeilen/WebApiExamples" title=" WebApiExamples GitHub repository " target="_blank">WebApiExamples GitHub repository</a>.</p>
 
-<p>The default generated Swagger.json uses the metadata for your classes and methods to generate the specification file. Information such as authentication or other custom headers are not known in the Swagger UI.</p>
+<p>The default generated Swagger.json uses the metadata for your classes and methods to generate the specification file. Information, such as authentication or other custom headers, are not known in the Swagger UI.</p>
 
-<p>You can modify the parameters listed for yourr operation with an extension called an OperationFilter.</p>
+<p>You can modify the parameters listed for your operation with an extension called OperationFilter.</p>
 
 <p>An example of an OperationFilter to add a custom header is listed below. You could use for example use this technique to add the Authorization header input fields for secured API.
 OperationFilters are run for every discovered method. You can examine the current OperationContext and add conditional logic such as the IsMethodWithHttpGetAttribute function as shown in the example below.</p>
@@ -208,7 +208,7 @@ OperationFilters are run for every discovered method. You can examine the curren
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare.Swagger</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerOperationFilter</span> <span class="p">:</span> <span class="n">IOperationFilter</span>
@@ -226,7 +226,7 @@ OperationFilters are run for every discovered method. You can examine the curren
                     <span class="n">Required</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
                     <span class="n">Type</span> <span class="p">=</span> <span class="s">"string"</span>
                 <span class="p">});</span>
- 
+
                 <span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">NonBodyParameter</span>
                 <span class="p">{</span>
                     <span class="n">Name</span> <span class="p">=</span> <span class="s">"Authorization"</span><span class="p">,</span>
@@ -237,25 +237,25 @@ OperationFilters are run for every discovered method. You can examine the curren
                 <span class="p">});</span>
             <span class="p">}</span>
         <span class="p">}</span>
- 
+     
         <span class="k">private</span> <span class="k">void</span> <span class="nf">ValidateInput</span><span class="p">(</span><span class="n">Operation</span> <span class="n">operation</span><span class="p">,</span> <span class="n">OperationFilterContext</span> <span class="n">context</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">operation</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
             <span class="p">{</span>
                 <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">operation</span><span class="p">));</span>
             <span class="p">}</span>
- 
+     
             <span class="k">if</span> <span class="p">(</span><span class="n">context</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
             <span class="p">{</span>
                 <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">context</span><span class="p">));</span>
             <span class="p">}</span>
- 
+     
             <span class="k">if</span> <span class="p">(</span><span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
             <span class="p">{</span>
                 <span class="n">operation</span><span class="p">.</span><span class="n">Parameters</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">IParameter</span><span class="p">&gt;();</span>
             <span class="p">}</span>
         <span class="p">}</span>
- 
+     
         <span class="k">private</span> <span class="kt">bool</span> <span class="nf">IsMethodWithHttpGetAttribute</span><span class="p">(</span><span class="n">OperationFilterContext</span> <span class="n">context</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">return</span> <span class="n">context</span><span class="p">.</span><span class="n">MethodInfo</span><span class="p">.</span><span class="n">CustomAttributes</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="n">attribute</span> <span class="p">=&gt;</span> <span class="n">attribute</span><span class="p">.</span><span class="n">AttributeType</span> <span class="p">==</span> <span class="k">typeof</span><span class="p">(</span><span class="n">HttpGetAttribute</span><span class="p">));</span>
@@ -269,7 +269,7 @@ OperationFilters are run for every discovered method. You can examine the curren
 <span class="p">{</span> 
     <span class="c1">//other configuration omitted...
 </span>
- 
+
     <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
     <span class="p">{</span>
         <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
@@ -280,9 +280,9 @@ OperationFilters are run for every discovered method. You can examine the curren
                 <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
             <span class="p">});</span>
     <span class="p">});</span>
- 
+     
     <span class="n">c</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerOperationFilter</span><span class="p">&gt;();</span>
- 
+     
     <span class="c1">//other configuration omitted...
 </span>
 <span class="p">}</span></code></pre></figure>
@@ -293,7 +293,7 @@ OperationFilters are run for every discovered method. You can examine the curren
 <p>Swagger UI for the same Get method after enabling the OperationFilter:
 <br /><img src="/assets/images/20181208/AfterOperationFilter.png" alt="Swagger UI after OperationFilter" /></p>
 
-<p>Also you might want to add or modify certain properties or descriptions for the endpoint. To modify a part of the Swagger.json above the “operation” level, use a DocumentFilter.</p>
+<p>Also, you might want to add or modify certain properties or descriptions for the endpoint. To modify a part of the Swagger.json above the “operation” level, use a DocumentFilter.</p>
 
 <p>An example of a DocumentFilter is to add descriptions to the tags. Operations for a Controller will be grouped within a collapsible pane in Swagger UI and the header of the pane is the tag assigned to that grouping. The DocumentFilter listed below will also sort the operations per tag in alphabetical order instead of the default method ordering as discovered within the API controller.</p>
 
@@ -302,7 +302,7 @@ OperationFilters are run for every discovered method. You can examine the curren
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.MiddleWare.Swagger</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">SwaggerDocumentFilter</span> <span class="p">:</span> <span class="n">IDocumentFilter</span>
@@ -313,11 +313,11 @@ OperationFilters are run for every discovered method. You can examine the curren
             <span class="p">{</span>
                 <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">swaggerDoc</span><span class="p">));</span>
             <span class="p">}</span>
- 
+
             <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Tags</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Tag</span><span class="p">&gt;</span> <span class="p">{</span>
                     <span class="k">new</span> <span class="n">Tag</span><span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"RoutingApi"</span><span class="p">,</span> <span class="n">Description</span> <span class="p">=</span> <span class="s">"This is a description for the api routes"</span> <span class="p">}</span>
                 <span class="p">};</span>
- 
+     
             <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span> <span class="p">=</span> <span class="n">swaggerDoc</span><span class="p">.</span><span class="n">Paths</span><span class="p">.</span><span class="nf">OrderBy</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">).</span><span class="nf">ToDictionary</span><span class="p">(</span><span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">pair</span> <span class="p">=&gt;</span> <span class="n">pair</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
         <span class="p">}</span>
     <span class="p">}</span>
@@ -329,7 +329,7 @@ OperationFilters are run for every discovered method. You can examine the curren
     <span class="p">{</span> 
         <span class="c1">//other configuration omitted...
 </span>
- 
+
         <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
         <span class="p">{</span>
             <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span>
@@ -340,10 +340,10 @@ OperationFilters are run for every discovered method. You can examine the curren
                     <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
                 <span class="p">});</span>
         <span class="p">});</span>
- 
+     
         <span class="n">c</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerOperationFilter</span><span class="p">&gt;();</span>
         <span class="n">c</span><span class="p">.</span><span class="n">DocumentFilter</span><span class="p">&lt;</span><span class="n">SwaggerDocumentFilter</span><span class="p">&gt;();</span>
- 
+     
         <span class="c1">//other configuration omitted...
 </span>
     <span class="p">}</span></code></pre></figure>
@@ -359,7 +359,7 @@ Like specifying a return type. These return types will be listed in definitions 
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">HomeController</span> <span class="p">:</span> <span class="n">Controller</span>
@@ -372,17 +372,17 @@ Like specifying a return type. These return types will be listed in definitions 
             <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="k">new</span> <span class="n">MyResponseType</span> <span class="p">{</span>
                 <span class="n">Title</span> <span class="p">=</span> <span class="s">"SomeTitle"</span><span class="p">,</span>
                 <span class="n">Data</span> <span class="p">=</span> <span class="s">"SomeData"</span>
- 
+
             <span class="p">});</span>
         <span class="p">}</span>
- 
+     
         <span class="k">public</span> <span class="k">class</span> <span class="nc">MyResponseType</span> <span class="p">{</span>
             <span class="k">public</span> <span class="kt">string</span> <span class="n">Title</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
- 
+     
             <span class="k">public</span> <span class="kt">string</span> <span class="n">Data</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
- 
+     
             <span class="k">public</span> <span class="kt">int</span> <span class="n">Number</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
- 
+     
             <span class="k">public</span> <span class="n">DateTime</span> <span class="n">Timestamp</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">}</span>
@@ -398,7 +398,7 @@ Like specifying a return type. These return types will be listed in definitions 
 
 <figure class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Microsoft.AspNetCore.Mvc</span><span class="p">;</span>
 <span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
- 
+
 <span class="k">namespace</span> <span class="nn">NetCore.WebApiExample.Controllers</span>
 <span class="p">{</span>
     <span class="k">public</span> <span class="k">class</span> <span class="nc">HomeController</span> <span class="p">:</span> <span class="n">Controller</span>
@@ -407,7 +407,7 @@ Like specifying a return type. These return types will be listed in definitions 
         <span class="p">{</span>
             <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
         <span class="p">}</span>
- 
+
         <span class="c1">/// &lt;summary&gt;
 </span>
         <span class="c1">/// This route has a XML comments description
@@ -427,7 +427,7 @@ Like specifying a return type. These return types will be listed in definitions 
     <span class="p">}</span>
 <span class="p">}</span></code></pre></figure>
 
-<p>Next you can output the XML file with the comments in the project properties. In the project properties, go to the Build tab. Be sure to select “All Configurations” the Configuration drop down on the top of the page. Next check the XML file checkbox. In the project properties you can only specify a hardcoded path, but we can change it in the project file to make it dynamic to the build configuration and target framework to make sure the xml file ends up next to your output dll. When enabling the XML comments checkbox warnings will pop-up in the Error List window for every method not decorated with XML comments on the next build. To ignore these warnings, add the value “;1591” to the Suppress Warnings field also in the Build tab of the project properties.</p>
+<p>Next, you can output the XML file with the comments in the project properties. In the project properties, go to the Build tab. Be sure to select “All Configurations” the Configuration drop-down on the top of the page. Next check the XML file checkbox. In the project properties, you can only specify a hardcoded path, but we can change it in the project file to make it dynamic to the build configuration and target framework to make sure the XML file ends up next to your output DLL. When enabling the XML comments checkbox warnings will pop-up in the Error List window for every method not decorated with XML comments on the next build. To ignore these warnings, add the value “;1591” to the Suppress Warnings field also in the Build tab of the project properties.</p>
 
 <p>Project properties:
 <br /><img src="/assets/images/20181208/ProjectPropertiesXmlOutputFile.png" alt="Project properties Build tab for XML comments file" /></p>
@@ -437,17 +437,16 @@ Like specifying a return type. These return types will be listed in definitions 
 <figure class="highlight"><pre><code class="language-xml" data-lang="xml">  <span class="nt">&lt;PropertyGroup&gt;</span>
     <span class="nt">&lt;TargetFramework&gt;</span>netcoreapp2.1<span class="nt">&lt;/TargetFramework&gt;</span>
   <span class="nt">&lt;/PropertyGroup&gt;</span>
- 
+
   <span class="nt">&lt;PropertyGroup</span> <span class="na">Condition=</span><span class="s">"'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"</span><span class="nt">&gt;</span>
     <span class="nt">&lt;DocumentationFile&gt;</span>bin\$(Configuration)\$(TargetFramework)\NetCore.WebApiExample.xml<span class="nt">&lt;/DocumentationFile&gt;</span>
     <span class="nt">&lt;NoWarn&gt;</span>1701;1702;1591<span class="nt">&lt;/NoWarn&gt;</span>
   <span class="nt">&lt;/PropertyGroup&gt;</span>
- 
+
   <span class="nt">&lt;PropertyGroup</span> <span class="na">Condition=</span><span class="s">"'$(Configuration)|$(Platform)'=='Release|AnyCPU'"</span><span class="nt">&gt;</span>
     <span class="nt">&lt;DocumentationFile&gt;</span>bin\$(Configuration)\$(TargetFramework)\NetCore.WebApiExample.xml<span class="nt">&lt;/DocumentationFile&gt;</span>
     <span class="nt">&lt;NoWarn&gt;</span>1701;1702;1591<span class="nt">&lt;/NoWarn&gt;</span>
-  <span class="nt">&lt;/PropertyGroup&gt;</span>
- </code></pre></figure>
+  <span class="nt">&lt;/PropertyGroup&gt;</span></code></pre></figure>
 
 <p>After setting the file location, you set the IncludeXmlComments in the Swagger startup configuration to read the comments file with the correct location for the file.</p>
 
@@ -460,11 +459,10 @@ Like specifying a return type. These return types will be listed in definitions 
             <span class="n">Version</span> <span class="p">=</span> <span class="s">"1.0"</span><span class="p">,</span>
             <span class="n">Description</span> <span class="p">=</span> <span class="s">"This API features several endpoints showing different API features"</span>
         <span class="p">});</span>
- 
+
     <span class="kt">var</span> <span class="n">xmlCommentsPath</span> <span class="p">=</span> <span class="n">Assembly</span><span class="p">.</span><span class="nf">GetExecutingAssembly</span><span class="p">().</span><span class="n">Location</span><span class="p">.</span><span class="nf">Replace</span><span class="p">(</span><span class="s">"dll"</span><span class="p">,</span><span class="s">"xml"</span><span class="p">);</span>
     <span class="n">c</span><span class="p">.</span><span class="nf">IncludeXmlComments</span><span class="p">(</span><span class="n">xmlCommentsPath</span><span class="p">);</span>    
-<span class="p">});</span>
- </code></pre></figure>
+<span class="p">});</span></code></pre></figure>
 
 <p>After this setup, when you navigate to the Swagger page you will see the extra descriptions.</p>
 
@@ -477,8 +475,8 @@ Like specifying a return type. These return types will be listed in definitions 
 <h3 id="resources-and-further-documentation">Resources and further documentation</h3>
 
 <ul>
-  <li><a href="https://github.com/domaindrivendev/Swashbuckle" title="Swashbuckle github project and documentation" target="_blank">Swashbuckle github project and documentation</a></li>
-  <li><a href="https://github.com/domaindrivendev/Swashbuckle.AspNetCore" title="Swashbuckle.AspNetCore github project and documentation" target="_blank">Swashbuckle. AspNetCore github project and documentation</a></li>
+  <li><a href="https://github.com/domaindrivendev/Swashbuckle" title="Swashbuckle GitHub project and documentation" target="_blank">Swashbuckle GitHub project and documentation</a></li>
+  <li><a href="https://github.com/domaindrivendev/Swashbuckle.AspNetCore" title="Swashbuckle.AspNetCore GitHub project and documentation" target="_blank">Swashbuckle. AspNetCore GitHub project and documentation</a></li>
   <li><a href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger" title="Microsoft docs Swagger page for .NET Core " target="_blank">Microsoft docs Swagger page for .NET Core</a></li>
   <li><a href="https://en.wikipedia.org/wiki/OpenAPI_Specification" title="OpenAPI specification on Wikipedia" target="_blank">OpenAPI specification on Wikipedia</a></li>
   <li><a href="https://github.com/OAI/OpenAPI-Specification" title="Open API specification GitHub repository" target="_blank">Open API specification GitHub repository</a></li>
@@ -496,8 +494,8 @@ Like specifying a return type. These return types will be listed in definitions 
                     <section class="sidebar-section">
     <h3>About me</h3>
     I am a dutch .NET developer.
-    I have been coding professionaly since 2008.
-    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>
 <section class="sidebar-section">
     <h3>Social</h3>
@@ -509,6 +507,9 @@ Like specifying a return type. These return types will be listed in definitions 
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -519,9 +520,6 @@ Like specifying a return type. These return types will be listed in definitions 
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>

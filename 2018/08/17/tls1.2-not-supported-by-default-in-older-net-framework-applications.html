@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TLS1.2 not supported by default in older .NET Framework applications</title>
-    <meta name="description" content="Lately more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing a HTT...">
+    <meta name="description" content="Lately, more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing an H...">
     <link rel="stylesheet" href="/assets/css/syntax.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
@@ -36,13 +36,13 @@
     <span>Aug 17, 2018</span><br />
     Tags: 
     <div class="article-content">
-        <p>Lately more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing a HTTPS connection to their servers. TLS takes care of the encryption of the HTTPS communication and TLS1.2 was introduced in 2008. It is more secure (harder to decrypt) than the previous versions.</p>
+        <p>Lately, more and more API providers have been disabling TLS 1.1 for their servers and are currently only accepting the TLS 1.2 protocol for establishing an HTTPS connection to their servers. TLS takes care of the encryption of the HTTPS communication and TLS1.2 was introduced in 2008. It is more secure (harder to decrypt) than the previous versions.</p>
 
-<p>You may encounter that establishing a HTTPS connection to a 3rd party may suddenly fail without there having been any new code changes or deployments. This may be due to the fact that the 3rd party has decided to no longer accept TLS 1.1 or below for HTTPS connections.</p>
+<p>You may encounter that establishing an HTTPS connection to a 3rd party may suddenly fail without there having been any new code changes or deployments. This may be due to the fact that the 3rd party has decided to no longer accept TLS 1.1 or below for HTTPS connections.</p>
 
-<p>I ran into this myself again this week because I used a PowerShell command to execute C# code to retrieve a bearer access token from Azure leveraging the ADAL dll’s. It suddenly did not work anymore last week and after some Googling I found a similar error that was solved by adding the TLS1.2 protocol to the ServicePointManager.SecurityProtocol property. I have needed to do this before in several older C# applications and it inspired me to write this blogpost today.</p>
+<p>I ran into this myself again this week because I used a PowerShell command to execute C# code to retrieve a bearer access token from Azure leveraging the ADAL DLLs. It suddenly did not work anymore last week and after some Googling, I found a similar error that was solved by adding the TLS1.2 protocol to the ServicePointManager.SecurityProtocol property. I have needed to do this before in several older C# applications and it inspired me to write this blog post today.</p>
 
-<p>If you face the exception “The server forcibly closed the connection” this may be an indication that the ServicePointManager no longer has a compatible protocol to establish a HTTPS connection with the server.</p>
+<p>If you face the exception “The server forcibly closed the connection” this may be an indication that the ServicePointManager no longer has a compatible protocol to establish an HTTPS connection with the server.</p>
 
 <p>The ServicePointManager is a static class .NET Framework class that will always choose the highest (securest) protocol available from the SecurityProtocol property and will only fall back to a previous version if the highest is not supported.</p>
 
@@ -55,7 +55,7 @@ This is usually the cause when using older .NET Framework versions (&lt; 4.7) as
 
 <p>When using powershell use the command below to check the current default protocols as used in Powershell:</p>
 
-<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"> <span class="o">[</span>Net.ServicePointManager]::SecurityProtocol</code></pre></figure>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><span class="o">[</span>Net.ServicePointManager]::SecurityProtocol</code></pre></figure>
 
 <p>You can set the TLS1.2 protocol if it’s not listed by using:</p>
 
@@ -85,8 +85,8 @@ This is usually the cause when using older .NET Framework versions (&lt; 4.7) as
                     <section class="sidebar-section">
     <h3>About me</h3>
     I am a dutch .NET developer.
-    I have been coding professionaly since 2008.
-    On this blog I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
 </section>
 <section class="sidebar-section">
     <h3>Social</h3>
@@ -98,6 +98,9 @@ This is usually the cause when using older .NET Framework versions (&lt; 4.7) as
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -108,9 +111,6 @@ This is usually the cause when using older .NET Framework versions (&lt; 4.7) as
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/03/16/Securing-a-web-application-with-Azure-AD.html">Getting started with web application security using Azure Active Directory</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
