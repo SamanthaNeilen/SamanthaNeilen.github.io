@@ -33,7 +33,555 @@
     
     <article>
         <header class="article-header">
-            <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a>
+            <a href="/2020/02/08/Unit-testing-self-executing-JavaScript-Modules-in-Visual-Studio.html">Unit testing self-executing JavaScript modules in Visual Studio</a>
+        </header>
+        
+        <span>Feb 8, 2020</span> <br />
+        Tags: 
+        JavaScript
+        
+        TestAutomation
+        
+        <div class="article-content">
+            <p>Visual Studio has support for unit tests in the Test Explorer window so you can run all your C# and JavaScript tests from that editor. A separate Node project can contain al the test code separate from the code that gets published and deployed. It is possible to include the tests in the web project itself. See <a href="https://docs.microsoft.com/en-us/visualstudio/javascript/unit-testing-javascript-with-visual-studio?view=vs-2019#unit-tests-in-other-project-types">the Microsoft Docs page on Unit testing JavaScript and TypeScript in Visual Studio</a> for more details.</p>
+
+<p>This post is a continuation of my post about <a href="https://samanthaneilen.github.io/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a>. I will continue building on the JavaScriptModules project presented in that post. A working Visual Studio project with the code can be found in my <a href="https://github.com/SamanthaNeilen/JavascriptModulesExamples">JavaScriptModuleExamples repository on GitHub</a>.
+ If you use the project from GitHub be sure to follow to ReadMe.md on the repository for additional steps to see the tests in Visual Studio Test Explorer.</p>
+
+<p>The befits of writing these JavaScript unit tests are getting earlier feedback about the state of your JavaScript without writing more fragile and slower integration tests. The unit tests can also be run in the build pipeline next to your regular unit tests using an npm test command step before deploying to an environment.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#setup-a-nodejs-test-project" id="markdown-toc-setup-a-nodejs-test-project">Setup a Node.Js Test project</a></li>
+  <li><a href="#writing-tests" id="markdown-toc-writing-tests">Writing tests</a></li>
+  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
+</ul>
+
+<h3 id="setup-a-nodejs-test-project">Setup a Node.Js Test project</h3>
+
+<p>So to start testing, add a Blank Node.js Console Application project. You need to have the Node.js workload installed in Visual Studio. When you add a new file to the project via the “Add -&gt; New Item” context menu, you can see the test frameworks that Visual Studio already provides a template file for. The template file contains a passing test and a failing test showing the syntax for basic tests.</p>
+
+<p><img src="/assets/images/20200208/JavaScriptUnitTestFileTemplates.png" alt="[JavaScript unit test file templates]" /></p>
+
+<p><a href="https://medium.com/welldone-software/an-overview-of-javascript-testing-in-2019-264e19514d0a">An article comparing several of the different JavaScript frameworks can be found on Medium.</a></p>
+
+<p>I will be working with the Jest framework in this post, so add a Jest test file. The contents for the default new Jest file is shown below.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">describe</span><span class="p">(</span><span class="s1">'Test Suite 1'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"Test 1 - This shouldn't fail"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s1">'Test 2 - This should fail'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="mi">1</span> <span class="o">===</span> <span class="mi">1</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">();</span> <span class="c1">// "This shouldn't fail"</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="kc">false</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">();</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>To run the tests using Visual Studio Test you need to set the “JavaScript Unit Test” properties in the project properties and install the jest and jest-editor-support npm packages.</p>
+
+<p>For the “JavaScript Unit Tests” properties set the “Test Framework” to the framework of choice (Jest, in my case) and set the Test Root to a “Tests” subfolder. Using a subfolder will ensure that you can add extra folders with builder and helper classes without them being seen as potential unit test files.</p>
+
+<p>Now the tests will show up in Test Explorer after building the project. You may have to restart Visual Studio the first time before any tests show up. Also to ensure running or debugging the latest version of your tests you always need to build before running a test via Test Explorer.</p>
+
+<p><img src="/assets/images/20200208/FirstTestsLoadedInTestExplorer.png" alt="[First tests loaded in Test Explorer]" /></p>
+
+<h3 id="writing-tests">Writing tests</h3>
+
+<p>To start testing the customer-overview.js file from the JavaScriptModules web project we first have to hookup some dependencies and mocks. We need jQuery, a mock of our customer-service.js and the HTML or DOM setup that the module can interact with.</p>
+
+<p>First, add a testutilities.js file that will set up a module that has the link to the wwwroot of our project under test and loads in 3rd party libraries needed for testing. The module is shown below.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">currentModule</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="kd">let</span> <span class="nx">wwwRootScriptsFolder</span> <span class="o">=</span> <span class="s1">'../JavaScriptModules/wwwroot/'</span><span class="p">;</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">wwwRoot</span> <span class="o">=</span> <span class="nx">wwwRootScriptsFolder</span><span class="p">;</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">initialize</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nb">global</span><span class="p">.</span><span class="nx">jQuery</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRootScriptsFolder</span> <span class="o">+</span> <span class="s1">'lib/jquery/jquery.js'</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">;</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>Now we can use the TestUtilities module in the test file to do a simple test using jQuery. This example also shows how to declare some HTML to interact with. The document is actually a mock provided by the test framework. Any interactions your code and modules have with the window or document will work as expected.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">describe</span><span class="p">(</span><span class="s1">'Test Suite 1'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">beforeEach</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">jest</span><span class="p">.</span><span class="nx">resetModules</span><span class="p">();</span>
+        <span class="nx">require</span><span class="p">(</span><span class="s1">'../TestUtilities.js'</span><span class="p">);</span>
+        <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span><span class="p">.</span><span class="nx">initialize</span><span class="p">();</span>
+
+        <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">input</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'label'</span><span class="p">);</span>
+        <span class="nx">input</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="s1">'myLabel'</span><span class="p">;</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">input</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"Test 1 - This shouldn't fail"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">'#myLabel'</span><span class="p">)).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s1">'Test 2 - This should fail'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="mi">1</span> <span class="o">===</span> <span class="mi">1</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">();</span> <span class="c1">// "This shouldn't fail"</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="kc">false</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">();</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+
+</code></pre></div></div>
+<p>If you run the test in debugging mode, you can stop and inspect the variables and DOM.</p>
+
+<p><img src="/assets/images/20200208/DebugTest.png" alt="[Debugging JavaScript test]" /></p>
+
+<p>Now, we want to build the HTML template for the initial page for the module under test. I usually create a module using <a href="https://en.wikipedia.org/wiki/Builder_pattern">the builder pattern</a> to be able to create the template in a fluent syntax. This way you can use the builder in your tests to create multiple starting HTML situations with expressive and readable syntax. The builder and the test file using the builder are shown below. Not that in the builder below I only add the required elements to check my logic. All elements that are for layout and not functionality are omitted. (The code below can be also be found in my GitHub repo under the tag: V1.3-first-test-module-using-HTML-builder <a href="https://github.com/SamanthaNeilen/JavascriptModulesExamples/tree/V1.3-first-test-module-using-HTML-builder">my GitHub repo under the tag: V1.3-first-test-module-using-HTML-builder</a>.)</p>
+
+<p>(Also note that the code shown is a refinement of multiple times writing, evaluating, refactoring and running and reading the tests iterations. If your logic and HTML are simple you may not even these builders to write a few simple tests.)</p>
+
+<p>UnitTest.js:</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">describe</span><span class="p">(</span><span class="s1">'Search using Name'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">beforeEach</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">testProjectRoot</span> <span class="o">=</span> <span class="s1">'../../../'</span><span class="p">;</span>
+        <span class="nx">jest</span><span class="p">.</span><span class="nx">resetModules</span><span class="p">();</span>
+
+        <span class="nx">require</span><span class="p">(</span><span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="s1">'TestUtilities.js'</span><span class="p">);</span>
+        <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span><span class="p">.</span><span class="nx">initialize</span><span class="p">();</span>
+        <span class="nx">require</span><span class="p">(</span><span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="s1">'Builders/CustomerOverviewHtmlBuilder.js'</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">wwwRoot</span> <span class="o">=</span> <span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span><span class="p">.</span><span class="nx">wwwRoot</span><span class="p">;</span>
+        <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRoot</span> <span class="o">+</span> <span class="s1">'js/utilities.js'</span><span class="p">);</span>
+        <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRoot</span> <span class="o">+</span> <span class="s1">'js/customer-overview.js'</span><span class="p">);</span>
+
+        <span class="c1">//arrange initial state</span>
+        <span class="kd">let</span> <span class="nx">htmlTemplate</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">customerOverviewHtmlBuilderModule</span>
+            <span class="p">.</span><span class="k">new</span><span class="p">()</span>
+            <span class="p">.</span><span class="nx">clearDataRows</span><span class="p">()</span>
+            <span class="p">.</span><span class="nx">hideLoadingRow</span><span class="p">()</span>
+            <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'first customer'</span><span class="p">,</span> <span class="s1">'first customer email'</span><span class="p">,</span> <span class="s1">'first customer country'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'second customer'</span><span class="p">,</span> <span class="s1">'second customer email'</span><span class="p">,</span> <span class="s1">'second customer country'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'testcustomer'</span><span class="p">,</span> <span class="s1">'testcustomer email'</span><span class="p">,</span> <span class="s1">'testcustomer country'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">build</span><span class="p">();</span>
+
+        <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">htmlTemplate</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"WHEN 3 rows loaded THEN Search with full Name SHOULD filter to show one row"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="c1">//arrange</span>
+        <span class="kd">let</span> <span class="nx">searchNameValue</span> <span class="o">=</span> <span class="s1">'second customer'</span><span class="p">;</span>
+        <span class="kd">let</span> <span class="nx">initialVisibleRows</span> <span class="o">=</span> <span class="nx">getVisibleRows</span><span class="p">();</span>
+        <span class="kd">let</span> <span class="nx">initialInvisibleRows</span> <span class="o">=</span> <span class="nx">getInvisibleRows</span><span class="p">();</span>
+
+        <span class="c1">//act</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s2">"#searchCustomerName"</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="nx">searchNameValue</span><span class="p">);</span>
+        <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span><span class="p">.</span><span class="nx">filterData</span><span class="p">();</span>
+
+        <span class="c1">//assert intial state</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">initialVisibleRows</span><span class="p">).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">initialInvisibleRows</span><span class="p">).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+        <span class="c1">//assert state after action</span>
+        <span class="kd">let</span> <span class="nx">filteredVisibleRows</span> <span class="o">=</span> <span class="nx">getVisibleRows</span><span class="p">();</span>
+        <span class="kd">let</span> <span class="nx">filteredInvisibleRows</span> <span class="o">=</span> <span class="nx">getInvisibleRows</span><span class="p">();</span>
+        
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">filteredVisibleRows</span><span class="p">).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">filteredInvisibleRows</span><span class="p">).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">actualVisibleRowSearchName</span> <span class="o">=</span> <span class="nx">getSearchNameValueForSingleRow</span><span class="p">(</span><span class="nx">filteredVisibleRows</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">actualVisibleRowSearchName</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="nx">searchNameValue</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="kd">function</span> <span class="nx">getSearchNameValueForSingleRow</span><span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">getVisibleRows</span><span class="p">()</span> <span class="p">{</span>
+        
+        <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">getAllRows</span><span class="p">(),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="o">!</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">hasClass</span><span class="p">(</span><span class="s1">'display-none'</span><span class="p">);</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">getInvisibleRows</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">getAllRows</span><span class="p">(),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">hasClass</span><span class="p">(</span><span class="s1">'display-none'</span><span class="p">);</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">getAllRows</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'tr'</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+</code></pre></div></div>
+
+<p>TestUtilities.js:</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">currentModule</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="kd">let</span> <span class="nx">wwwRootScriptsFolder</span> <span class="o">=</span> <span class="s1">'../JavaScriptModules/wwwroot/'</span><span class="p">;</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">wwwRoot</span> <span class="o">=</span> <span class="nx">wwwRootScriptsFolder</span><span class="p">;</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">initialize</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nb">global</span><span class="p">.</span><span class="nx">jQuery</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRootScriptsFolder</span> <span class="o">+</span> <span class="s1">'lib/jquery/jquery.js'</span><span class="p">);</span>
+        <span class="nx">require</span><span class="p">(</span><span class="s1">'./Builders/BaseHtmlBuilder.js'</span><span class="p">);</span>
+    <span class="p">};</span>
+    
+    <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">;</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>CustomerOverviewHtmlBuilder.js:</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">baseHtmlBuilder</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">currentModule</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="kd">let</span> <span class="nx">root</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'div'</span><span class="p">);</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="k">new</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">root</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'div'</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">searchForm</span> <span class="o">=</span> <span class="nx">createSearchForm</span><span class="p">();</span>
+        <span class="nx">root</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">searchForm</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">dataGrid</span> <span class="o">=</span> <span class="nx">createEmptyGrid</span><span class="p">();</span>
+        <span class="nx">root</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">dataGrid</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">rowTemplates</span> <span class="o">=</span> <span class="nx">createRowTemplates</span><span class="p">();</span>
+        <span class="nx">root</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">rowTemplates</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+    <span class="p">};</span>
+
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">clearDataRows</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">customerTable</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">root</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">);</span>
+        <span class="kd">let</span> <span class="nx">loadingRow</span> <span class="o">=</span> <span class="nx">customerTable</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">'.loading-row'</span><span class="p">);</span>
+        <span class="nx">customerTable</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+        <span class="nx">customerTable</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">loadingRow</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">hideLoadingRow</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">customerTable</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">root</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">);</span>
+        <span class="kd">let</span> <span class="nx">loadingRow</span> <span class="o">=</span> <span class="nx">customerTable</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">'.loading-row'</span><span class="p">);</span>
+        <span class="nx">loadingRow</span><span class="p">.</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">'display-none'</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+    <span class="p">};</span>
+    
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">withDataRow</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">country</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">customerTable</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">root</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">);</span>
+        <span class="kd">let</span> <span class="nx">row</span> <span class="o">=</span> <span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createRow</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="na">Id</span><span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+                <span class="na">className</span><span class="p">:</span> <span class="s1">'customer-row'</span><span class="p">,</span>
+                <span class="na">cells</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="nx">name</span> <span class="p">},</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="nx">email</span> <span class="p">},</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="nx">country</span> <span class="p">}]</span>
+            <span class="p">}</span>
+        <span class="p">);</span>
+        <span class="nx">customerTable</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">row</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">build</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">root</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="kd">function</span> <span class="nx">createSearchForm</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">searchform</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'div'</span><span class="p">);</span>
+        <span class="nx">searchform</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="s1">'search-customer'</span><span class="p">;</span>
+
+        <span class="nx">searchform</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createTextInput</span><span class="p">(</span><span class="s1">'searchCustomerName'</span><span class="p">));</span>
+        <span class="nx">searchform</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createTextInput</span><span class="p">(</span><span class="s1">'searchEmail'</span><span class="p">));</span>
+        <span class="nx">searchform</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createTextInput</span><span class="p">(</span><span class="s1">'searchCountry'</span><span class="p">));</span>
+        <span class="nx">searchform</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createButton</span><span class="p">(</span><span class="s1">'customerOverviewSearchButton'</span><span class="p">));</span>
+
+        <span class="k">return</span> <span class="nx">searchform</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">createEmptyGrid</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">table</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'table'</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">tableBody</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'tbody'</span><span class="p">);</span>
+        <span class="nx">tableBody</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="s1">'customer-table-body'</span><span class="p">;</span>
+        <span class="nx">table</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">tableBody</span><span class="p">);</span>
+
+        <span class="kd">let</span> <span class="nx">row</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'tr'</span><span class="p">);</span>
+        <span class="nx">row</span><span class="p">.</span><span class="nx">className</span>  <span class="o">=</span> <span class="s1">'loading-row'</span><span class="p">;</span>
+        <span class="nx">tableBody</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">row</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">table</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">createRowTemplates</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">table</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'table'</span><span class="p">);</span>
+        <span class="nx">table</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s1">'display-none'</span><span class="p">;</span>
+
+        <span class="kd">let</span> <span class="nx">row</span> <span class="o">=</span> <span class="nx">baseHtmlBuilder</span><span class="p">.</span><span class="nx">createRow</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="na">id</span><span class="p">:</span> <span class="s1">'data-row-template'</span><span class="p">,</span>
+                <span class="na">className</span><span class="p">:</span> <span class="s1">'customer-row'</span><span class="p">,</span>
+                <span class="na">cells</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="s1">''</span> <span class="p">},</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="s1">''</span> <span class="p">},</span>
+                    <span class="p">{</span> <span class="na">innerHTML</span><span class="p">:</span> <span class="s1">''</span> <span class="p">}]</span>
+            <span class="p">}</span>
+        <span class="p">);</span>
+        <span class="nx">table</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">row</span><span class="p">);</span>
+        
+        <span class="k">return</span> <span class="nx">table</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nb">global</span><span class="p">.</span><span class="nx">customerOverviewHtmlBuilderModule</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">;</span>
+<span class="p">})(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nb">global</span><span class="p">.</span><span class="nx">BaseHtmlBuilderModule</span><span class="p">);</span>
+</code></pre></div></div>
+<p>BaseHtmlBuilder.js:</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">currentModule</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">createTextInput</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">input</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'input'</span><span class="p">);</span>
+        <span class="nx">input</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">id</span><span class="p">;</span>
+        <span class="nx">input</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s1">'text'</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">input</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">createButton</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">button</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'button'</span><span class="p">);</span>
+        <span class="nx">button</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">id</span><span class="p">;</span>
+        <span class="nx">button</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s1">'button'</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">button</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">createRow</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">rowDefinition</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">rowElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'tr'</span><span class="p">);</span>
+        <span class="nx">rowElement</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">rowDefinition</span><span class="p">.</span><span class="nx">Id</span><span class="p">;</span>
+        <span class="nx">rowElement</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="nx">rowDefinition</span><span class="p">.</span><span class="nx">className</span><span class="p">;</span>
+
+        <span class="kd">let</span> <span class="nx">cells</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">.</span><span class="nx">createCells</span><span class="p">(</span><span class="nx">rowDefinition</span><span class="p">.</span><span class="nx">cells</span><span class="p">);</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">cells</span><span class="p">,</span>
+            <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">cell</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">rowElement</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">cell</span><span class="p">);</span>
+            <span class="p">});</span>
+
+        <span class="k">return</span> <span class="nx">rowElement</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">currentModule</span><span class="p">.</span><span class="nx">createCells</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">cells</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">resultingCells</span> <span class="o">=</span> <span class="p">[];</span>
+
+        <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">cells</span><span class="p">,</span>
+            <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">cell</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">let</span> <span class="nx">cellElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'td'</span><span class="p">);</span>
+                <span class="nx">cellElement</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="nx">cell</span><span class="p">.</span><span class="nx">className</span><span class="p">;</span>
+                <span class="nx">cellElement</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">cell</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">;</span>
+                <span class="nx">resultingCells</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">cellElement</span><span class="p">);</span>
+            <span class="p">});</span>
+
+        <span class="k">return</span> <span class="nx">resultingCells</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nb">global</span><span class="p">.</span><span class="nx">BaseHtmlBuilderModule</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">;</span>
+<span class="p">})(</span><span class="nx">jQuery</span><span class="p">);</span>
+</code></pre></div></div>
+<p>When you see this code it might seem like a lot of work to create a few tests. By extracting helper methods to a separate class you will have to invest a bit more initially but will be faster at writing tests later. Also by practicing TDD, you should be able to create the template as you are building your HTML and initial JavaScript methods so the extra invested time should not come all at once after completing your complete HTML and JavaScript logic.</p>
+
+<p>A debugging/troubleshooting tip for your HTML builders. If you’re unsure that the code to create the HTML is correct. At a watch to the document.body.innerHTML variable and paste the value in a new HTML page file in Visual Studio. Select all contents in the file and right-click to get the context menu and select Un-Minify to get a nice readable HTML with syntax highlighting to troubleshoot the output of the builder.</p>
+
+<p><img src="/assets/images/20200208/DocumentHtmlUnMinify.png" alt="[Un-Minify option for HTML]" /></p>
+
+<p>Jest supports a way to use tests with parameters but the Visual Studio integration does not pick them up. So for now, I just add multiple tests for the different parameters I would like to test. To avoid having to change all the tests when my arrangements or assertions have to change, I introduce ScenarioBuilder and/or AssertionHelper modules that again abstract the test scenarios and assertions in a nice readable fluent syntax.</p>
+
+<p>In the example, I added a scenario builder module in the file itself containing a full set of arrange, act and assert methods. If the module gets to large or you see duplication across several builders you could choose to create builders with better separation of concerns. The point is to show an example of a pattern for writing readable tests where the implementation details can be changed in a single spot in the code should the page or functionality change. For the full working solution see <a href="https://github.com/SamanthaNeilen/JavascriptModulesExamples/tree/V1.4-first-test-using-scenario-builder">my GitHub repo with the tag: V1.4-first-test-using-scenario-builder</a>.)</p>
+
+<p>UnitTest.js</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">describe</span><span class="p">(</span><span class="s1">'Search using Name'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"WHEN 3 rows loaded THEN Search with full Name SHOULD filter to show one row"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">scenario</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">SearchCustomerNameScenarioBuilderModule</span><span class="p">.</span><span class="k">new</span><span class="p">();</span>
+
+        <span class="c1">//arrange</span>
+        <span class="kd">const</span> <span class="nx">valueToSearch</span> <span class="o">=</span> <span class="s1">'second customer'</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfVisibleRows</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfInvisibleRows</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+        
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">arrange_Page_With_3_Initial_DataRows</span><span class="p">();</span>
+
+        <span class="c1">//act</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">act_SearchName</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">);</span>
+
+        <span class="c1">//assert</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">assert_Number_Of_Visible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfVisibleRows</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Number_Of_Invisible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfInvisibleRows</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Visible_Rows_Name_Is_Complete_SearchValue</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Invisible_Rows_Name_Do_Not_Contain_SearchValue</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"WHEN 3 rows loaded THEN Search with partial Name SHOULD filter to show one row"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">scenario</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">SearchCustomerNameScenarioBuilderModule</span><span class="p">.</span><span class="k">new</span><span class="p">();</span>
+
+        <span class="c1">//arrange</span>
+        <span class="kd">const</span> <span class="nx">valueToSearch</span> <span class="o">=</span> <span class="s1">'test'</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfVisibleRows</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfInvisibleRows</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">arrange_Page_With_3_Initial_DataRows</span><span class="p">();</span>
+
+        <span class="c1">//act</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">act_SearchName</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">);</span>
+
+        <span class="c1">//assert</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">assert_Number_Of_Visible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfVisibleRows</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Number_Of_Invisible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfInvisibleRows</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Visible_Rows_Name_Contains_SearchValue</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Invisible_Rows_Name_Do_Not_Contain_SearchValue</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="s2">"WHEN 3 rows loaded THEN Search with empty Name SHOULD filter to show all rows"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">scenario</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">SearchCustomerNameScenarioBuilderModule</span><span class="p">.</span><span class="k">new</span><span class="p">();</span>
+
+        <span class="c1">//arrange</span>
+        <span class="kd">const</span> <span class="nx">valueToSearch</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfVisibleRows</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">expectedNumberOfInvisibleRows</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">arrange_Page_With_3_Initial_DataRows</span><span class="p">();</span>
+
+        <span class="c1">//act</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">act_SearchName</span><span class="p">(</span><span class="nx">valueToSearch</span><span class="p">);</span>
+
+        <span class="c1">//assert</span>
+        <span class="nx">scenario</span><span class="p">.</span><span class="nx">assert_Number_Of_Visible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfVisibleRows</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">assert_Number_Of_Invisible_Rows</span><span class="p">(</span><span class="nx">expectedNumberOfInvisibleRows</span><span class="p">);</span>
+    <span class="p">});</span>
+
+
+    <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">jest</span><span class="p">,</span> <span class="nx">expect</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">currentModule</span> <span class="o">=</span> <span class="p">{};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="k">new</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kd">const</span> <span class="nx">testProjectRoot</span> <span class="o">=</span> <span class="s1">'../../../'</span><span class="p">;</span>
+            <span class="nx">jest</span><span class="p">.</span><span class="nx">resetModules</span><span class="p">();</span>
+
+            <span class="nx">require</span><span class="p">(</span><span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="s1">'TestUtilities.js'</span><span class="p">);</span>
+            <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span><span class="p">.</span><span class="nx">initialize</span><span class="p">();</span>
+            <span class="nx">require</span><span class="p">(</span><span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="s1">'Builders/CustomerOverviewHtmlBuilder.js'</span><span class="p">);</span>
+
+            <span class="kd">let</span> <span class="nx">wwwRoot</span> <span class="o">=</span> <span class="nx">testProjectRoot</span> <span class="o">+</span> <span class="nb">global</span><span class="p">.</span><span class="nx">TestUtilitiesModule</span><span class="p">.</span><span class="nx">wwwRoot</span><span class="p">;</span>
+            <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRoot</span> <span class="o">+</span> <span class="s1">'js/utilities.js'</span><span class="p">);</span>
+            <span class="nx">require</span><span class="p">(</span><span class="nx">wwwRoot</span> <span class="o">+</span> <span class="s1">'js/customer-overview.js'</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">arrange_Page_With_3_Initial_DataRows</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+
+            <span class="kd">const</span> <span class="nx">template</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">customerOverviewHtmlBuilderModule</span>
+                <span class="p">.</span><span class="k">new</span><span class="p">()</span>
+                <span class="p">.</span><span class="nx">clearDataRows</span><span class="p">()</span>
+                <span class="p">.</span><span class="nx">hideLoadingRow</span><span class="p">()</span>
+                <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'first customer'</span><span class="p">,</span> <span class="s1">'first customer email'</span><span class="p">,</span> <span class="s1">'first customer country'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'second customer'</span><span class="p">,</span> <span class="s1">'second customer email'</span><span class="p">,</span> <span class="s1">'second customer country'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">withDataRow</span><span class="p">(</span><span class="s1">'testcustomer'</span><span class="p">,</span> <span class="s1">'testcustomer email'</span><span class="p">,</span> <span class="s1">'testcustomer country'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">build</span><span class="p">();</span>
+
+            <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">template</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">act_SearchName</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">nameToSearch</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s2">"#searchCustomerName"</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="nx">nameToSearch</span><span class="p">);</span>
+            <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span><span class="p">.</span><span class="nx">filterData</span><span class="p">();</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">assert_Number_Of_Visible_Rows</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">numberOfRows</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">expect</span><span class="p">(</span><span class="nx">getVisibleRows</span><span class="p">()).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="nx">numberOfRows</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">assert_Number_Of_Invisible_Rows</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">numberOfRows</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">expect</span><span class="p">(</span><span class="nx">getInvisibleRows</span><span class="p">()).</span><span class="nx">toHaveLength</span><span class="p">(</span><span class="nx">numberOfRows</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">assert_Visible_Rows_Name_Is_Complete_SearchValue</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">nameToSearch</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">rows</span> <span class="o">=</span> <span class="nx">getVisibleRows</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">rows</span><span class="p">,</span>
+                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isLoadingRow</span><span class="p">(</span><span class="nx">row</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="nx">nameToSearch</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">assert_Visible_Rows_Name_Contains_SearchValue</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">nameToSearch</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">rows</span> <span class="o">=</span> <span class="nx">getVisibleRows</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">rows</span><span class="p">,</span>
+                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isLoadingRow</span><span class="p">(</span><span class="nx">row</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">).</span><span class="nx">toEqual</span><span class="p">(</span><span class="nx">expect</span><span class="p">.</span><span class="nx">stringContaining</span><span class="p">(</span><span class="nx">nameToSearch</span><span class="p">));</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">currentModule</span><span class="p">.</span><span class="nx">assert_Invisible_Rows_Name_Do_Not_Contain_SearchValue</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">nameToSearch</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">rows</span> <span class="o">=</span> <span class="nx">getInvisibleRows</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">rows</span><span class="p">,</span>
+                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isLoadingRow</span><span class="p">(</span><span class="nx">row</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">).</span><span class="nx">toEqual</span><span class="p">(</span><span class="nx">expect</span><span class="p">.</span><span class="nx">not</span><span class="p">.</span><span class="nx">stringContaining</span><span class="p">(</span><span class="nx">nameToSearch</span><span class="p">));</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+
+            <span class="k">return</span> <span class="nx">currentModule</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="kd">function</span> <span class="nx">isLoadingRow</span><span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">hasClass</span><span class="p">(</span><span class="s1">'loading-row'</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="kd">function</span> <span class="nx">getVisibleRows</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">getAllRows</span><span class="p">(),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="o">!</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">hasClass</span><span class="p">(</span><span class="s1">'display-none'</span><span class="p">);</span> <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="kd">function</span> <span class="nx">getInvisibleRows</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">getAllRows</span><span class="p">(),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">hasClass</span><span class="p">(</span><span class="s1">'display-none'</span><span class="p">);</span> <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="kd">function</span> <span class="nx">getAllRows</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'tr'</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nb">global</span><span class="p">.</span><span class="nx">SearchCustomerNameScenarioBuilderModule</span> <span class="o">=</span> <span class="nx">currentModule</span><span class="p">;</span>
+
+    <span class="p">})(</span><span class="nx">jest</span><span class="p">,</span> <span class="nx">expect</span><span class="p">);</span>
+<span class="p">});</span>
+
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/visualstudio/javascript/unit-testing-javascript-with-visual-studio?view=vs-2019#unit-tests-in-other-project-types">Microsoft Docs page on Unit testing JavaScript and TypeScript in Visual Studio</a></li>
+  <li><a href="https://jestjs.io/docs/en/expect">Jest expect method documentation</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Builder%20pattern">Wikipedia page for the builder pattern</a></li>
+</ul>
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
+            <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a>
         </header>
         
         <span>Dec 30, 2019</span> <br />
@@ -894,109 +1442,6 @@
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a>
-        </header>
-        
-        <span>May 6, 2019</span> <br />
-        Tags: 
-        Testing
-        
-        <div class="article-content">
-            <p>Usually, I think of test scenarios while examining specifications and writing code. Even though I am not a test first TDD practitioner and usually write and executing tests after writing some logic, I do think about and test scenarios throughout my coding  process.</p>
-
-<p>The techniques I want to describe in this post have been helpful to me in writing better quality code. They help me catch missing requirements earlier and my eventual tests (manual or automated) are more complete. Knowing these techniques also helps me collaborate better with the QA team during development and/or testing.</p>
-
-<p>The techniques may describe graphing out paths and making decision tables but I almost never write down the described graphs and tables. If you find yourself having trouble identifying or explaining scenarios, the described graph or table might help you as a means of visual aid.</p>
-
-<p>The techniques are described identifying all possible test scenarios for 100% coverage. Analyzing and testing all scenarios (manual or automatic) is usually not possible due to time constraints. You should always try to focus on the parts of the software that are most likely to fail due to complexity and the parts that have the highest cost to the business when they do fail. Your test set should be maintainable and provide good enough coverage so you have enough confidence in your test set. When in doubt collaborate with your team members or QA team to determine the value of test scenarios and test coverage.</p>
-
-<p>Testing techniques are divided into white and black box techniques. White box techniques look at the actual statements of the source code to determine test cases. Black box techniques use specifications to determine if outputs are correct when providing inputs.</p>
-
-<p><strong>Table of contents:</strong></p>
-<ul id="markdown-toc">
-  <li><a href="#equivalence-class-and-boundary-partitioning-black-box-technique" id="markdown-toc-equivalence-class-and-boundary-partitioning-black-box-technique">Equivalence class and boundary partitioning (black box technique)</a></li>
-  <li><a href="#statement-and-decision-based-testing-white-box-techniques" id="markdown-toc-statement-and-decision-based-testing-white-box-techniques">Statement and decision-based testing (white box techniques)</a></li>
-  <li><a href="#conditional-based-testing-white-box-technique" id="markdown-toc-conditional-based-testing-white-box-technique">Conditional-based testing (white box technique)</a></li>
-  <li><a href="#state-transition-testing-black-box-technique" id="markdown-toc-state-transition-testing-black-box-technique">State transition testing (black box technique)</a></li>
-  <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
-</ul>
-
-<h3 id="equivalence-class-and-boundary-partitioning-black-box-technique">Equivalence class and boundary partitioning (black box technique)</h3>
-
-<p>Equivalence class partitioning is a technique for partitioning possible inputs into possible valid and invalid scenarios.</p>
-
-<p>For string input for a certain field you could identify:</p>
-
-<p>Valid input</p>
-<ul>
-  <li>Input length has a minimum length of 0 (empty string) and a maximum length of 50.</li>
-  <li>It contains only alphanumeric characters and no diacritics.</li>
-</ul>
-
-<p>Invalid input</p>
-<ul>
-  <li>Null value.String larger than 50 characters.</li>
-  <li>String with diacritics or other special characters (@# etcetera).</li>
-</ul>
-
-<p>The equivalence class technique states that you should create a test scenario for each of the valid and each of the invalid scenarios. If a method has multiple parameters and you are testing invalid scenarios you should never use more than one invalid input at a time to avoid defect masking.  This way you can relate expected errors back to the single invalid input or unexpected errors to one of the valid inputs.</p>
-
-<p>Boundary partitioning is add on to equivalence class partitioning. You basically look at the equivalence classes and use the boundary value (for example string has a length of 50), boundary value -1 (string length 49) and boundary value +1 (string length 51) as additional test cases. This technique is identifying the so-called edge cases of input. You should look at all equivalence classes (valid and invalid) to determine if you can set up test cases with the boundary, boundary+1 and boundary-1, a value between 2 boundaries and see if the outputs are the expected values.</p>
-
-<h3 id="statement-and-decision-based-testing-white-box-techniques">Statement and decision-based testing (white box techniques)</h3>
-
-<p>Statement and decision-based testing use a <a href="https://en.wikipedia.org/wiki/Control-flow_graph">control-flow graph</a>. Basically, each node in the graph is a control statement where a decision is made about which path to execute next (so if, switch, while, for statements ). The branches (edges) of the graph are the possible code paths executed between the control statements.</p>
-
-<p>Statement-based testing creates test scenarios for each node (not all the edges). So you should have passed through each control statement (condition is true) at least once for coverage for this technique. When looking at the source code if you pass through each control statement and execute the code within the control statements, you should end up covering all lines in the source code.</p>
-
-<p>Decision-based testing looks to cover the edges of the control-flow graph. To cover all the edges of the graph you should create tests for each conditional state for the control statements. So for an if statement you should test with conditional false and true. For loops, you should iterate at least through one loop and use a test case that ignores the loop. When using a switch/case statements all possible cases should be covered.</p>
-
-<p>For some good examples of these two techniques, look at the short YouTube/Udacity links in the resource section of this post.</p>
-
-<h3 id="conditional-based-testing-white-box-technique">Conditional-based testing (white box technique)</h3>
-
-<p>Control statements (for example if, switch, while, for statements ) usually have some kind of conditional logic. If the conditional logic has multiple inputs you can apply the rules for equivalence and boundary testing (see the previous paragraph in this post) to determine all possible inputs to the conditional statement to see if the expected path is executed.</p>
-
-<h3 id="state-transition-testing-black-box-technique">State transition testing (black box technique)</h3>
-
-<p>Sometimes your software uses a <a href="https://en.wikipedia.org/wiki/Finite-state_machine">finite state machine</a> (maybe some kind of status table or status enum is used to describe the possible states of an object). The linked Wikipedia article for the finite state machine contains multiple techniques for identifying the states, path between states and the conditions per path or state.</p>
-
-<p>Each path between a state usually identifies a “happy flow” test scenario. Besides obvious valid state transitions, you should try to identify invalid paths and if they are possible to execute in the system.</p>
-
-<p>Also, look at the conditions per path. See if you can use the rules for equivalence and boundary testing (see the previous paragraph in this post) to determine if the guards work as expected.</p>
-
-<h3 id="resources">Resources</h3>
-
-<ul>
-  <li><a href="https://www.istqb.org/downloads/send/51-ctfl2018/208-ctfl-2018-syllabus.html">ISTQB: Foundation Level 2018 Syllabus (chapter 4 contains a list of testing techniques)</a></li>
-  <li>Wikipedia:
-    <ul>
-      <li><a href="https://en.wikipedia.org/wiki/Equivalence_partitioning">Equivalence class partitioning</a></li>
-      <li><a href="https://en.wikipedia.org/wiki/Boundary-value_analysis">Boundary value analysis</a></li>
-      <li><a href="https://en.wikipedia.org/wiki/Control-flow_graph">Control-flow graph</a></li>
-      <li><a href="https://en.wikipedia.org/wiki/Finite-state_machine">Finite state machine</a></li>
-    </ul>
-  </li>
-  <li><a href="https://sqa.stackexchange.com/questions/20226/how-do-we-calculate-statement-coverage-branch-coverage-path-coverage-and-cond">StackExchange: How do we calculate Statement coverage, Branch coverage, Path coverage and Condition coverage in White box testing?</a></li>
-  <li>YouTube/Udacity:
-    <ul>
-      <li><a href="https://www.youtube.com/watch?v=9PSrhH2gtkU">Statement Coverage - Georgia Tech - Software Development Process</a></li>
-      <li><a href="https://www.youtube.com/watch?v=0lVA7TPpxUE">Control Flow Graphs - Georgia Tech - Software Development Process</a></li>
-      <li><a href="https://www.youtube.com/watch?v=JkJFxPy08rk">Branch Coverage - Georgia Tech - Software Development Process</a></li>
-      <li><a href="https://www.youtube.com/watch?v=ZnPmJd5aqyw">Condition Coverage - Georgia Tech - Software Development Process</a></li>
-      <li><a href="https://www.youtube.com/watch?v=kd1_3CwYr60">Branch and Condition Coverage - Georgia Tech - Software Development Process</a></li>
-    </ul>
-  </li>
-  <li><a href="https://www.softwaretestingclass.com/design-test-cases-using-state-transition-testing-technique/">Software Testing Class: How to Design Test Cases Using State Transition Testing Technique?</a></li>
-  <li><a href="https://www.softwaretestingmaterial.com/state-transition-test-design-technique/">Software Testing Material: State Transition Test Case Design Technique</a></li>
-</ul>
-
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -1021,7 +1466,10 @@
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
-    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable javascript with self-executing functions</a> <br />
+    <a href="/2020/02/08/Unit-testing-self-executing-JavaScript-Modules-in-Visual-Studio.html">Unit testing self-executing JavaScript modules in Visual Studio</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
@@ -1031,9 +1479,6 @@
     <div class="last-posts-spacer"></div>
     
     <a href="/2019/06/22/Static-code-analysis-for-your-csharp-projects.html">Static code analysis for your C# projects</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/05/06/Techniques-for-determining-test-scenarios.html">Techniques for determining test scenarios</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
