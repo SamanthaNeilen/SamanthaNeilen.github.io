@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calling async methods with ConfigureAwait</title>
+    <meta name="description" content="When I started using SonarQube/SonarLint to improve code quality it made me aware of using the ConfigureAwait method available on any async method call. The ...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="https://samanthaneilen.github.io/2020/05/04/Calling-async-methods-with-configureawait.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Calling async methods with ConfigureAwait
+    </header>
+    
+    <span>May 4, 2020</span><br />
+    Tags: 
+                Async 
+			
+    <div class="article-content">
+        <p>When I started using SonarQube/SonarLint to improve code quality it made me aware of using the ConfigureAwait method available on any async method call. The linting rule defines:</p>
+
+<blockquote>
+  <p>After an <code class="highlighter-rouge">await</code>ed <code class="highlighter-rouge">Task</code> has executed, you can continue execution in the original, calling thread or any arbitrary thread. Unless the rest of the code needs the context from which the <code class="highlighter-rouge">Task</code> was spawned, <code class="highlighter-rouge">Task.ConfigureAwait(false)</code> should be used to keep execution in the <code class="highlighter-rouge">Task</code> thread to avoid the need for context switching and the possibility of deadlocks.</p>
+
+  <p>This rule raises an issue when code in a class library <code class="highlighter-rouge">await</code>s a <code class="highlighter-rouge">Task</code> and continues execution in the original calling thread.</p>
+
+  <p><a href="https://rules.sonarsource.com/csharp/RSPEC-3216">quoted from: sonarsource.com</a></p>
+</blockquote>
+
+<p>In this post, I will take little dive into asynchronous programming and refer to relevant resources to look at. After that, I will explain the usage of the ConfigureAwait method.</p>
+
+<p><strong>Table of contents:</strong></p>
+<ul id="markdown-toc">
+  <li><a href="#what-is-asynchronous-programming" id="markdown-toc-what-is-asynchronous-programming">What is asynchronous programming</a></li>
+  <li><a href="#the-task-based-asynchronous-pattern-tap" id="markdown-toc-the-task-based-asynchronous-pattern-tap">The Task-based Asynchronous Pattern (TAP)</a></li>
+  <li><a href="#using-configureawait" id="markdown-toc-using-configureawait">Using ConfigureAwait</a></li>
+</ul>
+
+<h3 id="what-is-asynchronous-programming">What is asynchronous programming</h3>
+
+<p>If you are not very familiar with asynchronous programming I would advise you to look into the high-level explanations found in the Microsoft Docs articles below.</p>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/">Asynchronous programming with async and await</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/dotnet/standard/async-in-depth">Async in depth</a></li>
+</ul>
+
+<p>My summary for these articles is:</p>
+
+<p>A single method call chain in your program when called synchronously is executed on 1 thread. If the code has to wait for an external call handled by the operating system (accessing a disk or network resource) that single thread will stay idle and wait for that external call to finish then resume its work.</p>
+
+<p>When using asynchronous programming you allow the call chain execution to be paused and free up the thread for other work while waiting for the response of an external or long-running call. This allows the software or system that runs the software to complete more work and utilize it’s resources more efficiently.</p>
+
+<p>Another great article on Microsoft Docs is “https://docs.microsoft.com/en-us/dotnet/csharp/async” that explains how to identify situations in which asynchronous programming is especially helpful. Also, be aware of the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/async#important-info-and-advice">“Important info and advice</a>” section in that article for some extra tips even if you already know and use asynchronous programming.</p>
+
+<h3 id="the-task-based-asynchronous-pattern-tap">The Task-based Asynchronous Pattern (TAP)</h3>
+
+<p>.NET Framework 4 and above (including .NET Core) use the Task-based Asynchronous Pattern (TAP) for writing asynchronous code. There <a href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap">are in-depth and concrete articles for Task-based asynchronous pattern (TAP)</a> on how to use the Task-based Asynchronous Pattern in C#. You can also find explanations on the “Legacy” asynchronous patterns used in the .NET framework using the left-hand content menu.</p>
+
+<p>The “<a href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern">Consuming the Task-based Asynchronous Pattern</a>” contains an explanation on how to consume asynchronous methods. This information is good to know as more and more methods of the .NET framework are starting to become asynchronous methods. This article also contains <a href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern#configuring-suspension-and-resumption-with-yield-and-configureawait">an explanation for the ConfigureAwait method</a>.</p>
+
+<h3 id="using-configureawait">Using ConfigureAwait</h3>
+
+<p>As stated in the last paragraph the section in “<a href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern">Consuming the Task-based Asynchronous Pattern</a>” explaining the ConfigureAwait is “<a href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern#configuring-suspension-and-resumption-with-yield-and-configureawait">Configuring Suspension and Resumption with Yield and ConfigureAwait</a>”.</p>
+
+<p>It explains that when resuming work after an await, the default behavior is to resume work on the original thread that was paused. If you do not explicitly use the ConfigureAwait method the default behavior will be the same as ConfigureAwait(true).</p>
+
+<p>When using asynchronous methods in a web application this default behavior allows you to retain the value certain variables like for example the HttpContext variable after an awaited method.</p>
+
+<p>If you have no need for these values (or capture all the values on entry and hand them off to your asynchronous code) you can use ConfigureAwait(false). This will allow the continuation of execution on any thread and allows the system to improve its scheduling of work on the available threads. As stated in the SonarQube rule listed at the start of the article this may also prevent certain deadlock scenarios.</p>
+
+<p>However, be aware that when introducing ConfigureAwait(false) that you may lose some context variables and get some unexplainable null reference exceptions if the code is expecting those variables to still have a value.</p>
+
+<p>There is a great <a href="https://devblogs.microsoft.com/dotnet/configureawait-faq/">Microsoft developer blogpost</a> with extra useful information and a FAQ section about the usage of ConfigureAwait. It has a more in-depth explanation of how to use ConfigureAwait.</p>
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .NET developer.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a><br />
+    Subscribe via <a href="/feed.xml">RSS</a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>
+    
+    <a href="/2020/05/04/Calling-async-methods-with-configureawait.html">Calling async methods with ConfigureAwait</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/03/18/Tips-for-building-habits-around-working-from-home.html">Tips for building habits around working from home</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/02/08/Unit-testing-self-executing-JavaScript-Modules-in-Visual-Studio.html">Unit testing self-executing JavaScript modules in Visual Studio</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/10/19/Managing-your-client-side-libraries.html">Managing your client-side libraries</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
