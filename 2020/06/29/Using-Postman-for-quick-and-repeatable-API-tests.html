@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Using Postman for quick and repeatable API tests</title>
+    <meta name="description" content="Postman is an API tool that is great for setting up repeatable calls to a REST web service in a short amount of time. When developing an API it’s a good way ...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="https://samanthaneilen.github.io/2020/06/29/Using-Postman-for-quick-and-repeatable-API-tests.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Using Postman for quick and repeatable API tests
+    </header>
+    
+    <span>Jun 29, 2020</span><br />
+    Tags: 
+                WebAPI 
+			
+    <div class="article-content">
+        <p>Postman is an API tool that is great for setting up repeatable calls to a REST web service in a short amount of time. When developing an API it’s a good way to check if the API works as expected and saves time in setting up calls every time. Using environment parameters you can also quickly replay the requests on different environments with different parameters. The export functions allow you to store collections and environment files in source control as needed. Using a low-code tool also has the benefit of sharing the calls and files with non-technical testers.</p>
+
+<p>The tool has support for mock API and automated testing but these features require an account and the use of a paid license. When I need those features I usually switch to SoapUI another API testing tool that provides those features for free with no account needed. I will write an article on SoapUI at a later time. SoapUI also provides support for WCF services while Postman focusses on REST calls.</p>
+
+<p>Due to ease of use and sharing Postman does have my preference over SoapUI until I find I need WCF calls, local mock services, or automated test cases.</p>
+
+<p>More information on <a href="https://www.postman.com/">Postman features</a> and pricing see the Postman site. You can also download the tool from that website and install it. On the first startup, it will show a dialog prompting to sign in but there is a small skip sign-in link in the pop-up if you do not wish to set up yet another account for a new service.</p>
+
+<p><strong>Table of contents:</strong></p>
+
+<ul id="markdown-toc">
+  <li><a href="#creating-and-sharing-collections" id="markdown-toc-creating-and-sharing-collections">Creating and sharing collections</a></li>
+  <li><a href="#using-environments-and-parameters" id="markdown-toc-using-environments-and-parameters">Using environments and parameters</a></li>
+  <li><a href="#using-a-pre-request-script-to-fetch-a-bearer-token-for-authorization-use-cases" id="markdown-toc-using-a-pre-request-script-to-fetch-a-bearer-token-for-authorization-use-cases">Using a pre-request script to fetch a bearer token for authorization use cases</a></li>
+  <li><a href="#postman-console" id="markdown-toc-postman-console">Postman console</a></li>
+  <li><a href="#exporting-postman-requests-as-code" id="markdown-toc-exporting-postman-requests-as-code">Exporting postman requests as code</a></li>
+  <li><a href="#tip-for-seeing-and-replaying-a-browser-request" id="markdown-toc-tip-for-seeing-and-replaying-a-browser-request">Tip for seeing and replaying a browser request</a></li>
+</ul>
+
+<p><br /><br /></p>
+
+<h3 id="creating-and-sharing-collections">Creating and sharing collections</h3>
+
+<p>When opening Postman, go to the collections tab and create a new collection. This will create a folder to group requests. It will also allow you to set up certain shared settings like authorization, pre-requests scripts, tests, and variables as can be seen in de screenshot below.</p>
+
+<p><img src="/assets/images/20200629/CreateCollection.png" alt="[Create collection]" /><br /><br /></p>
+
+<p>I have added <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/NetCore.WebApiExample/Controllers/ValuesController.cs">a simple values controller to my WebApi examples project</a> as shown below.</p>
+
+<pre><code class="language-C#">
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+
+namespace NetCore.WebApiExample.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ValuesController : ControllerBase
+    {
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok(new [] {"value1", "value2"});
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            return Ok($"Requested id: {id}");
+        }
+
+        [HttpPost]
+        public IActionResult PostObjectParameter([FromBody] KeyValuePair&lt;int,string&gt; keyValuePair)
+        {
+            return Ok($"Posted values {keyValuePair}");
+        }
+        
+        [HttpPost("{id}")]
+        public IActionResult PostValueTypeParameter([FromRoute]int id, [FromBody] KeyValuePair&lt;string,string&gt; value)
+        {
+            return Ok($"Posted values {{ id: {id}, value: {value} }}");
+        }
+    }
+}
+
+</code></pre>
+<p><br /><br /></p>
+
+<p>A screenshot listing the requests within postman and the post for the api/values/{id} endpoint is shown below.</p>
+
+<p><img src="/assets/images/20200629/CollectionOverview.png" alt="[Collection requests and POST example]" /><br /><br /></p>
+
+<p>For requests using a JSON body be sure to add a Content-Type: application/json header to the request to ensure proper interpretation of the body content.<br /><br /></p>
+
+<p><img src="/assets/images/20200629/RequestHeaders.png" alt="[Request headers]" /><br /><br /></p>
+
+<p>Postman will add this header automatically when selecting the JSON content-type from the drop-down when using a raw body.<br /><br /></p>
+
+<p><img src="/assets/images/20200629/BodyContentType.png" alt="[Body content type dropdown]" /> <br /><br /></p>
+
+<p>When calling an endpoint protected by authentication/authorization you can either add an Authorization header to the headers tab or use the Authorization tab to fill the header using parameters related to the Authorization method:</p>
+
+<p><img src="/assets/images/20200629/AuthorizationList.png" alt="[Authorization tab dropdown]" /> <br /><br /></p>
+
+<p>When you have to wish to save the collection for sharing click the collection context menu and choose export. This will export a JSON file containing all the data. Be aware that if you set secrets in the requests that these will be embedded into the collection file.</p>
+
+<p>The collection export file can be imported using the Import function in the top menu of Postman and saved to source control or any collaboration workspace.</p>
+
+<p>I have marked both options with a red square in the screenshot below:</p>
+
+<p><img src="/assets/images/20200629/ImportAndExportCollection.png" alt="[Import and export collection]" /> <br /><br /></p>
+
+<p>I have added my <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/Test%20files/NetCore%20WebApi%20Examples.postman_collection(no_parameters).json">exported postman collection file to my WebApi examples GitHub repository</a> and you can try importing and running the collection on a localhost instance of that project.</p>
+
+<p><br /><br /></p>
+
+<h3 id="using-environments-and-parameters">Using environments and parameters</h3>
+
+<p>Postman allows the use of parameters and uses environments to easily switch out the parameter value. You can create a file for a local and hosted environment containing the host URL as a parameter.</p>
+
+<p>To do this first create environments using the “Manage environment” option as shown below.</p>
+
+<p><img src="/assets/images/20200629/ManageEnvironment.png" alt="[Manage environment]" /> <br /><br /></p>
+
+<p><img src="/assets/images/20200629/CreateEnvironment.png" alt="[Create environment]" /> <br /><br /></p>
+
+<p>Next change the host URL in the request to use a parameter placeholder so Postman knows where to replace the variable. Be sure to set the active environment to ensure the parameter is bound to the correct value. The variables can be embedded in the URL or any of the request parameter tabs (authorization, headers, body) as shown in the screenshots below.</p>
+
+<p><img src="/assets/images/20200629/ParameterizedRequest.png" alt="[Parameterized request]" /><br /><br /></p>
+
+<p>Environments can also be exported using the download option in the Manage environment pop-up.</p>
+
+<p><img src="/assets/images/20200629/DownloadEnvironment.png" alt="[Download environment]" /><br /><br /></p>
+
+<p>The import function in the top left side of Postman can be used for either importing environment or collection files.</p>
+
+<p>I have added <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/Test%20files/Local%20NetCore%20WebApiExamples.postman_environment.json">my exported parameterized postman collection file</a> and <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/Test%20files/Local%20NetCore%20WebApiExamples.postman_environment.json">local environment file</a> to my WebApi examples GitHub repository and you can try importing and running the collection on a localhost instance of that project.</p>
+
+<p><br /><br /></p>
+
+<h3 id="using-a-pre-request-script-to-fetch-a-bearer-token-for-authorization-use-cases">Using a pre-request script to fetch a bearer token for authorization use cases</h3>
+
+<p>When using OAUTH2 authorization, you can use the pre-requests script on a collection to call a script to fill a variable with a valid token. This will ensure you can always just run the request and not have to worry about retrieving a valid authorization token every time.</p>
+
+<p><a href="https://gist.github.com/bcnzer/073f0fc0b959928b0ca2b173230c0669">A basic script by Ben Chartrand can be found on Github.</a></p>
+
+<p>Be aware that when exporting environment files or postman collections that hard-coded settings and secrets will be exported in the files. In the uploaded files I have created placeholders for the secrets and specific instance settings that correspond with the placeholders in the WebApi configuration files.</p>
+
+<p>The pre-request script for a collection can be found using the Edit collection context menu setting and then selecting the pre-request script tab.</p>
+
+<p><img src="/assets/images/20200629/EditCollectionPreRequestScript.png" alt="[Edit collection option and pre-request script tab]" /><br /><br /></p>
+
+<h3 id="postman-console">Postman console</h3>
+
+<p>Postman console is a useful feature for troubleshooting and sharing raw requests made by Postman and can be found in the bottom left of the application.</p>
+
+<p><img src="/assets/images/20200629/PostmanConsole.png" alt="[Postman console option]" /> <br /><br /></p>
+
+<p>You can inspect the requests made and via the “show raw log” option can change the format to the actual HTTP call that has been sent. The raw format is great for sharing tool independent requests/responses to for example an API vendor for troubleshooting. (Again be aware of any secrets embedded in your requests/responses when sharing this information)</p>
+
+<p><br /><br /></p>
+
+<h3 id="exporting-postman-requests-as-code">Exporting postman requests as code</h3>
+
+<p>Besides sharing the raw requests logged in Postman console you can also share requests by exporting a request as code using the code option below the Save button on a request.</p>
+
+<p><img src="/assets/images/20200629/GenerateCode.png" alt="[Generate code option]" /><br /><br /></p>
+
+<h3 id="tip-for-seeing-and-replaying-a-browser-request">Tip for seeing and replaying a browser request</h3>
+
+<p>If you have a web application in a browser that calls an API you can usually use the network tab of the developer tools to inspect requests made from the browser to your API. <br /><br /></p>
+
+<p><img src="/assets/images/20200629/BrowserNetworkTabRequestDetails.png" alt="[Browser - network tab - request details]" /><br /><br /></p>
+
+<p>By copying the headers and body for the request to a postman request you can easily replay, edit, and troubleshoot a request without constantly having to fill-out webforms.</p>
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .NET developer.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a><br />
+    Subscribe via <a href="/feed.xml">RSS</a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>
+    
+    <a href="/2020/06/29/Using-Postman-for-quick-and-repeatable-API-tests.html">Using Postman for quick and repeatable API tests</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/05/04/Calling-async-methods-with-configureawait.html">Calling async methods with ConfigureAwait</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/03/18/Tips-for-building-habits-around-working-from-home.html">Tips for building habits around working from home</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/02/08/Unit-testing-self-executing-JavaScript-Modules-in-Visual-Studio.html">Unit testing self-executing JavaScript modules in Visual Studio</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
