@@ -33,6 +33,180 @@
     
     <article>
         <header class="article-header">
+            <a href="/2021/01/31/Using-SoapUI-for-API-tests.html">Using SoapUI for API tests</a>
+        </header>
+        
+        <span>Jan 31, 2021</span> <br />
+        Tags: 
+        WebAPI
+        
+        <div class="article-content">
+            <p>SoapUI is an API testing tool like Postman. It’s an open-source and free API testing tool. It can be used for both SOAP and REST endpoints. You can pretty easily make repeatable calls, as you can with Postman, and save the files in source control with your API.</p>
+
+<p>The features that make it stand out for me is the fact that you can make a TestSuite that calls several tests and the local MockServices.</p>
+
+<p>The TestSuites make use of the out-of-the-box assertions on the responses and these assertions can be extended by either switching to a paid version or by using Groovy scripts. You can define the URL for TestSuites in project parameters so you can easily point the TestSuite to a different URL or environment.</p>
+
+<p>You can define a local MockService to run on your local machine and have it return payloads to the application that you are testing or running. This can be very helpful when you are creating an application for an API that doesn’t exist yet.</p>
+
+<p>The drawbacks of SoapUI are the steeper learning curve for getting started compared to Postman. The fact that these capabilities are very useful for local development but not for running the tests automatically in a deployment pipeline or deploying a mock endpoint to a test environment.</p>
+
+<p>For more robust repeatable testing in a deployment pipeline, writing test code using C# combined with one of the testing frameworks and Selenium and/or Specflow will give you the most options. However Postman, and for extended capabilities, SoapUI will add a lot of benefits in regards to local and regression testing.</p>
+
+<p><strong>Table of contents:</strong></p>
+
+<ul id="markdown-toc">
+  <li><a href="#creating-and-sharing-a-project" id="markdown-toc-creating-and-sharing-a-project">Creating and sharing a project</a></li>
+  <li><a href="#using-custom-properties" id="markdown-toc-using-custom-properties">Using custom properties</a></li>
+  <li><a href="#soapui-logging" id="markdown-toc-soapui-logging">SoapUI logging</a></li>
+  <li><a href="#creating-a-testsuite" id="markdown-toc-creating-a-testsuite">Creating a TestSuite</a></li>
+  <li><a href="#creating-a-mockservice" id="markdown-toc-creating-a-mockservice">Creating a Mockservice</a></li>
+</ul>
+<p><br /><br /></p>
+
+<h3 id="creating-and-sharing-a-project">Creating and sharing a project</h3>
+
+<p>When opening SoapUI, use the Empty button to create a new project. You can right-click the new project in the navigator pane to rename the project and to add a new Rest service from URI (or even a SOAP endpoint with a WSDL) . After creating the project you can add the REST service as shown in the screenshot below.</p>
+
+<p><img src="/assets/images/20210131/NewProject.png" alt="[New project]" /><br /><br /></p>
+
+<p><img src="/assets/images/20210131/NewRestService.png" alt="[New REST-service]" /><br /><br /></p>
+
+<p>This will create a service with an endpoint in de project to which you can add other endpoints and several different requests per endpoint.</p>
+
+<p>Double-click a specific request to open the Request editor to execute the request and view the response. Use the play button to execute the request and view the results on the right side of the window. You may have to select the JSON or HTML tab to see the response.</p>
+
+<p><img src="/assets/images/20210131/NewServiceEndpointRequest.png" alt="[New service endpoint request]" /><br /><br /></p>
+
+<p>Add extra resources (for example /API/other-path) by right-clicking the service and select the option New Resource.</p>
+
+<p>Add extra methods to call the resource for different parameters and HTTP verbs by right-clicking the resource and selecting New Method (or New Child to create a sub-resource and then new Method).</p>
+
+<p>Use parentheses like {id} to create a parameter in the path.</p>
+
+<p><img src="/assets/images/20210131/ResourceWithTemplateParameter.png" alt="[Resource with template parameter]" /><br /><br /></p>
+
+<p>Add extra requests to a method for different parameter values by right-clicking the method and then choosing the New Request option.</p>
+
+<p>For requests using a JSON body be sure to add a Content-Type: application/JSON header to the request to ensure proper interpretation of the body content. To ensure you receive a JSON response when multiple response types are possible add an Accept: application/JSON header to the request. The Request editor contains a header tab to add these headers. See the screenshot below.</p>
+
+<p><img src="/assets/images/20210131/AddHeader.png" alt="[Add header]" /><br /><br /></p>
+
+<p>In the screenshot below, I have added a request for each of the Values controller endpoints to the project in the Navigator pane. The screenshot also shows a POST request and how all the parameters and settings are set in the Request editor.</p>
+
+<p><img src="/assets/images/20210131/ProjectWithAllRequestAndRequestEditorParameters.png" alt="[Project with all requests and Requesteditor parameters]" /><br /><br /></p>
+
+<p>When you have to wish to save the project for sharing right-click the project file in the navigator pane and select the Save Project option. This will save an XML file containing all the data. Be aware that if you set secrets in the requests that these will be embedded into the project file.</p>
+
+<p>The project file can be opened using the Import button in the top menu of SoapUI and saved to source control or any collaboration workspace.</p>
+
+<p>I have marked both options with a red square in the screenshot below:</p>
+
+<p><img src="/assets/images/20210131/SaveAndImportProject.png" alt="[save and import project]" /><br /><br /></p>
+
+<p>I have added my SoapUI project file to <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/Test%20files/NetCore%20WebApi%20Examples.postman_collection(no_parameters).json">my WebApi examples GitHub repository</a>  and you can try importing and running the collection on a localhost instance of that project.</p>
+
+<h3 id="using-custom-properties">Using custom properties</h3>
+
+<p>SoapUI allows the use of parameters on several levels to easily switch out the parameter values for the entire project, or just on a request or TestSuite.</p>
+
+<p>The parameters or properties can be added to several levels. To see where you can add properties open the properties pane (if it’s not open already) from the left-hand lower side of SoapUI.</p>
+
+<p><img src="/assets/images/20210131/PropertiesWindow.png" alt="[Properties window]" /><br /><br /></p>
+
+<p>Whenever the + button is shown you can add your properties or parameters. I like to add environment URLs on the project level. You can assign these to all the requests in the project. When you change the environment parameter used all the requests will execute for the new URL. This makes it easy to switch environments.</p>
+
+<p>For example, add the project Custom Properties as shown in the screenshot below. As you can see I reference the environment_local property in the environment property. The environment property will be used in the request templates for all the requests so only the value has to be changed to the correct environment property that you want to use. This way you always have all the environment URLs in one place without having to look them up.</p>
+
+<p><img src="/assets/images/20210131/ProjectPropertiesEnvironments.png" alt="[Project properties environments]" /><br /><br /></p>
+
+<p>To easily assign the environment property to all the requests in the project, double-click the API node to show the Service Viewer. Go to the Service Endpoints tab, change the fixed Endpoint value to the value {#Project#environment}, set the mode to overwrite, and select the Assign button to assign the parameter to all requests in the project. (Double-check with the Request editor to see that the parameter has indeed been assigned correctly).</p>
+
+<p><img src="/assets/images/20210131/AssignParameter.png" alt="[Assign parameter]" /><br /><br /></p>
+
+<p>The syntax ${#ParameterLevel#ParameterName} to assign or use a parameter value will work on most input fields within the project.</p>
+
+<p>Parameters and properties are also invaluable for TestSuites and TestCases. I will explain these features in a later paragraph.</p>
+
+<p>I have added my exported parameterized SoapUI file to <a href="https://github.com/SamanthaNeilen/WebApiExamples/blob/api_test_tools/Test%20files/NetCore%20WebApi%20Examples.postman_collection(no_parameters).json">my WebApi examples GitHub repository</a> and you can try importing and running the project on a localhost instance of that project.</p>
+
+<h3 id="soapui-logging">SoapUI logging</h3>
+
+<p>SoapUI provides several types of logging. The screenshot below shows some of the more useful logs.</p>
+
+<p>The Raw tabs for the requests and responses show the actual URL, headers, and response content of the requests. For the request body, view the request tab. As you can see in the Raw tab for the request the URLs have been replaced by the actual values of the parameters for the send request.</p>
+
+<p>The HTTP logging provides a text log of all the full requests and responses (though the timestamps and newline characters can make it a bit difficult to read at times).</p>
+
+<p><img src="/assets/images/20210131/LoggingPanes.png" alt="[Logging panes]" /><br /><br /></p>
+
+<p>These panes will help you track down the response error codes and understand specific requests that you send using the Request editor.</p>
+
+<h3 id="creating-a-testsuite">Creating a TestSuite</h3>
+
+<p>TestSuites are a great tool to define some simple regression tests for your API. Create a new TestSuite from the project context menu.</p>
+
+<p><img src="/assets/images/20210131/NewTestSuite.png" alt="[New TestSuite]" /><br /><br /></p>
+
+<p>You can add TestCases from the context menu on the new TestSuite. Each test case contains a request or a set of requests that have their responses checked for certain criteria. A test case can be a logical grouping of 1 or several requests with the same purpose like checking certain validation rules.</p>
+
+<p>You could define and use repeatable test steps and change certain parameters for the specific case or step. See <a href="https://www.soapui.org/docs/functional-testing/modularizing-your-tests/">the Soap UI Docs on modularizing your tests</a> for more guidance.</p>
+
+<p>The image below shows a simple TestCase with a simple Assertion.</p>
+
+<p><img src="/assets/images/20210131/TestSuite.png" alt="[TestSuite]" /><br /><br /></p>
+
+<p>Possible test step types are shown in the screenshot below.</p>
+
+<p><img src="/assets/images/20210131/TestSteps.png" alt="[TestSteps]" /><br /><br /></p>
+
+<p>The groovy steps provide extensibility by code but it does have a learning curve especially if you are not familiar with the Java programming paradigms.</p>
+
+<p>There are already a lot of very usable out-of-the-box assertions like the HTTP code assertions, string/content comparison, JSON path, and JSON regular expressions assertions.</p>
+
+<p>Be aware that the free version of SoapUI has limitations (as seen for all the greyed out options).</p>
+
+<p><img src="/assets/images/20210131/ProAssertions.png" alt="[Pro assertions]" /><br /><br /></p>
+
+<p>You can easily use the SoapUI menus on either the project to run all TestCases, a single TestSuite, or even a single TestStep with a few simple clicks.</p>
+
+<p><img src="/assets/images/20210131/RunTests.png" alt="[Run tests]" /><br /><br /></p>
+
+<p>Even if you just run these regression tests locally and keep the project file with the codebase you will always have a quick tool to verify whether or not everything is working as intended and even testers that don’t have a test automation background can maintain and extend these projects.</p>
+
+<p>SoapUI also has possibilities for <a href="https://www.soapui.org/docs/security-testing/getting-started/">security tests</a>, <a href="https://www.soapui.org/docs/load-testing/concept/">load tests</a>, and <a href="https://www.soapui.org/docs/functional-testing/teststep-reference/manual-teststep/">documenting manual test steps</a> for an API. Please see the SoapUI docs linked in the previous sentence for more information on those.</p>
+
+<h3 id="creating-a-mockservice">Creating a Mockservice</h3>
+
+<p>A MockService is a simple local web service that is started at a certain address. You can tell the service on which endpoints to listen for requests and what responses to send back. This is a great tool when developing a consuming application where the endpoints do not yet exist or to test certain behavior (error responses) from those endpoints.</p>
+
+<p>To create a MockService, again use the context menu on the project node in the navigation pane.</p>
+
+<p><img src="/assets/images/20210131/NewMockService.png" alt="[New MockService]" /><br /><br /></p>
+
+<p>The local URL at which the MockService is run can be changed from the settings.</p>
+
+<p><img src="/assets/images/20210131/MockServiceSettings.png" alt="[MockService settings]" /><br /><br /></p>
+
+<p>Now you can add an endpoint (mock action) through the context menu on the MockService. Omit all the query parameters from the endpoint path and set the path parameter to a fixed value. There are ways to add scripts to the MockService so it responds more dynamically to path parameters to return a proper response. See <a href="https://www.soapui.org/docs/soap-mocking/creating-dynamic-mockservices/">the SoapUI docs on creating dynamic MockServices</a> for more information.</p>
+
+<p><img src="/assets/images/20210131/NewMockAction.png" alt="[NewMock action]" /><br /><br /></p>
+
+<p><img src="/assets/images/20210131/NewMockResponse.png" alt="[NewMock response]" /><br /><br /></p>
+
+<p>You can define the HTTP status code and the response body for the mock endpoint in the editor. The MockService responses allow you to define sequences of responses so (for the first response define a response message and for all subsequent responses define a very different response). Double-click the mock action to find and change the Dispatch options. The default is Sequence, meaning that all the responses are returned in order and the last response is repeated until the service is stopped or started.</p>
+
+<p><img src="/assets/images/20210131/MockActionSequence.png" alt="[MockAction sequence]" /><br /><br /></p>
+
+<p>When a MockService is started you can still edit the responses and status codes while it’s running. SoapUI will return the newly changed response without restarting the MockService first.</p>
+
+<p>Be aware that when consuming the MockService from a local browser that you may have to add extra CORS endpoints to ensure the browser’s security to make the requests. See <a href="https://medium.com/@andrelimamail/how-to-deal-with-cors-in-soap-ui-mock-services-or-anyother-f4cc55b3dccd">this Medium article on how to handle CORS from a MockService</a>.</p>
+
+        </div>
+    </article>
+    
+    <article>
+        <header class="article-header">
             <a href="/2020/06/29/Using-Postman-for-quick-and-repeatable-API-tests.html">Using Postman for quick and repeatable API tests</a>
         </header>
         
@@ -853,578 +1027,6 @@ namespace NetCore.WebApiExample.Controllers
         </div>
     </article>
     
-    <article>
-        <header class="article-header">
-            <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a>
-        </header>
-        
-        <span>Dec 30, 2019</span> <br />
-        Tags: 
-        JavaScript
-        
-        <div class="article-content">
-            <p>I still mostly use regular JavaScript with jQuery in my applications. Before I started writing self-executing modules, my JavaScript was embedded all over the place in HTML and it was untestable (except for running a page in the browser).</p>
-
-<p>A year or so ago a colleague introduced me to the concept of self-executing JavaScript functions. (Thank you Gijs Stoeldraaijers!) After adopting this practice, I found that I could write JavaScript modules with keeping the SOLID principles in mind. The most important benefits are creating smaller modules with a single purpose that can be tested and dependency injection support to make unit testing even easier. Even without adopting unit testing right away the improvements to maintainability were immense for me.</p>
-
-<p>I’ll not go into JavaScript unit testing in this post and do an in-depth post as my next blog post. If you want to look into it, without waiting for that, please look at the <a href="https://docs.microsoft.com/en-us/visualstudio/javascript/unit-testing-javascript-with-visual-studio?view=vs-2019#unit-tests-in-other-project-types">Microsoft Docs page on Unit testing JavaScript and TypeScript in Visual Studio</a>.</p>
-
-<p><strong>Table of contents:</strong></p>
-<ul id="markdown-toc">
-  <li><a href="#example-of-the-old-way-of-working-embedding-javascript-in-the-page" id="markdown-toc-example-of-the-old-way-of-working-embedding-javascript-in-the-page">Example of the old way of working (embedding JavaScript in the page)</a></li>
-  <li><a href="#self-executing-functions" id="markdown-toc-self-executing-functions">Self-executing functions</a></li>
-  <li><a href="#separating-html-control-events-and-javascript-hook-ups" id="markdown-toc-separating-html-control-events-and-javascript-hook-ups">Separating HTML control events and JavaScript hook-ups</a></li>
-  <li><a href="#separating-html-templating-from-your-javascript-code" id="markdown-toc-separating-html-templating-from-your-javascript-code">Separating HTML templating from your JavaScript code</a></li>
-</ul>
-
-<h3 id="example-of-the-old-way-of-working-embedding-javascript-in-the-page">Example of the old way of working (embedding JavaScript in the page)</h3>
-<p>Below, I have created an example of my old way of writing JavaScript on an overview page that loads data from an API endpoint and has some filter capabilities.</p>
-
-<p>The data templates are hardcoded strings in the JavaScript and the search button event hookup is done through HTML markup.</p>
-
-<p>A working Visual Studio project with the code listed below can be found in my <a href="https://github.com/SamanthaNeilen/JavascriptModulesExamples/tree/V1.0-Embedded-JavaScript">JavaScriptModuleExamples repository on GitHub with the tag “V1.0-Embedded-JavaScript”</a>.</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@page
-@model IndexModel
-@{
-    ViewData["Title"] = "Home page";
-}
-<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col"</span><span class="nt">&gt;</span>
-    <span class="nt">&lt;h1&gt;</span>Customer overview<span class="nt">&lt;/h1&gt;</span>
-
-    @* Searchform *@
-    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"search-customer"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchCustomerName"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Name<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchCustomerName"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchEmail"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Email<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchEmail"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchCountry"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Country<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchCountry"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">"button"</span> <span class="na">class=</span><span class="s">"btn btn-sm btn-primary col-sm-2"</span> <span class="na">onclick=</span><span class="s">"filterData()"</span><span class="nt">&gt;</span>@Texts.Search<span class="nt">&lt;/button&gt;</span>
-    <span class="nt">&lt;/div&gt;</span>
-
-    @* Grid for data *@
-    <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"table mt-2"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;thead&gt;</span>
-            <span class="nt">&lt;tr&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Name<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Email<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Country<span class="nt">&lt;/th&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/thead&gt;</span>
-        <span class="nt">&lt;tbody</span> <span class="na">id=</span><span class="s">"customer-table-body"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;tr</span> <span class="na">class=</span><span class="s">"loading-row"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;td</span> <span class="na">colspan=</span><span class="s">"3"</span><span class="nt">&gt;&lt;progress&gt;&lt;/progress&gt;&lt;/td&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/tbody&gt;</span>
-    <span class="nt">&lt;/table&gt;</span>
-<span class="nt">&lt;/div&gt;</span>
-
-@section Scripts {
-    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
-        <span class="kd">const</span> <span class="nx">CUSTOMER_ROW_SELECTOR</span> <span class="o">=</span> <span class="s1">'.customer-row'</span><span class="p">,</span>
-            <span class="nx">LOADING_ROW_SELECTOR</span> <span class="o">=</span> <span class="s1">'.loading-row'</span><span class="p">,</span>
-            <span class="nx">DISPLAY_NONE_CLASS</span> <span class="o">=</span> <span class="s1">'display-none'</span><span class="p">,</span>
-            <span class="nx">CUSTOMER_TABLE_BODY</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">);</span>
-
-        <span class="kd">function</span> <span class="nx">loadData</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nx">showLoader</span><span class="p">();</span>
-
-            <span class="nx">$</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="s1">'https://localhost:44313/api/customer'</span><span class="p">)</span>
-                <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">customerList</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">jqXHR</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">));</span>
-                    <span class="nx">showCustomerRows</span><span class="p">(</span><span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">CUSTOMER_ROW_SELECTOR</span><span class="p">));</span>
-                <span class="p">})</span>
-                <span class="p">.</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">alert</span><span class="p">(</span><span class="s1">'error '</span> <span class="o">+</span> <span class="nx">textStatus</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">errorThrown</span><span class="p">);</span>
-                <span class="p">});</span>
-        <span class="p">}</span>
-
-        <span class="kd">function</span> <span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">)</span> <span class="p">{</span>
-            <span class="kd">const</span> <span class="nx">rowTemplate</span> <span class="o">=</span> <span class="s1">'&lt;tr class="customer-row"&gt;&lt;td&gt;{name}&lt;/td&gt;&lt;td&gt;{email}&lt;/td&gt;&lt;td&gt;{country}&lt;/td&gt;&lt;/tr&gt;'</span><span class="p">;</span>
-            <span class="kd">let</span> <span class="nx">dataRows</span> <span class="o">=</span> <span class="s1">'&lt;tr class="loading-row"&gt;&lt;td colspan="3"&gt;&lt;progress&gt;&lt;/progress&gt;&lt;/td&gt;&lt;/tr&gt;'</span><span class="p">;</span>
-
-            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerList</span><span class="p">,</span>
-                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">dataRows</span> <span class="o">+=</span> <span class="nx">rowTemplate</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{name}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{email}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">email</span><span class="p">)</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{country}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">country</span><span class="p">);</span>
-                <span class="p">});</span>
-
-            <span class="k">return</span> <span class="nx">dataRows</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="kd">function</span> <span class="nx">showLoader</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-
-            <span class="kd">const</span> <span class="nx">dataRows</span> <span class="o">=</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">CUSTOMER_ROW_SELECTOR</span><span class="p">);</span>
-            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">dataRows</span><span class="p">,</span>
-                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-                <span class="p">});</span>
-        <span class="p">}</span>
-
-        <span class="kd">function</span> <span class="nx">showCustomerRows</span><span class="p">(</span><span class="nx">customerRows</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerRows</span><span class="p">,</span>
-                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-                <span class="p">});</span>
-            <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="kd">function</span> <span class="nx">filterData</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nx">showLoader</span><span class="p">();</span>
-
-            <span class="kd">const</span> <span class="nx">customerRows</span> <span class="o">=</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">CUSTOMER_ROW_SELECTOR</span><span class="p">);</span>
-            <span class="kd">const</span> <span class="nx">searchName</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchCustomerName'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-            <span class="kd">const</span> <span class="nx">searchEmail</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchEmail'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-            <span class="kd">const</span> <span class="nx">searchCountry</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchCountry'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-
-            <span class="kd">const</span> <span class="nx">rowsToShow</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">customerRows</span><span class="p">,</span>
-                <span class="kd">function</span> <span class="p">(</span><span class="nx">customerRow</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="kd">let</span> <span class="nx">columns</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">customerRow</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">);</span>
-
-                    <span class="k">return</span> <span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchName</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-                        <span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchEmail</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-                        <span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchCountry</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">);</span>
-
-
-                <span class="p">});</span>
-
-           <span class="nx">showCustomerRows</span><span class="p">(</span><span class="nx">rowsToShow</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="kd">function</span> <span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchValue</span><span class="p">,</span> <span class="nx">valueInRow</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nx">searchValue</span> <span class="o">===</span> <span class="s1">''</span> <span class="o">||</span>
-                <span class="nx">valueInRow</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">searchValue</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-            <span class="nx">loadData</span><span class="p">();</span>
-        <span class="p">});</span>
-    <span class="nt">&lt;/script&gt;</span>
-}
-</code></pre></div></div>
-
-<h2 id="self-executing-functions">Self-executing functions</h2>
-
-<p>An example of a self-executing module is shown below. The proper term for the self-executing module is Immediately Invoked Function Expressions or IIFE.</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">someOtherInjectedModule</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">const</span> <span class="nx">CURRENT_MODULE</span> <span class="o">=</span> <span class="p">{};</span>
-    <span class="kd">const</span> <span class="nx">PRIVATE_VARIABLE</span> <span class="o">=</span> <span class="s1">'Hello world!'</span><span class="p">;</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">myPublicFunction</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">privateFunction</span><span class="p">();</span>
-    <span class="p">};</span>
-
-    <span class="kd">function</span> <span class="nx">privateFunction</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">alert</span><span class="p">(</span><span class="nx">PRIVATE_VARIABLE</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="nb">window</span><span class="p">.</span><span class="nx">ModuleExample</span> <span class="o">=</span> <span class="nx">CURRENT_MODULE</span><span class="p">;</span>
-
-<span class="p">})(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">SomeOtherModule</span><span class="p">);</span>
-
-<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nb">window</span><span class="p">.</span><span class="nx">ModuleExample</span><span class="p">.</span><span class="nx">myPublicFunction</span><span class="p">();</span>
-<span class="p">});</span>
-</code></pre></div></div>
-
-<p>The function parameters make it possible to inject dependencies. This has 2 benefits.</p>
-
-<ol>
-  <li>
-    <p>You can inject mocks when unit testing. This makes unit testing much easier.</p>
-  </li>
-  <li>
-    <p>All the external dependencies, that the class relies on, are shown at the top and bottom of the file.</p>
-  </li>
-</ol>
-
-<p>Another great benefit that this pattern gives is variable scoping. All variables scoped within the module are scoped to the function and do not have to be global.</p>
-
-<p>The CURRENT_MODULE object and all its functions/properties are exposed globally by assigning it to a global window property. All the other “private” functions and variables are never exposed outside the scope of the self-executing function.</p>
-
-<p>The  example as shown in the first code listing of this post rewritten with an IIFE is shown below.</p>
-
-<p>A working Visual Studio project with the code listed below can be found in my <a href="https://github.com/SamanthaNeilen/JavascriptModulesExamples">JavaScriptModuleExamples repository on GitHub</a>.</p>
-
-<p>customer-overview.js:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">customerService</span><span class="p">,</span> <span class="nx">utilitiesModule</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">const</span> <span class="nx">CURRENT_MODULE</span> <span class="o">=</span> <span class="p">{},</span>
-        <span class="nx">CUSTOMER_ROW_SELECTOR</span> <span class="o">=</span> <span class="s1">'.customer-row'</span><span class="p">,</span>
-        <span class="nx">LOADING_ROW_SELECTOR</span> <span class="o">=</span> <span class="s1">'.loading-row'</span><span class="p">,</span>
-        <span class="nx">CUSTOMER_TABLE_BODY</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#customer-table-body'</span><span class="p">);</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">initialize</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">$</span><span class="p">(</span><span class="s1">'#customerOverviewSearchButton'</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">filterData</span><span class="p">);</span>
-        <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">loadData</span><span class="p">();</span>
-    <span class="p">};</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">loadData</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="nx">showLoader</span><span class="p">();</span>
-
-        <span class="nx">customerService</span><span class="p">.</span><span class="nx">getCustomers</span><span class="p">(</span><span class="nx">showCustomerData</span><span class="p">);</span>
-    <span class="p">};</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">filterData</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="nx">showLoader</span><span class="p">();</span>
-
-        <span class="kd">const</span> <span class="nx">customerRows</span> <span class="o">=</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">CUSTOMER_ROW_SELECTOR</span><span class="p">);</span>
-        <span class="kd">const</span> <span class="nx">searchName</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchCustomerName'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-        <span class="kd">const</span> <span class="nx">searchEmail</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchEmail'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-        <span class="kd">const</span> <span class="nx">searchCountry</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#searchCountry'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
-
-        <span class="kd">const</span> <span class="nx">rowsToShow</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">grep</span><span class="p">(</span><span class="nx">customerRows</span><span class="p">,</span>
-            <span class="kd">function</span> <span class="p">(</span><span class="nx">customerRow</span><span class="p">)</span> <span class="p">{</span>
-                <span class="kd">const</span> <span class="nx">columns</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">customerRow</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">'td'</span><span class="p">);</span>
-
-                <span class="k">return</span> <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchName</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-                    <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchEmail</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-                    <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">isMatchForFilter</span><span class="p">(</span><span class="nx">searchCountry</span><span class="p">,</span> <span class="nx">columns</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">innerHTML</span><span class="p">);</span>
-            <span class="p">});</span>
-
-        <span class="nx">showCustomerRows</span><span class="p">(</span><span class="nx">rowsToShow</span><span class="p">);</span>
-    <span class="p">};</span>
-
-    <span class="kd">function</span> <span class="nx">showCustomerData</span><span class="p">(</span><span class="nx">customerList</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">));</span>
-        <span class="nx">showCustomerRows</span><span class="p">();</span>
-    <span class="p">}</span>
-
-    <span class="kd">function</span> <span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">const</span> <span class="nx">outerHtmlProperty</span> <span class="o">=</span> <span class="s1">'outerHTML'</span><span class="p">;</span>
-        <span class="kd">const</span> <span class="nx">dataRowTemplateId</span> <span class="o">=</span> <span class="s1">'data-row-template'</span><span class="p">;</span>
-        <span class="kd">const</span> <span class="nx">rowTemplate</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#'</span> <span class="o">+</span> <span class="nx">dataRowTemplateId</span><span class="p">).</span><span class="nx">prop</span><span class="p">(</span><span class="nx">outerHtmlProperty</span><span class="p">)</span>
-            <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'id="'</span> <span class="o">+</span> <span class="nx">dataRowTemplateId</span> <span class="o">+</span> <span class="s1">'"'</span><span class="p">,</span> <span class="s1">''</span><span class="p">);</span>
-
-        <span class="kd">let</span> <span class="nx">dataRows</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">).</span><span class="nx">prop</span><span class="p">(</span><span class="nx">outerHtmlProperty</span><span class="p">);</span>
-
-        <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerList</span><span class="p">,</span>
-            <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">dataRows</span> <span class="o">+=</span> <span class="nx">rowTemplate</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{name}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{email}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">email</span><span class="p">)</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{country}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">country</span><span class="p">);</span>
-            <span class="p">});</span>
-
-        <span class="k">return</span> <span class="nx">dataRows</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="kd">function</span> <span class="nx">showLoader</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">showElement</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">,</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">);</span>
-
-        <span class="nx">forEachCustomerRow</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">hideElement</span><span class="p">(</span><span class="nx">row</span><span class="p">,</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">);</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
-
-    <span class="kd">function</span> <span class="nx">showCustomerRows</span><span class="p">(</span><span class="nx">filteredRows</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">forEachCustomerRow</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">showElement</span><span class="p">(</span><span class="nx">row</span><span class="p">,</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">);</span>
-        <span class="p">},</span> <span class="nx">filteredRows</span><span class="p">);</span>
-
-        <span class="nx">utilitiesModule</span><span class="p">.</span><span class="nx">hideElement</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">,</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="kd">function</span> <span class="nx">forEachCustomerRow</span><span class="p">(</span><span class="nx">callBack</span><span class="p">,</span> <span class="nx">filteredRows</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">let</span> <span class="nx">customerRows</span> <span class="o">=</span> <span class="nx">CUSTOMER_TABLE_BODY</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">CUSTOMER_ROW_SELECTOR</span><span class="p">);</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">filteredRows</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">customerRows</span> <span class="o">=</span> <span class="nx">filteredRows</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerRows</span><span class="p">,</span>
-            <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">row</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">callBack</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="nx">row</span><span class="p">));</span>
-            <span class="p">});</span>
-    <span class="p">}</span>
-
-    <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span> <span class="o">=</span> <span class="nx">CURRENT_MODULE</span><span class="p">;</span>
-
-<span class="p">})(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">customerService</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">utilitiesModule</span><span class="p">);</span>
-
-<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span><span class="p">.</span><span class="nx">initialize</span><span class="p">();</span>
-<span class="p">});</span>
-</code></pre></div></div>
-<p>utilities.js</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">const</span> <span class="nx">CURRENT_MODULE</span> <span class="o">=</span> <span class="p">{},</span>
-        <span class="nx">DISPLAY_NONE_CLASS</span> <span class="o">=</span> <span class="s1">'display-none'</span><span class="p">;</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">isMatchForFilter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">searchValue</span><span class="p">,</span> <span class="nx">valueInRow</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">searchValue</span> <span class="o">===</span> <span class="s1">''</span> <span class="o">||</span>
-            <span class="nx">valueInRow</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">searchValue</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">};</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">hideElement</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">elementSelector</span><span class="p">,</span> <span class="nx">parentSelector</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">let</span> <span class="nx">parent</span> <span class="o">=</span> <span class="nx">getParent</span><span class="p">(</span><span class="nx">parentSelector</span><span class="p">);</span>
-        <span class="nx">parent</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">elementSelector</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-    <span class="p">};</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">showElement</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">elementSelector</span><span class="p">,</span> <span class="nx">parentSelector</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">let</span> <span class="nx">parent</span> <span class="o">=</span> <span class="nx">getParent</span><span class="p">(</span><span class="nx">parentSelector</span><span class="p">);</span>
-        <span class="nx">parent</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">elementSelector</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="nx">DISPLAY_NONE_CLASS</span><span class="p">);</span>
-    <span class="p">};</span>
-
-    <span class="kd">function</span> <span class="nx">getParent</span><span class="p">(</span><span class="nx">parentSelector</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">let</span> <span class="nx">parent</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">);</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">parentSelector</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">parent</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">parentSelector</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="k">return</span> <span class="nx">parent</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="nb">window</span><span class="p">.</span><span class="nx">utilitiesModule</span> <span class="o">=</span> <span class="nx">CURRENT_MODULE</span><span class="p">;</span>
-<span class="p">})(</span><span class="nx">jQuery</span><span class="p">);</span>
-</code></pre></div></div>
-<p>customer-service.js</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">const</span> <span class="nx">CURRENT_MODULE</span> <span class="o">=</span> <span class="p">{},</span>
-        <span class="nx">CUSTOMER_URI</span> <span class="o">=</span> <span class="s1">'https://localhost:44313/api/customer'</span><span class="p">;</span>
-
-    <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">getCustomers</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">successCallBack</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">$</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="nx">CUSTOMER_URI</span><span class="p">)</span>
-            <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">customerList</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">jqXHR</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">successCallBack</span><span class="p">(</span><span class="nx">customerList</span><span class="p">);</span>
-            <span class="p">})</span>
-            <span class="p">.</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">alert</span><span class="p">(</span><span class="s1">'error '</span> <span class="o">+</span> <span class="nx">textStatus</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">errorThrown</span><span class="p">);</span>
-            <span class="p">});</span>
-    <span class="p">};</span>
-  
-    <span class="nb">window</span><span class="p">.</span><span class="nx">customerService</span> <span class="o">=</span> <span class="nx">CURRENT_MODULE</span><span class="p">;</span>
-<span class="p">})(</span><span class="nx">jQuery</span><span class="p">);</span>
-</code></pre></div></div>
-
-<p>index.cshtml:</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@page
-@model IndexModel
-@{
-    ViewData["Title"] = "Home page";
-}
-<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col"</span><span class="nt">&gt;</span>
-    <span class="nt">&lt;h1&gt;</span>Customer overview<span class="nt">&lt;/h1&gt;</span>
-
-    @* Searchform *@
-    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"search-customer"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchCustomerName"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Name<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchCustomerName"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchEmail"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Email<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchEmail"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"searchCountry"</span> <span class="na">class=</span><span class="s">"col-sm-2 col-form-label"</span><span class="nt">&gt;</span>@Texts.Country<span class="nt">&lt;/label&gt;</span>
-            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-5"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">id=</span><span class="s">"searchCountry"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;/div&gt;</span>
-        <span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">"customerOverviewSearchButton"</span> <span class="na">type=</span><span class="s">"button"</span> <span class="na">class=</span><span class="s">"btn btn-sm btn-primary col-sm-2"</span><span class="nt">&gt;</span>@Texts.Search<span class="nt">&lt;/button&gt;</span>
-    <span class="nt">&lt;/div&gt;</span>
-
-    @* Grid for data *@
-    <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"table mt-2"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;thead&gt;</span>
-            <span class="nt">&lt;tr&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Name<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Email<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Country<span class="nt">&lt;/th&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/thead&gt;</span>
-        <span class="nt">&lt;tbody</span> <span class="na">id=</span><span class="s">"customer-table-body"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;tr</span> <span class="na">class=</span><span class="s">"loading-row"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;td</span> <span class="na">colspan=</span><span class="s">"3"</span><span class="nt">&gt;&lt;progress&gt;&lt;/progress&gt;&lt;/td&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/tbody&gt;</span>
-    <span class="nt">&lt;/table&gt;</span>
-
-    @* Row templates *@
-    <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"display-none"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"data-row-template"</span> <span class="na">class=</span><span class="s">"customer-row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{name}<span class="nt">&lt;/td&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{email}<span class="nt">&lt;/td&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{country}<span class="nt">&lt;/td&gt;</span>
-        <span class="nt">&lt;/tr&gt;</span>
-    <span class="nt">&lt;/table&gt;</span>
-<span class="nt">&lt;/div&gt;</span>
-
-@section Scripts {
-    <span class="nt">&lt;environment</span> <span class="na">include=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/js/utilities.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/js/customer-service.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/js/customer-overview.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-    <span class="nt">&lt;/environment&gt;</span>
-    <span class="nt">&lt;environment</span> <span class="na">exclude=</span><span class="s">"Development"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"~/js/dist/customer-overview.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-    <span class="nt">&lt;/environment&gt;</span>
-}
-</code></pre></div></div>
-<p>bundleconfig.json (to generate the minified file in de dist folder)</p>
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="w">
-  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"outputFileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wwwroot/css/site.min.css"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"inputFiles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"wwwroot/css/site.css"</span><span class="w"> </span><span class="p">]</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"outputFileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wwwroot/js/dist/customer-overview.min.js"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"inputFiles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-      </span><span class="s2">"wwwroot/js/utilities.js"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"wwwroot/js/customer-service.js"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"wwwroot/js/customer-overview.js"</span><span class="w">
-    </span><span class="p">],</span><span class="w">
-    </span><span class="s2">"minify"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"renameLocals"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
-    </span><span class="p">},</span><span class="w">
-    </span><span class="s2">"sourceMap"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">]</span><span class="w">
-</span></code></pre></div></div>
-<h2 id="separating-html-control-events-and-javascript-hook-ups">Separating HTML control events and JavaScript hook-ups</h2>
-
-<p>When embedding JavaScript in the HTML pages, the event hookups are usually written directly in the controls, mixing markup with the JavaScript. In my opinion, this makes it harder to find how and where my JavaScript functions are used.</p>
-
-<p>By hooking up al the events in the JavaScript module there’s no need to embed any JavaScript in the markup for the page. The HTML markup is only used for layout. The functionality and/or interaction logic is completely separate and centralized in the JavaScript modules.</p>
-
-<p>There are still dependencies between the DOM and the JavaScript module but the test framework I have been using (Jest) provides a DOM mock. The DOM mock can be accessed like the browser DOM and you can test the interactions and their results. I’ll show examples in my next blog post.</p>
-
-<p>The example page with embedded JavaScript, rewritten with an IIFE is shown below.</p>
-
-<p>Event hookup before (in the html):</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">"button"</span> <span class="na">class=</span><span class="s">"btn btn-sm btn-primary col-sm-2"</span> <span class="na">onclick=</span><span class="s">"window.customerOverviewModule.filterData()"</span><span class="nt">&gt;</span>@Texts.Search<span class="nt">&lt;/button&gt;</span>
-</code></pre></div></div>
-
-<p>Event hookup after refactoring to the IIFE:</p>
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">"customerOverviewSearchButton"</span> <span class="na">type=</span><span class="s">"button"</span> <span class="na">class=</span><span class="s">"btn btn-sm btn-primary col-sm-2"</span><span class="nt">&gt;</span>@Texts.Search<span class="nt">&lt;/button&gt;</span>
-</code></pre></div></div>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">customerService</span><span class="p">,</span> <span class="nx">utilitiesModule</span><span class="p">)</span> <span class="p">{</span>
-
-     <span class="c1">///...</span>
-    
-     <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">initialize</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">$</span><span class="p">(</span><span class="s1">'#customerOverviewSearchButton'</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">filterData</span><span class="p">);</span>
-        
-        <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">loadData</span><span class="p">();</span>
-    <span class="p">};</span>
-
-     <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">loadData</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-         <span class="c1">///...</span>
-     <span class="p">};</span>
-    
-     <span class="nx">CURRENT_MODULE</span><span class="p">.</span><span class="nx">filterData</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-     	<span class="c1">///...</span>
-     <span class="p">};</span>
-     
-     <span class="c1">///...</span>
-     
-     <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span> <span class="o">=</span> <span class="nx">CURRENT_MODULE</span><span class="p">;</span>
-
-<span class="p">})(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">customerService</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">utilitiesModule</span><span class="p">);</span>
-
-<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nb">window</span><span class="p">.</span><span class="nx">customerOverviewModule</span><span class="p">.</span><span class="nx">initialize</span><span class="p">();</span>
-<span class="p">});</span>
-</code></pre></div></div>
-<h2 id="separating-html-templating-from-your-javascript-code">Separating HTML templating from your JavaScript code</h2>
-
-<p>Sometimes you have to create multiple repeating element groups from a JavaScript array. An example is calling an API to retrieve orders then printing a line with each order object. You might define a constant with the HTML template as a string in your JavaScript. For maintainability, code completion and analysis benefits, I find it better to just include a hidden div with the template on the page. You won’t have to deal with escaping reserved characters in a string like quotes and slashes and also gain indenting and linting support from your IDE.</p>
-
-<p>The HTML string used before the refactoring was:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kd">function</span> <span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">)</span> <span class="p">{</span>
-            <span class="kd">const</span> <span class="nx">rowTemplate</span> <span class="o">=</span> <span class="s1">'&lt;tr class="customer-row"&gt;&lt;td&gt;{name}&lt;/td&gt;&lt;td&gt;{email}&lt;/td&gt;&lt;td&gt;{country}&lt;/td&gt;&lt;/tr&gt;'</span><span class="p">;</span>
-            <span class="kd">let</span> <span class="nx">dataRows</span> <span class="o">=</span> <span class="s1">'&lt;tr class="loading-row"&gt;&lt;td colspan="3"&gt;&lt;progress&gt;&lt;/progress&gt;&lt;/td&gt;&lt;/tr&gt;'</span><span class="p">;</span>
-
-            <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerList</span><span class="p">,</span>
-                <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">dataRows</span> <span class="o">+=</span> <span class="nx">rowTemplate</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{name}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{email}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">email</span><span class="p">)</span>
-                        <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{country}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">country</span><span class="p">);</span>
-                <span class="p">});</span>
-
-            <span class="k">return</span> <span class="nx">dataRows</span><span class="p">;</span>
-        <span class="p">}</span>
-</code></pre></div></div>
-<p>The code using templating from the overview page example as an IIFE  is shown below:</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code> @* Grid for data *@
-    <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"table mt-2"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;thead&gt;</span>
-            <span class="nt">&lt;tr&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Name<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Email<span class="nt">&lt;/th&gt;</span>
-                <span class="nt">&lt;th</span> <span class="na">scope=</span><span class="s">"col"</span><span class="nt">&gt;</span>@Texts.Country<span class="nt">&lt;/th&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/thead&gt;</span>
-        <span class="nt">&lt;tbody</span> <span class="na">id=</span><span class="s">"customer-table-body"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;tr</span> <span class="na">class=</span><span class="s">"loading-row"</span><span class="nt">&gt;</span>
-                <span class="nt">&lt;td</span> <span class="na">colspan=</span><span class="s">"3"</span><span class="nt">&gt;&lt;progress&gt;&lt;/progress&gt;&lt;/td&gt;</span>
-            <span class="nt">&lt;/tr&gt;</span>
-        <span class="nt">&lt;/tbody&gt;</span>
-    <span class="nt">&lt;/table&gt;</span>
-
-    @* Row templates *@
-    <span class="nt">&lt;table</span> <span class="na">class=</span><span class="s">"display-none"</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"data-row-template"</span> <span class="na">class=</span><span class="s">"customer-row"</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{name}<span class="nt">&lt;/td&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{email}<span class="nt">&lt;/td&gt;</span>
-            <span class="nt">&lt;td&gt;</span>{country}<span class="nt">&lt;/td&gt;</span>
-        <span class="nt">&lt;/tr&gt;</span>
-    <span class="nt">&lt;/table&gt;</span>
-</code></pre></div></div>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">function</span> <span class="nx">getDataRows</span><span class="p">(</span><span class="nx">customerList</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">const</span> <span class="nx">outerHtmlProperty</span> <span class="o">=</span> <span class="s1">'outerHTML'</span><span class="p">;</span>
-        <span class="kd">const</span> <span class="nx">dataRowTemplateId</span> <span class="o">=</span> <span class="s1">'data-row-template'</span><span class="p">;</span>
-        <span class="kd">const</span> <span class="nx">rowTemplate</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#'</span> <span class="o">+</span> <span class="nx">dataRowTemplateId</span><span class="p">).</span><span class="nx">prop</span><span class="p">(</span><span class="nx">outerHtmlProperty</span><span class="p">)</span>
-            <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'id="'</span> <span class="o">+</span> <span class="nx">dataRowTemplateId</span> <span class="o">+</span> <span class="s1">'"'</span><span class="p">,</span> <span class="s1">''</span><span class="p">);</span>
-
-        <span class="kd">let</span> <span class="nx">dataRows</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">LOADING_ROW_SELECTOR</span><span class="p">).</span><span class="nx">prop</span><span class="p">(</span><span class="nx">outerHtmlProperty</span><span class="p">);</span>
-
-        <span class="nx">$</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">customerList</span><span class="p">,</span>
-            <span class="kd">function</span> <span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">dataRows</span> <span class="o">+=</span> <span class="nx">rowTemplate</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{name}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{email}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">email</span><span class="p">)</span>
-                    <span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'{country}'</span><span class="p">,</span> <span class="nx">customer</span><span class="p">.</span><span class="nx">country</span><span class="p">);</span>
-            <span class="p">});</span>
-
-        <span class="k">return</span> <span class="nx">dataRows</span><span class="p">;</span>
-    <span class="p">}</span>
-</code></pre></div></div>
-
-        </div>
-    </article>
-    
     <center><p><a href="/archive">For additional posts see the archive page for an overview of all available posts</a></p></center>
     
 </div>
@@ -1449,6 +1051,9 @@ namespace NetCore.WebApiExample.Controllers
 <section class="sidebar-section">
     <h3>Last posts </h3>
     
+    <a href="/2021/01/31/Using-SoapUI-for-API-tests.html">Using SoapUI for API tests</a> <br />
+    <div class="last-posts-spacer"></div>
+    
     <a href="/2020/06/29/Using-Postman-for-quick-and-repeatable-API-tests.html">Using Postman for quick and repeatable API tests</a> <br />
     <div class="last-posts-spacer"></div>
     
@@ -1459,9 +1064,6 @@ namespace NetCore.WebApiExample.Controllers
     <div class="last-posts-spacer"></div>
     
     <a href="/2020/02/08/Unit-testing-self-executing-JavaScript-Modules-in-Visual-Studio.html">Unit testing self-executing JavaScript modules in Visual Studio</a> <br />
-    <div class="last-posts-spacer"></div>
-    
-    <a href="/2019/12/30/Creating-more-maintainable-javascript-with-self-executing-functions.html">Creating more maintainable JavaScript with self-executing functions</a> <br />
     <div class="last-posts-spacer"></div>
     
     <a href="/archive">Archive</a>
