@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Using Fiddler for HTTP traffic troubleshooting</title>
+    <meta name="description" content="Fiddler from Telerik is an HTTP proxy that can monitor all outgoing traffic from your computer. It’s a useful tool when developing to see the actual HTTP tra...">
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="canonical" href="https://samanthaneilen.github.io/2021/04/11/Using-Fiddler-for-HTTP-traffic-troubleshooting.html">
+    <link rel="alternate" type="application/rss+xml" title="Samantha Neilen" href="/feed.xml">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+    <header aria-label="header" class="header">
+        <span class="header-text">Samantha Neilen</span>
+    </header>
+</div>
+        <div class="row">
+            <div class="col-md-7 col-md-offset-1">
+                <main class="page-content" aria-label="content">
+                    <a href="/">Back to Home</a>
+<article>
+    <header class="article-header">
+        Using Fiddler for HTTP traffic troubleshooting
+    </header>
+    
+    <span>Apr 11, 2021</span><br />
+    Tags: 
+    <div class="article-content">
+        <p>Fiddler from Telerik is an HTTP proxy that can monitor all outgoing traffic from your computer. It’s a useful tool when developing to see the actual HTTP traffic that is generated from your applications under development.</p>
+
+<p>We use a ton of different libraries to create and HTTP messages and send them to our own or 3rd party API. Sometimes we make assumptions on certain settings or serialization behavior, however, these assumptions might be wrong and Fiddler is a tool to help verify and troubleshoot the behavior of the API.</p>
+
+<p>When using local SoapUI mock services, you can only see logging that an endpoint has been called but not the message that was sent to the endpoint. When using Fiddler you can inspect the message send to the endpoint to examine if the message is as expected.</p>
+
+<h3 id="using-fiddler-to-inspect-traffic">Using Fiddler to inspect traffic</h3>
+
+<p>After you install it, you can set an option to decrypt HTTPS traffic in Tools -&gt; Options -&gt; HTTPS. After ticking the checkbox, it will ask you to accept and install an HTTPS certificate that can be used to decrypt HTTP traffic.</p>
+
+<p><img src="/assets/images/20210411/EnableHttps.png" alt="[Enable HTTPS option]" /><br /><br /></p>
+
+<p>Fiddler acts as a man-in-the-middle receiving and passing all communications before it hits the internet. The certificate ensures that the local HTTPS traffic to Fiddler is secured and browsers and applications will accept the HTTPS connections encrypted by the Fiddler certificate. For more information and explaining how Fiddler does this, without compromising the machine to malicious attacks, see this<a href="https://www.telerik.com/blogs/faq---certificates-in-Fiddler"> FAQ about certificates in Fiddler</a>.</p>
+
+<p>By default Fiddler will allow you to monitor traffic from your web browser, SoapUI, or Postman to a local API without additional settings. The screenshot below shows the traffic generated from Postman, SoapUI, and my browser when running a sample MVC project.</p>
+
+<p><img src="/assets/images/20210411/CapturedTraffic.png" alt="[Captured traffic]" /><br /><br /></p>
+
+<p>When using Web API that runs on localhost with IIS or IIS Express you need to set the proxy in de web.config to use the Fiddler proxy to ensure that the traffic from the Web API is routed through and captured by Fiddler.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;system.net&gt;</span>
+     <span class="nt">&lt;defaultProxy</span> <span class="na">enabled=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+         <span class="nt">&lt;proxy</span> <span class="na">proxyaddress=</span><span class="s">"http://127.0.0.1:8888"</span><span class="nt">/&gt;</span>
+     <span class="nt">&lt;/defaultProxy&gt;</span>
+<span class="nt">&lt;/system.net&gt;</span>
+</code></pre></div></div>
+
+<p><br /><br /></p>
+
+<p>After you see the request you want to analyze use the inspectors to see the actual message.</p>
+
+<p><img src="/assets/images/20210411/Inspectors.png" alt="[Inspectors]" /><br /><br /></p>
+
+<p>You can save and edit messages.</p>
+
+<p><img src="/assets/images/20210411/SaveMessage.png" alt="[Save message]" /><br /><br /></p>
+
+<p><img src="/assets/images/20210411/ReplayMessage.png" alt="[Replay message]" /><br /><br /></p>
+
+<p>You can setup Fiddler to respond with a fixed response for a certain request</p>
+
+<p><img src="/assets/images/20210411/AutoResponder.png" alt="[AutoResponder]" /><br /><br /></p>
+
+<p>You can exclude certain domains from Fiddler so requests to those domains are not routed through Fiddler.</p>
+
+<p>Bypass in Fiddler options:</p>
+
+<p><img src="/assets/images/20210411/BypassOption.png" alt="[Bypass option]" /><br /><br /></p>
+
+<p>Web API web.config bypass option:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;system.net&gt;</span>
+    <span class="nt">&lt;defaultProxy</span> <span class="na">enabled=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;proxy</span> <span class="na">proxyaddress=</span><span class="s">"http://127.0.0.1:8888"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;bypasslist&gt;</span>
+            <span class="nt">&lt;add</span> <span class="na">address=</span><span class="s">"https://contoso.com"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;/bypasslist&gt;</span>
+    <span class="nt">&lt;/defaultProxy&gt;</span>
+<span class="nt">&lt;/system.net&gt;</span>
+</code></pre></div></div>
+
+<p><br /><br /></p>
+
+<h3 id="resources">Resources:</h3>
+
+<p><a href="https://docs.telerik.com/Fiddler/configure-Fiddler/tasks/installFiddler">Telerik Fiddler Docs</a></p>
+
+    </div>
+    
+</article>
+
+                </main>
+            </div>
+            <div class="col-md-3">
+                <aside aria-label="sidebar">
+                    <section class="sidebar-section">
+    <h3>About me</h3>
+    I am a dutch .NET developer.
+    I have been coding professionally since 2008.
+    On this blog, I will be writing about multiple subjects that I use in my daily programming job or subjects that I am studying.
+</section>
+<section class="sidebar-section">
+    <h3>Social</h3>
+    <a href="https://github.com/SamanthaNeilen"><i class="fa fa-github" aria-hidden="true"></i><span>&nbsp;SamanthaNeilen</span></a> <br />
+    <a href="https://twitter.com/NeilenSamantha"><i class="fa fa-twitter" aria-hidden="true"></i><span>&nbsp;NeilenSamantha</span></a> <br />
+    <a href="https://www.linkedin.com/in/samantha-neilen-16153713"><i class="fa fa-linkedin" aria-hidden="true"></i><span>&nbsp;Samantha Neilen</span></a><br />
+    Subscribe via <a href="/feed.xml">RSS</a>
+</section>
+<section class="sidebar-section">
+    <h3>Last posts </h3>
+    
+    <a href="/2021/04/11/Using-Fiddler-for-HTTP-traffic-troubleshooting.html">Using Fiddler for HTTP traffic troubleshooting</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2021/01/31/Using-SoapUI-for-API-tests.html">Using SoapUI for API tests</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/06/29/Using-Postman-for-quick-and-repeatable-API-tests.html">Using Postman for quick and repeatable API tests</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/05/04/Calling-async-methods-with-configureawait.html">Calling async methods with ConfigureAwait</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/2020/03/18/Tips-for-building-habits-around-working-from-home.html">Tips for building habits around working from home</a> <br />
+    <div class="last-posts-spacer"></div>
+    
+    <a href="/archive">Archive</a>
+</section>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
